@@ -1,0 +1,42 @@
+{:enums
+ {:habit_time
+  {:description "Describes what time of day a habit should be completed."
+   :values [ :MORNING :EVENING :ANYTIME ]}}
+
+ :unions
+ {:frequency
+  {:description "A list of possible frequency settings."
+   :members [:specific_day_of_week_frequency :total_week_frequency]}}
+
+ :objects
+ {:specific_day_of_week_frequency
+  {:description "A frequency that happens on specific days of the week."
+   :fields
+   {:monday {:type Int}
+    :tuesday {:type Int}
+    :wednesday {:type Int}
+    :thursday {:type Int}
+    :friday {:type Int}
+    :saturday {:type Int}
+    :sunday {:type Int}}}
+
+  :total_week_frequency
+  {:description "A frequency that happens a certain number of times per week."
+   :fields
+   {:week {:type Int}}}
+
+  :habit
+  {:description "A habit that we are watching."
+   :fields
+   {:id {:type (non-null ID)}
+    :name {:type (non-null String)}
+    :description {:type String}
+    :time_of_day {:type (non-null :habit_time)}
+    :goal_frequency {:type :frequency}
+    }}}
+
+ :queries
+ {:get_habits
+  {:type (list :habit)
+   :description "Gets all habits"
+   :resolve :query/get-habits}}}

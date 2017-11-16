@@ -2,7 +2,8 @@
 
 - Creating habits
     - Frequency Goal
-        - daily / weekly / monthly
+        - daily / weekly
+        - time of day (enum): Morning/Evening/Anytime
         - specific times of [day/week/month]
         - number of times per [day/week/month]
         - every X days
