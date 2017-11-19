@@ -19,6 +19,6 @@
   (mc/insert-and-return db (:habits collection-names) habit))
 
 (defn get-habits
-  "Retrieves all habits from the database."
+  "Retrieves all habits sync from the database as clojure maps."
   []
   (mc/find-maps db (:habits collection-names)))

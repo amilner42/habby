@@ -6,7 +6,13 @@
  :unions
  {:frequency
   {:description "A list of possible frequency settings."
-   :members [:specific_day_of_week_frequency :total_week_frequency]}}
+   :members [:specific_day_of_week_frequency
+             :total_week_frequency
+             :every_x_days_frequency]}
+
+  :habit
+  {:description "A good or bad habit."
+   :members [:good_habit :bad_habit]}}
 
  :objects
  {:specific_day_of_week_frequency
@@ -23,20 +29,35 @@
   :total_week_frequency
   {:description "A frequency that happens a certain number of times per week."
    :fields
-   {:week {:type Int}}}
+   {:week {:type (non-null Int)}}}
 
-  :habit
-  {:description "A habit that we are watching."
+  :every_x_days_frequency
+  {:description "A frequency that happens a certain number of times per a certain number of days."
+   :fields
+   {:times {:type (non-null Int)}
+    :days {:type (non-null Int)}}}
+
+  :good_habit
+  {:description "A good habit that we are trying to maintain."
    :fields
    {:id {:type (non-null ID)}
     :name {:type (non-null String)}
     :description {:type String}
     :time_of_day {:type (non-null :habit_time)}
-    :goal_frequency {:type :frequency}
-    }}}
+    :target_frequency {:type (non-null :frequency)
+                       :resolve :query/tag-type-for-target-frequency}}}
+
+  :bad_habit
+  {:description "A bad habit we are trying to reduce."
+   :fields
+   {:id {:type (non-null ID)}
+    :name {:type (non-null String)}
+    :description {:type String}
+    :threshold_frequency {:type (non-null :frequency)
+                          :resolve :query/tag-type-for-threshold-frequency}}}}
 
  :queries
  {:get_habits
-  {:type (list :habit)
-   :description "Gets all habits"
+  {:type (non-null (list (non-null :habit)))
+   :description "Get all habits."
    :resolve :query/get-habits}}}
