@@ -10,10 +10,37 @@
     [clojure.edn :as edn]))
 
 
+(defn value-map [m f]
+  "Maps a function on the values of a map, returns a map with the updated values."
+  (into {} (for [[k v] m] [k (f v)])))
+
+(defn unnest-tagged-unions-on-input-object
+  "Recursively converts all the tagged unions in the input object to have data unnested.
+  Will look for the value ascociated with the`:type_name` key and unnest the data stored
+  with that as its key, if no :type_name key is present or it isn't a map, returns
+  the input-object unchanged. Does this recursively for all nested keys if it is a map."
+  [input-object]
+  (let [type_name (and (map? input-object) (:type_name input-object))]
+    (if (and (map? input-object) (not (nil? type_name)))
+      (as-> (input-object (keyword type_name)) rtrn
+        (value-map rtrn unnest-tagged-unions-on-input-object)
+        (assoc rtrn :type_name type_name))
+      input-object)))
+
 (defn tag-type
   "Tag a map using `schema/tag-with-type` and the map's `type_name`."
   [ map-with-type ]
   (schema/tag-with-type map-with-type (keyword (:type_name map-with-type))))
+
+(defn tag-type-recursive
+  "Tag a map using `tag-type` and recurse on its children."
+  [ maybe-mp ]
+  (let [type_name (and (map? maybe-mp) (:type_name maybe-mp))]
+    (if (map? maybe-mp)
+      (if (nil? type_name)
+        (value-map maybe-mp tag-type-recursive)
+        (tag-type (value-map maybe-mp tag-type-recursive)))
+      maybe-mp)))
 
 (defn create-async-resolver
   "Spawn a thread to run the resolver and immediately return a lacinia `ResolverResultPromise`."
@@ -30,19 +57,26 @@
       result)))
 
 (defn create-tag-type-resolver
-  "Create a resolver which returns `field-name` of `value` tagged."
+  "Create a resolver which returns the `field-name` of `value` tagged with `tag-type`."
   [ field-name ]
-  (fn [context args value] (tag-type (value (keyword field-name)))))
+  (fn [context args value] (tag-type (value field-name))))
 
 (defn resolve-get-habits
+  "Get all the habits from the database."
   [context args value]
   (map tag-type (db/get-habits)))
+
+(defn resolve-mutation-add-habit
+  "Add a habit to the database and get the habit back."
+  [context {:keys [create_habit_data] } value]
+  (tag-type-recursive (db/add-habit (unnest-tagged-unions-on-input-object create_habit_data))))
 
 (defn resolver-map
   []
   {:query/get-habits (create-async-resolver resolve-get-habits)
-   :query/tag-type-for-threshold-frequency (create-tag-type-resolver "threshold_frequency")
-   :query/tag-type-for-target-frequency (create-tag-type-resolver "target_frequency")})
+   :query/tag-type-for-threshold-frequency (create-tag-type-resolver :threshold_frequency)
+   :query/tag-type-for-target-frequency (create-tag-type-resolver :target_frequency)
+   :query/resolve-mutation-add-habit (create-async-resolver resolve-mutation-add-habit)})
 
 ; We load our EDN schema file and attach our resolvers from our resolver map
 ; before compiling. We must do the attachment of the resolvers before compiling.

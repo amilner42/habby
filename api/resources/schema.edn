@@ -60,4 +60,67 @@
  {:get_habits
   {:type (non-null (list (non-null :habit)))
    :description "Get all habits."
-   :resolve :query/get-habits}}}
+   :resolve :query/get-habits}}
+
+ :input-objects
+ {:create_every_x_days_frequency_data
+  {:description "The data required to create a every_x_days_frequency."
+   :fields
+   {:type_name {:type (non-null String)}
+    :times {:type (non-null Int)}
+    :days {:type (non-null Int)}}}
+
+  :create_total_week_frequency_data
+  {:description "The data required to create a total_week_frequency."
+   :fields
+   {:type_name {:type (non-null String)}
+    :week {:type (non-null Int)}}}
+
+  :create_specific_day_of_week_frequency_data
+  {:description "The data required to create a specific_day_of_week_frequency."
+   :fields
+   {:type_name {:type (non-null String)}
+    :monday {:type Int}
+    :tuesday {:type Int}
+    :wednesday {:type Int}
+    :thursday {:type Int}
+    :friday {:type Int}
+    :saturday {:type Int}
+    :sunday {:type Int}}}
+
+  :create_frequency_data
+  {:description "The data required to create a frequency."
+   :fields
+   {:type_name {:type (non-null String)}
+    :every_x_days_frequency {:type :create_every_x_days_frequency_data}
+    :total_week_frequency {:type :create_total_week_frequency_data}
+    :specific_day_of_week_frequency {:type :create_specific_day_of_week_frequency_data}}}
+
+  :create_good_habit_data
+  {:description "The data required to create a new good habit."
+   :fields
+    {:name {:type (non-null String)}
+     :description {:type String}
+     :time_of_day {:type (non-null :habit_time)}
+     :target_frequency {:type (non-null :create_frequency_data)}}}
+
+  :create_bad_habit_data
+  {:description "The data required to create a new bad habit."
+   :fields
+   {:name {:type (non-null String)}
+    :description {:type String}
+    :threshold_frequency {:type (non-null :create_frequency_data)}}}
+
+  :create_habit_data
+  {:description "The data required to create a new habit."
+   :fields
+    {:type_name {:type (non-null String)}
+     :good_habit {:type :create_good_habit_data}
+     :bad_habit {:type :create_bad_habit_data}}}}
+
+ :mutations
+ {:add_habit
+  {:type :habit
+   :description "Add a habit to your list of habits."
+   :args {:create_habit_data {:type (non-null :create_habit_data)}}
+   :resolve :query/resolve-mutation-add-habit}}}
