@@ -6,7 +6,8 @@
             [com.walmartlabs.lacinia.schema :as schema]
             [com.walmartlabs.lacinia.resolve :as resolve]
             [clojure.core.async :refer [thread]]
-            [clojure.edn :as edn]))
+            [clojure.edn :as edn])
+  (:use [slingshot.slingshot :only [throw+, try+]]))
 
 
 (defn value-map [m f]
@@ -22,6 +23,7 @@
   (let [type_name (and (map? input-object) (:type_name input-object))]
     (if (and (map? input-object) (not (nil? type_name)))
       (as-> (input-object (keyword type_name)) rtrn
+        (if (nil? rtrn) (throw+ {:type ::invalid_tagged_union_null :tag_name type_name}) rtrn)
         (value-map rtrn unnest-tagged-unions-on-input-object)
         (assoc rtrn :type_name type_name))
       input-object)))
@@ -47,8 +49,14 @@
   (fn [context args value]
     (let [result (resolve/resolve-promise)]
       (thread
-       (try
+       (try+
          (resolve/deliver! result (resolver context args value))
+         (catch [:type ::invalid_tagged_union_null] {:keys [tag_name]}
+           (resolve/deliver! result nil
+                             {:message (str
+                                        "Invalid tagged union, tag name was "
+                                        tag_name
+                                        " but value associated with that key was null.")}))
          (catch Throwable t
            (resolve/deliver! result nil
                              {:message (str "Exception: " (.getMessage t))}))))
