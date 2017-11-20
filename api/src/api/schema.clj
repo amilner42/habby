@@ -1,13 +1,12 @@
 (ns api.schema
   "Contains custom resolvers and a function to provide the full schema."
-  (:require
-    [api.db :as db]
-    [clojure.java.io :as io]
-    [com.walmartlabs.lacinia.util :as util]
-    [com.walmartlabs.lacinia.schema :as schema]
-    [com.walmartlabs.lacinia.resolve :as resolve]
-    [clojure.core.async :refer [thread]]
-    [clojure.edn :as edn]))
+  (:require [api.db :as db]
+            [clojure.java.io :as io]
+            [com.walmartlabs.lacinia.util :as util]
+            [com.walmartlabs.lacinia.schema :as schema]
+            [com.walmartlabs.lacinia.resolve :as resolve]
+            [clojure.core.async :refer [thread]]
+            [clojure.edn :as edn]))
 
 
 (defn value-map [m f]

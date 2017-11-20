@@ -1,12 +1,11 @@
 (ns user
   "The user gets loaded by the repl by default, just helps with testing queries out..."
-  (:require
-    [api.schema :as s]
-    [com.walmartlabs.lacinia :as lacinia]
-    [com.walmartlabs.lacinia.pedestal :as lp]
-    [io.pedestal.http :as http]
-    [clojure.java.browse :refer [browse-url]]
-    [clojure.walk :as walk])
+  (:require [api.schema :as s]
+            [com.walmartlabs.lacinia :as lacinia]
+            [com.walmartlabs.lacinia.pedestal :as lp]
+            [io.pedestal.http :as http]
+            [clojure.java.browse :refer [browse-url]]
+            [clojure.walk :as walk])
   (:import (clojure.lang IPersistentMap)))
 
 (def schema (s/load-schema))
