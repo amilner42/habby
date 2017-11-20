@@ -28,12 +28,12 @@
 
 (defn tag-type
   "Tag a map using `schema/tag-with-type` and the map's `type_name`."
-  [ map-with-type ]
+  [map-with-type]
   (schema/tag-with-type map-with-type (keyword (:type_name map-with-type))))
 
 (defn tag-type-recursive
   "Tag a map using `tag-type` and recurse on its children."
-  [ maybe-mp ]
+  [maybe-mp]
   (let [type_name (and (map? maybe-mp) (:type_name maybe-mp))]
     (if (map? maybe-mp)
       (if (nil? type_name)
@@ -43,7 +43,7 @@
 
 (defn create-async-resolver
   "Spawn a thread to run the resolver and immediately return a lacinia `ResolverResultPromise`."
-  [ resolver ]
+  [resolver]
   (fn [context args value]
     (let [result (resolve/resolve-promise)]
       (thread
@@ -57,7 +57,7 @@
 
 (defn create-tag-type-resolver
   "Create a resolver which returns the `field-name` of `value` tagged with `tag-type`."
-  [ field-name ]
+  [field-name]
   (fn [context args value] (tag-type (value field-name))))
 
 (defn resolve-get-habits
