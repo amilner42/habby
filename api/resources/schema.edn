@@ -9,7 +9,12 @@
           :habit {:description "A good or bad habit."
                   :members [:good_habit :bad_habit]}}
 
- :objects {:specific_day_of_week_frequency {:description "A frequency that happens on specific days of the week."
+ :objects {:date {:description "A year/month/day."
+                  :fields {:year {:type (non-null Int)}
+                           :month {:type (non-null Int)}
+                           :day {:type (non-null Int)}}}
+
+           :specific_day_of_week_frequency {:description "A frequency that happens on specific days of the week."
                                             :fields {:monday {:type Int}
                                                      :tuesday {:type Int}
                                                      :wednesday {:type Int}
@@ -38,13 +43,23 @@
                                 :name {:type (non-null String)}
                                 :description {:type String}
                                 :threshold_frequency {:type (non-null :frequency)
-                                                      :resolve :query/tag-type-for-threshold-frequency}}}}
+                                                      :resolve :query/tag-type-for-threshold-frequency}}}
+
+           :habit_day_record {:description "A record of how much a habit was performed on a specific day."
+                              :fields {:habit_id {:type (non-null ID)}
+                                       :date {:type (non-null :date)}
+                                       :amount {:type (non-null Int)}}}}
 
  :queries {:get_habits {:type (non-null (list (non-null :habit)))
                         :description "Get all habits."
                         :resolve :query/get-habits}}
 
- :input-objects {:create_every_x_days_frequency_data {:description "The data required to create a every_x_days_frequency."
+ :input-objects {:date_data {:description "A year/month/day."
+                              :fields {:year {:type (non-null Int)}
+                                       :month {:type (non-null Int)}
+                                       :day {:type (non-null Int)}}}
+
+                 :create_every_x_days_frequency_data {:description "The data required to create a every_x_days_frequency."
                                                       :fields {:type_name {:type (non-null String)}
                                                                :times {:type (non-null Int)}
                                                                :days {:type (non-null Int)}}}
@@ -86,6 +101,13 @@
                                               :bad_habit {:type :create_bad_habit_data}}}}
 
  :mutations {:add_habit {:type :habit
-                         :description "Add a habit to your list of habits."
+                         :description "Add a habit to your list of habits, returns the new habit."
                          :args {:create_habit_data {:type (non-null :create_habit_data)}}
-                         :resolve :query/resolve-mutation-add-habit}}}
+                         :resolve :query/resolve-mutation-add-habit}
+
+             :set_habit_data {:type :habit_day_record
+                              :description "Add a record of how much a habit was performed on a specific day."
+                              :args {:habit_id {:type (non-null ID)}
+                                     :amount {:type (non-null Int)}
+                                     :date {:type (non-null :date_data)}}
+                              :resolve :query/resolve-mutation-set-habit-data}}}

@@ -6,12 +6,19 @@
             [com.walmartlabs.lacinia.schema :as schema]
             [com.walmartlabs.lacinia.resolve :as resolve]
             [clojure.core.async :refer [thread]]
-            [clojure.edn :as edn])
+            [clojure.edn :as edn]
+            [clj-time.core :as t])
   (:use [slingshot.slingshot :only [throw+, try+]]))
 
 
-(defn value-map [m f]
+(defn date-to-y-m-d-map
+  "Converts a joda date-time to a year/month/day map based on the time in UTC."
+  [date-time]
+  {:year (t/year date-time), :month (t/month date-time), :day (t/day date-time)})
+
+(defn value-map
   "Maps a function on the values of a map, returns a map with the updated values."
+  [m f]
   (into {} (for [[k v] m] [k (f v)])))
 
 (defn unnest-tagged-unions-on-input-object
@@ -78,12 +85,19 @@
   [context {:keys [create_habit_data] } value]
   (tag-type-recursive (db/add-habit (unnest-tagged-unions-on-input-object create_habit_data))))
 
+(defn resolve-mutation-set-habit-data
+  "Add some new habit data to the database."
+  [context {:keys [habit_id amount date]} value]
+  (let [date-time (t/date-time (:year date) (:month date) (:day date))]
+    (update (db/set-habit-data habit_id amount date-time) :date date-to-y-m-d-map)))
+
 (defn resolver-map
   []
   {:query/get-habits (create-async-resolver resolve-get-habits)
    :query/tag-type-for-threshold-frequency (create-tag-type-resolver :threshold_frequency)
    :query/tag-type-for-target-frequency (create-tag-type-resolver :target_frequency)
-   :query/resolve-mutation-add-habit (create-async-resolver resolve-mutation-add-habit)})
+   :query/resolve-mutation-add-habit (create-async-resolver resolve-mutation-add-habit)
+   :query/resolve-mutation-set-habit-data (create-async-resolver resolve-mutation-set-habit-data)})
 
 ; We load our EDN schema file and attach our resolvers from our resolver map
 ; before compiling. We must do the attachment of the resolvers before compiling.
