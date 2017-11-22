@@ -27,6 +27,11 @@
                          (assoc habit :_id (ObjectId.)))]
     (mc/insert-and-return db (:habits collection-names) habit_with_id)))
 
+(defn delete-habit
+  "Deletes a habit from the database, returns true if the habit was deleted."
+  [habit_id]
+  (= 1 (.getN (mc/remove-by-id db (:habits collection-names) (ObjectId. habit_id)))))
+
 (defn get-habits
   "Retrieves all habits sync from the database as clojure maps."
   []

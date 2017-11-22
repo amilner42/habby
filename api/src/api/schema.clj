@@ -56,25 +56,30 @@
   (fn [context args value] (tag-type (value field-name))))
 
 (defn resolve-get-habits
-  "Get all the habits from the database."
+  "@refer `db/get-habits`."
   [context args value]
   (map tag-type (db/get-habits)))
 
 (defn resolve-mutation-add-habit
-  "Add a habit to the database and get the habit back."
+  "@refer `db/add-habit`."
   [context {:keys [create_habit_data] } value]
   (tag-type (db/add-habit (unnest-tagged-unions-on-input-object create_habit_data))))
 
 (defn resolve-mutation-set-habit-data
-  "Add some new habit data to the database."
+  "@refer `db/set-habit-data`."
   [context {:keys [habit_id amount date]} value]
   (let [date-time (date-from-y-m-d-map date)]
     (db/set-habit-data habit_id amount date-time)))
 
 (defn resolve-get-habit-data
-  "Gets your habit data, optionally only after (and including) a specific date or for a specific habit."
+  "@refer `db/get-habit-data`."
   [context {:keys [after_date for_habit]} value]
   (db/get-habit-data after_date for_habit))
+
+(defn resolve-mutation-delete-habit
+  "@refer `db/delete-habit`."
+  [context {:keys [habit_id]} value]
+  (db/delete-habit habit_id))
 
 (defn create-date-to-y-m-d-resolver
   "Creates a resolver that converts a joda date-time to a y-m-d map."
@@ -89,7 +94,8 @@
    :query/resolve-mutation-add-habit (create-async-resolver resolve-mutation-add-habit)
    :query/resolve-mutation-set-habit-data (create-async-resolver resolve-mutation-set-habit-data)
    :query/get-habit-data (create-async-resolver resolve-get-habit-data)
-   :query/date-to-y-m-d-format (create-date-to-y-m-d-resolver :date)})
+   :query/date-to-y-m-d-format (create-date-to-y-m-d-resolver :date)
+   :query/resolve-mutation-delete-habit (create-async-resolver resolve-mutation-delete-habit)})
 
 (defn load-schema
   []

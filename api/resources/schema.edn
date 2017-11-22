@@ -107,14 +107,18 @@
                                               :good_habit {:type :create_good_habit_data}
                                               :bad_habit {:type :create_bad_habit_data}}}}
 
- :mutations {:add_habit {:type :habit
+ :mutations {:add_habit {:type (non-null :habit)
                          :description "Add a habit to your list of habits, returns the new habit."
                          :args {:create_habit_data {:type (non-null :create_habit_data)}}
                          :resolve :query/resolve-mutation-add-habit}
 
-             :set_habit_data {:type :habit_day_record
+             :set_habit_data {:type (non-null :habit_day_record)
                               :description "Add a record of how much a habit was performed on a specific day."
                               :args {:habit_id {:type (non-null ID)}
                                      :amount {:type (non-null Int)}
                                      :date {:type (non-null :date_data)}}
-                              :resolve :query/resolve-mutation-set-habit-data}}}
+                              :resolve :query/resolve-mutation-set-habit-data}
+             :delete_habit {:type (non-null Boolean)
+                            :description "Delete a habit by ID, returns true if the habit was deleted."
+                            :args {:habit_id {:type (non-null ID)}}
+                            :resolve :query/resolve-mutation-delete-habit}}}
