@@ -20,17 +20,22 @@
 
 (defn add-habit
   "Add a habit to the database and returns that habit including the ID.
-  Will create an ID if the habit passed doesn't have an ID."
+  Will create an ID if the habit passed doesn't have an ID. Will set `suspended` to false."
   [habit]
-  (let [ habit_with_id (if (contains? habit :_id)
-                         habit
-                         (assoc habit :_id (ObjectId.)))]
-    (mc/insert-and-return db (:habits collection-names) habit_with_id)))
+  (let [ final_habit (as-> habit habit
+                          (if (contains? habit :_id) habit (assoc habit :_id (ObjectId.)))
+                          (assoc habit :suspended false))]
+    (mc/insert-and-return db (:habits collection-names) final_habit)))
 
 (defn delete-habit
   "Deletes a habit from the database, returns true if the habit was deleted."
   [habit_id]
   (= 1 (.getN (mc/remove-by-id db (:habits collection-names) (ObjectId. habit_id)))))
+
+(defn set-suspend-habit
+  "Set the `suspended` for a habit, returns true if the update was performed on the habit."
+  [habit_id suspended]
+  (= 1 (.getN (mc/update db (:habits collection-names) {:_id (ObjectId. habit_id)} {$set {:suspended suspended}}))))
 
 (defn get-habits
   "Retrieves all habits sync from the database as clojure maps."

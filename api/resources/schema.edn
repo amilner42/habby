@@ -32,6 +32,7 @@
 
            :good_habit {:description "A good habit that we are trying to maintain."
                         :fields {:_id {:type (non-null ID)}
+                                 :suspended {:type (non-null Boolean)}
                                  :name {:type (non-null String)}
                                  :description {:type String}
                                  :time_of_day {:type (non-null :habit_time)}
@@ -40,6 +41,7 @@
 
            :bad_habit {:description "A bad habit we are trying to reduce."
                        :fields {:_id {:type (non-null ID)}
+                                :suspended {:type (non-null Boolean)}
                                 :name {:type (non-null String)}
                                 :description {:type String}
                                 :threshold_frequency {:type (non-null :frequency)
@@ -121,4 +123,10 @@
              :delete_habit {:type (non-null Boolean)
                             :description "Delete a habit by ID, returns true if the habit was deleted."
                             :args {:habit_id {:type (non-null ID)}}
-                            :resolve :query/resolve-mutation-delete-habit}}}
+                            :resolve :query/resolve-mutation-delete-habit}
+
+             :set_suspend_habit {:type (non-null Boolean)
+                                 :description "Set the `suspended` for a habit found by ID, returns true if the update was performed."
+                                 :args {:habit_id {:type (non-null ID)}
+                                        :suspended {:type (non-null Boolean)}}
+                                 :resolve :query/resolve-mutation-set-suspend-habit}}}

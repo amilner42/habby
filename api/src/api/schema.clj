@@ -55,6 +55,11 @@
   [field-name]
   (fn [context args value] (tag-type (value field-name))))
 
+(defn create-date-to-y-m-d-resolver
+  "Creates a resolver that converts a joda date-time to a y-m-d map."
+  [field-name]
+  (fn [context args value] (date-to-y-m-d-map (value field-name))))
+
 (defn resolve-get-habits
   "@refer `db/get-habits`."
   [context args value]
@@ -81,10 +86,10 @@
   [context {:keys [habit_id]} value]
   (db/delete-habit habit_id))
 
-(defn create-date-to-y-m-d-resolver
-  "Creates a resolver that converts a joda date-time to a y-m-d map."
-  [field-name]
-  (fn [context args value] (date-to-y-m-d-map (value field-name))))
+(defn resolve-mutation-set-suspend-habit
+  "@refer `db/set-suspend-habit`."
+  [context {:keys [habit_id, suspended]} value]
+  (db/set-suspend-habit habit_id suspended))
 
 (defn resolver-map
   []
@@ -95,7 +100,8 @@
    :query/resolve-mutation-set-habit-data (create-async-resolver resolve-mutation-set-habit-data)
    :query/get-habit-data (create-async-resolver resolve-get-habit-data)
    :query/date-to-y-m-d-format (create-date-to-y-m-d-resolver :date)
-   :query/resolve-mutation-delete-habit (create-async-resolver resolve-mutation-delete-habit)})
+   :query/resolve-mutation-delete-habit (create-async-resolver resolve-mutation-delete-habit)
+   :query/resolve-mutation-set-suspend-habit (create-async-resolver resolve-mutation-set-suspend-habit)})
 
 (defn load-schema
   []
