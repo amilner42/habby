@@ -31,7 +31,7 @@
                                              :days {:type (non-null Int)}}}
 
            :good_habit {:description "A good habit that we are trying to maintain."
-                        :fields {:id {:type (non-null ID)}
+                        :fields {:_id {:type (non-null ID)}
                                  :name {:type (non-null String)}
                                  :description {:type String}
                                  :time_of_day {:type (non-null :habit_time)}
@@ -39,20 +39,27 @@
                                                     :resolve :query/tag-type-for-target-frequency}}}
 
            :bad_habit {:description "A bad habit we are trying to reduce."
-                       :fields {:id {:type (non-null ID)}
+                       :fields {:_id {:type (non-null ID)}
                                 :name {:type (non-null String)}
                                 :description {:type String}
                                 :threshold_frequency {:type (non-null :frequency)
                                                       :resolve :query/tag-type-for-threshold-frequency}}}
 
            :habit_day_record {:description "A record of how much a habit was performed on a specific day."
-                              :fields {:habit_id {:type (non-null ID)}
-                                       :date {:type (non-null :date)}
+                              :fields {:_id {:type (non-null ID)}
+                                       :habit_id {:type (non-null ID)}
+                                       :date {:type (non-null :date)
+                                              :resolve :query/date-to-y-m-d-format}
                                        :amount {:type (non-null Int)}}}}
 
  :queries {:get_habits {:type (non-null (list (non-null :habit)))
                         :description "Get all habits."
-                        :resolve :query/get-habits}}
+                        :resolve :query/get-habits}
+
+           :get_habit_data {:type (non-null (list (non-null :habit_day_record)))
+                            :description "Get all the habit data that matches the request specifications."
+                            :args {:after_date {:type :date_data}, :for_habit {:type ID}}
+                            :resolve :query/get-habit-data}}
 
  :input-objects {:date_data {:description "A year/month/day."
                               :fields {:year {:type (non-null Int)}

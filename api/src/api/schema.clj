@@ -7,19 +7,9 @@
             [com.walmartlabs.lacinia.resolve :as resolve]
             [clojure.core.async :refer [thread]]
             [clojure.edn :as edn]
-            [clj-time.core :as t])
+            [api.util :refer [date-to-y-m-d-map, value-map, date-from-y-m-d-map]])
   (:use [slingshot.slingshot :only [throw+, try+]]))
 
-
-(defn date-to-y-m-d-map
-  "Converts a joda date-time to a year/month/day map based on the time in UTC."
-  [date-time]
-  {:year (t/year date-time), :month (t/month date-time), :day (t/day date-time)})
-
-(defn value-map
-  "Maps a function on the values of a map, returns a map with the updated values."
-  [m f]
-  (into {} (for [[k v] m] [k (f v)])))
 
 (defn unnest-tagged-unions-on-input-object
   "Recursively converts all the tagged unions in the input object to have data unnested.
@@ -88,8 +78,18 @@
 (defn resolve-mutation-set-habit-data
   "Add some new habit data to the database."
   [context {:keys [habit_id amount date]} value]
-  (let [date-time (t/date-time (:year date) (:month date) (:day date))]
-    (update (db/set-habit-data habit_id amount date-time) :date date-to-y-m-d-map)))
+  (let [date-time (date-from-y-m-d-map date)]
+    (db/set-habit-data habit_id amount date-time)))
+
+(defn resolve-get-habit-data
+  "Gets your habit data, optionally only after (and including) a specific date or for a specific habit."
+  [context {:keys [after_date for_habit]} value]
+  (db/get-habit-data after_date for_habit))
+
+(defn create-date-to-y-m-d-resolver
+  "Creates a resolver that converts a joda date-time to a y-m-d map."
+  [field-name]
+  (fn [context args value] (date-to-y-m-d-map (value field-name))))
 
 (defn resolver-map
   []
@@ -97,10 +97,10 @@
    :query/tag-type-for-threshold-frequency (create-tag-type-resolver :threshold_frequency)
    :query/tag-type-for-target-frequency (create-tag-type-resolver :target_frequency)
    :query/resolve-mutation-add-habit (create-async-resolver resolve-mutation-add-habit)
-   :query/resolve-mutation-set-habit-data (create-async-resolver resolve-mutation-set-habit-data)})
+   :query/resolve-mutation-set-habit-data (create-async-resolver resolve-mutation-set-habit-data)
+   :query/get-habit-data (create-async-resolver resolve-get-habit-data)
+   :query/date-to-y-m-d-format (create-date-to-y-m-d-resolver :date)})
 
-; We load our EDN schema file and attach our resolvers from our resolver map
-; before compiling. We must do the attachment of the resolvers before compiling.
 (defn load-schema
   []
   (-> (io/resource "schema.edn")
