@@ -30,16 +30,6 @@
   [map-with-type]
   (schema/tag-with-type map-with-type (keyword (:type_name map-with-type))))
 
-(defn tag-type-recursive
-  "Tag a map using `tag-type` and recurse on its children."
-  [maybe-mp]
-  (let [type_name (and (map? maybe-mp) (:type_name maybe-mp))]
-    (if (map? maybe-mp)
-      (if (nil? type_name)
-        (value-map maybe-mp tag-type-recursive)
-        (tag-type (value-map maybe-mp tag-type-recursive)))
-      maybe-mp)))
-
 (defn create-async-resolver
   "Spawn a thread to run the resolver and immediately return a lacinia `ResolverResultPromise`."
   [resolver]
@@ -73,7 +63,7 @@
 (defn resolve-mutation-add-habit
   "Add a habit to the database and get the habit back."
   [context {:keys [create_habit_data] } value]
-  (tag-type-recursive (db/add-habit (unnest-tagged-unions-on-input-object create_habit_data))))
+  (tag-type (db/add-habit (unnest-tagged-unions-on-input-object create_habit_data))))
 
 (defn resolve-mutation-set-habit-data
   "Add some new habit data to the database."
