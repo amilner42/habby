@@ -46,7 +46,11 @@
                                         " but value associated with that key was null.")}))
          (catch Throwable t
            (resolve/deliver! result nil
-                             {:message (str "Exception: " (.getMessage t))}))))
+                             {:message (str "Exception: " (.getMessage t))}))
+
+         (catch Object t
+           (resolve/deliver! result nil
+                             {:message (str "Exception: " t)}))))
 
       result)))
 
