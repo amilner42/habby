@@ -1,13 +1,15 @@
 module Init exposing (init)
 
-import DefaultModel exposing (..)
+import Api
+import DefaultModel exposing (defaultModel)
 import Flags exposing (Flags)
-import Model exposing (..)
-import Msg exposing (..)
+import Model exposing (Model)
+import Msg exposing (Msg(..))
 import Navigation
-import Update exposing (..)
 
 
 init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
 init flags location =
-    ( {}, Cmd.none )
+    ( defaultModel flags
+    , Api.queryHabitsAndHabitData flags.apiBaseUrl OnApiError OnGetHabitsAndHabitDataSuccess
+    )

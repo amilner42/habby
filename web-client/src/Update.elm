@@ -6,4 +6,9 @@ import Msg exposing (Msg(..))
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        OnGetHabitsAndHabitDataSuccess { habits, habitData } ->
+            ( { model | allHabits = habits, allHabitData = habitData }, Cmd.none )
+
+        _ ->
+            ( model, Cmd.none )

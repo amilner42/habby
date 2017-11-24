@@ -56,7 +56,7 @@ var commonConfig = {
             }
         }),
         new webpack.DefinePlugin({
-            __WEBPACK_CONSTANT_API_BASE_URL__: JSON.stringify("localhost:8888/")
+            __WEBPACK_CONSTANT_API_BASE_URL__: JSON.stringify("http://localhost:8888/graphql")
         }),
         new HtmlWebpackPlugin({
             template: 'src/index.html',

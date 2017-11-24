@@ -3,7 +3,7 @@ port module Main exposing (..)
 import Flags exposing (Flags)
 import Init exposing (init)
 import Model exposing (Model)
-import Msg exposing (Msg(..))
+import Msg exposing (Msg(OnLocationChange))
 import Navigation
 import Subscriptions exposing (subscriptions)
 import Update exposing (update)
