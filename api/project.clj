@@ -5,7 +5,7 @@
             :url "http://www.eclipse.org/legal/epl-v10.html"}
   :dependencies [[org.clojure/clojure "1.8.0"]
                  [com.walmartlabs/lacinia "0.21.0"]
-                 [com.walmartlabs/lacinia-pedestal "0.3.0"]
+                 [com.walmartlabs/lacinia-pedestal "0.5.0-rc-2"]
                  [io.aviso/logging "0.2.0"]
                  [com.novemberain/monger "3.1.0"]
                  [slingshot "0.12.2"]

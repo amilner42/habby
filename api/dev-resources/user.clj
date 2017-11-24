@@ -36,7 +36,8 @@
 (defn start-server
   [_]
   (-> schema
-      (lp/pedestal-service {:graphiql true})
+      (lp/service-map {:graphiql true})
+      (merge { ::http/allowed-origins {:creds true :allowed-origins (constantly true)}})
       http/create-server
       http/start))
 
