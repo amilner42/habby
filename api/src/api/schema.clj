@@ -43,14 +43,18 @@
                              {:message (str
                                         "Invalid tagged union, tag name was "
                                         tag_name
-                                        " but value associated with that key was null.")}))
+                                        " but value associated with that key was null.")
+
+                              :status 400}))
          (catch Throwable t
            (resolve/deliver! result nil
-                             {:message (str "Exception: " (.getMessage t))}))
+                             {:message (str "Exception: " (.getMessage t))
+                              :status 400}))
 
          (catch Object t
            (resolve/deliver! result nil
-                             {:message (str "Exception: " t)}))))
+                             {:message (str "Exception: " t)
+                              :status 400}))))
 
       result)))
 

@@ -4,7 +4,6 @@
             [com.walmartlabs.lacinia :as lacinia]
             [com.walmartlabs.lacinia.pedestal :as lp]
             [io.pedestal.http :as http]
-            [clojure.java.browse :refer [browse-url]]
             [clojure.walk :as walk])
   (:import (clojure.lang IPersistentMap)))
 
@@ -36,12 +35,10 @@
 
 (defn start-server
   [_]
-  (let [server (-> schema
-                   (lp/pedestal-service {:graphiql true})
-                   http/create-server
-                   http/start)]
-    (browse-url "http://localhost:8888/")
-    server))
+  (-> schema
+      (lp/pedestal-service {:graphiql true})
+      http/create-server
+      http/start))
 
 (defn stop-server
   [server]
