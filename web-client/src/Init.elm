@@ -1,15 +1,15 @@
 module Init exposing (init)
 
 import Api
-import DefaultModel exposing (defaultModel)
 import Flags exposing (Flags)
 import Model exposing (Model)
 import Msg exposing (Msg(..))
 import Navigation
+import RemoteData
 
 
 init : Flags -> Navigation.Location -> ( Model, Cmd Msg )
-init flags location =
-    ( defaultModel flags
-    , Api.queryHabitsAndHabitData flags.apiBaseUrl OnApiError OnGetHabitsAndHabitDataSuccess
+init { apiBaseUrl } location =
+    ( { apiBaseUrl = apiBaseUrl, allHabitData = RemoteData.Loading, allHabits = RemoteData.Loading }
+    , Api.queryHabitsAndHabitData apiBaseUrl OnGetHabitsAndHabitDataFailure OnGetHabitsAndHabitDataSuccess
     )

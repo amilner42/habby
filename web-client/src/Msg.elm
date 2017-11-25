@@ -7,5 +7,5 @@ import Navigation
 
 type Msg
     = OnLocationChange Navigation.Location
-    | OnApiError ApiError
+    | OnGetHabitsAndHabitDataFailure ApiError
     | OnGetHabitsAndHabitDataSuccess Api.HabitsAndHabitData
