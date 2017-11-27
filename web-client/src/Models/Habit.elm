@@ -9,6 +9,11 @@ type Habit
     | BadHabit BadHabitRecord
 
 
+type HabitKind
+    = GoodHabitKind
+    | BadHabitKind
+
+
 type alias GoodHabitRecord =
     { id : String
     , name : String
@@ -32,10 +37,38 @@ type alias BadHabitRecord =
     }
 
 
+type alias AddHabitInputData =
+    { description : String
+    , frequencyKind : FrequencyKind
+    , goodHabitTime : HabitTime
+    , kind : HabitKind
+    , name : String
+    , openView : Bool
+    , unitNamePlural : String
+    , unitNameSingular : String
+    , timesPerWeek : Maybe Int
+    , mondayTimes : Maybe Int
+    , tuesdayTimes : Maybe Int
+    , wednesdayTimes : Maybe Int
+    , thursdayTimes : Maybe Int
+    , fridayTimes : Maybe Int
+    , saturdayTimes : Maybe Int
+    , sundayTimes : Maybe Int
+    , times : Maybe Int
+    , days : Maybe Int
+    }
+
+
 type Frequency
     = EveryXDayFrequency EveryXDayFrequencyRecord
     | TotalWeekFrequency Int
     | SpecificDayOfWeekFrequency SpecificDayOfWeekFrequencyRecord
+
+
+type FrequencyKind
+    = EveryXDayFrequencyKind
+    | TotalWeekFrequencyKind
+    | SpecificDayOfWeekFrequencyKind
 
 
 type alias EveryXDayFrequencyRecord =

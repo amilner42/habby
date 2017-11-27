@@ -3,10 +3,15 @@
 .view {
     font-family: 'Raleway', sans-serif;
     padding: 5px;
+    color: #444;
 
     .today-panel {
+        box-sizing: border-box;
         display: block;
-        padding: 10px;
+        padding: 15px;
+        float: left;
+        width: 100%;
+
         @extend .box-shadow-5;
 
         .today-panel-title {
@@ -22,13 +27,167 @@
         }
 
         .habit-list {
-            .habit {
+            display: block;
+
+            .habit, .add-habit {
+                float: left;
                 display: inline-block;
-                @extend .box-shadow-14;
                 padding: 5px;
-                margin-right: 10px;
+                margin-right: 15px;
                 min-width: 200px;
+                min-height: 80px;
+                border: none;
+            }
+
+            .habit {
+                @extend .box-shadow-14;
+            }
+
+            .add-habit {
+                background-color: white;
+                vertical-align: middle;
+                line-height: 80px;
+                text-align: center;
+                font-size: 20px;
+                font-weight: 600;
+                @extend .box-shadow-4;
+                cursor: pointer;
+            }
+        }
+
+        .add-habit-line-breaker {
+            display: block;
+            width: 100%;
+            margin-top: 110px;
+            border: 0.5px solid #ddd;
+        }
+
+        .add-habit-input-form {
+
+            .add-habit-input-form-name-and-description, .add-habit-input-form-unit-name {
+                box-sizing: border-box;
+                display: inline-block;
+                float: left;
+                width: 250px;
+
+                .add-habit-input-form-name {
+                    @extend .input-style-1;
+
+                    height: 40px;
+                    width: 100%;
+                }
+
+                .add-habit-input-form-description {
+                    @extend .input-style-1;
+
+                    height: 100px;
+                    width: 100%;
+                }
+
+                .habit-unit-name-singular, .habit-unit-name-plural {
+                    @extend .input-style-1;
+
+                    height: 40px;
+                    margin-bottom: 10px;
+                    width: 200px;
+                }
+            }
+
+            .add-habit-input-form-unit-name {
+                width: 200px;
+                margin-left: 10px;
+            }
+
+            .add-habit-input-form-time-of-day {
+                display: inline-block;
+                width: 100px;
+                float: left;
+
+                .habit-time-of-day {
+                    @extend .button-style-1;
+
+                    height: 40px;
+                    margin: 0 0 10px 10px;
+                    width: 90px;
+                }
+            }
+
+            .add-habit-input-form-frequency-tag-name {
+                display: inline-block;
+                width: 170px;
+                float: left;
+
+                button {
+                    @extend .button-style-1;
+
+                    margin: 0 0 10px 10px;
+                    height: 40px;
+                    width: 150px;
+                }
+            }
+
+            .add-habit-input-form-habit-tag-name {
+                display: inline-block;
+                width: 100px;
+                float: left;
+
+                button {
+                    @extend .button-style-1;
+
+                    width: 90px;
+                    height: 40px;
+                    margin: 0 0 10px 0;
+                }
+            }
+
+            .add-habit-input-form-x-times-per-week {
+                input {
+                    @extend .input-style-1;
+
+                    width: 100px;
+                    height: 40px;
+                }
+            }
+
+            .add-habit-input-form-specific-days-of-week {
+                display: block;
+                float: left;
+                width: 330px;
+
+                input {
+                    @extend .input-style-1;
+
+                    height: 40px;
+                    width: 100px;
+                    display: inline-block;
+                    margin: 0 10px 10px 0;
+                    float: left;
+                }
+            }
+
+            .add-habit-input-form-x-times-per-y-days {
+                display: block;
+                float: left;
+                width: 110px;
+
+                input {
+                    @extend .input-style-1;
+
+                    height: 40px;
+                    width: 100px;
+                    display: inline-block;
+                    margin: 0 10px 10px 0;
+                    float: left;
+                }
             }
         }
     }
+}
+
+.display-none {
+    display: none !important;
+}
+
+.visibility-hidden {
+    visibility: hidden !important;
 }

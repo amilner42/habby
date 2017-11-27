@@ -2,9 +2,45 @@
 .box-shadow-5 {
   box-shadow: 0 0 1px rgba(34, 25, 25, 0.4);
 }
+.box-shadow-4{
+  box-shadow: 0 0 4px 1px rgba(0, 0, 0, 0.2);
 
+  &:hover {
+    box-shadow: 0 0 4px 1px rgba(0, 0, 0, 0.4);
+  }
+}
 .box-shadow-14 {
   -webkit-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
   -moz-box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
   box-shadow:0 1px 4px rgba(0, 0, 0, 0.3), 0 0 40px rgba(0, 0, 0, 0.1) inset;
+}
+
+// Different button styles.
+.button-style-1 {
+  color: #444;
+  display: block;
+  cursor: pointer;
+  background-color: #eee;
+  border: 1px solid #ddd;
+
+  &:hover {
+    background-color: #ddd;
+  }
+
+  &.selected {
+    border: 1px solid #888;
+    background-color: #ddd;
+  }
+}
+
+// Different input styles.
+.input-style-1 {
+  box-sizing: border-box;
+  padding: 5px;
+  display: inline-block;
+  resize: none;
+  box-shadow: none;
+  border: 1px solid #777;
+  border-radius: 1px;
+  font-size: 16px;
 }
