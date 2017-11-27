@@ -55,6 +55,18 @@ type HabitTime
     | Anytime
 
 
+{-| Retrieve fields that exist on both good and bad habits.
+-}
+getCommonFields : Habit -> { id : String, name : String, description : Maybe String, frequency : Frequency }
+getCommonFields habit =
+    case habit of
+        GoodHabit { id, name, description, frequency } ->
+            { id = id, name = name, description = description, frequency = frequency }
+
+        BadHabit { id, name, description, frequency } ->
+            { id = id, name = name, description = description, frequency = frequency }
+
+
 decodeHabit : Decode.Decoder Habit
 decodeHabit =
     let

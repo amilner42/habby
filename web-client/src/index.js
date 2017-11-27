@@ -5,7 +5,7 @@ require("./Styles/global.scss");
 require("./Styles/mixins.scss");
 require("./Styles/variables.scss");
 
-var flags = { apiBaseUrl: __WEBPACK_CONSTANT_API_BASE_URL__ };
+var flags = { apiBaseUrl: __WEBPACK_CONSTANT_API_BASE_URL__, currentTime: Date.now() };
 
 var Elm = require('./Main.elm');
 var mountNode = document.getElementById('main');

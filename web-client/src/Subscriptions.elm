@@ -1,9 +1,11 @@
 module Subscriptions exposing (subscriptions)
 
 import Model exposing (Model)
-import Msg exposing (Msg)
+import Msg exposing (Msg(TickMinute))
+import Time
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Sub.batch
+        [ Time.every Time.minute TickMinute ]

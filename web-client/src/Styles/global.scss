@@ -1,0 +1,34 @@
+@import './mixins.scss';
+
+.view {
+    font-family: 'Raleway', sans-serif;
+    padding: 5px;
+
+    .today-panel {
+        display: block;
+        padding: 10px;
+        @extend .box-shadow-5;
+
+        .today-panel-title {
+            font-size: 26px;
+            font-weight: 600;
+        }
+
+        .today-panel-date {
+            font-size: 16px;
+            display: inline-block;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+
+        .habit-list {
+            .habit {
+                display: inline-block;
+                @extend .box-shadow-14;
+                padding: 5px;
+                margin-right: 10px;
+                min-width: 200px;
+            }
+        }
+    }
+}
