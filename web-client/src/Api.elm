@@ -45,6 +45,8 @@ queryHabitsAndHabitData =
         \t\t\t\tdescription,
         \t\t\t\tname,
         \t\t\t\tsuspended,
+        \t\t\t\tunit_name_singular,
+        \t\t\t\tunit_name_plural,
         \t\t\t\ttarget_frequency {
         \t\t\t\t\t__typename
         \t\t\t\t\t... on every_x_days_frequency {
@@ -71,6 +73,8 @@ queryHabitsAndHabitData =
         \t\t\t\tdescription,
         \t\t\t\tname,
         \t\t\t\tsuspended,
+        \t\t\t\tunit_name_singular,
+        \t\t\t\tunit_name_plural,
         \t\t\t\tthreshold_frequency {
         \t\t\t\t\t\t__typename
         \t\t\t\t\t... on every_x_days_frequency {

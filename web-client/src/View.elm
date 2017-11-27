@@ -33,11 +33,11 @@ renderTodayPanel ymd rdHabits rdHabitData =
                 let
                     renderHabit habit =
                         let
-                            commonFields =
+                            habitFields =
                                 Habit.getCommonFields habit
 
                             relevantHabitData =
-                                List.filter (.habitId >> (==) commonFields.id) habitData
+                                List.filter (.habitId >> (==) habitFields.id) habitData
 
                             habitDataForToday =
                                 List.filter (.date >> (==) ymd) relevantHabitData
@@ -53,10 +53,18 @@ renderTodayPanel ymd rdHabits rdHabitData =
                         in
                         div
                             [ class "habit" ]
-                            [ div [ class "habit-name" ] [ text <| commonFields.name ]
+                            [ div [ class "habit-name" ] [ text <| habitFields.name ]
                             , div
                                 [ class "habit-amount-complete" ]
-                                [ text <| "Total: " ++ toString habitDataForToday ]
+                                [ text <|
+                                    toString habitDataForToday
+                                        ++ " "
+                                        ++ (if habitDataForToday == 1 then
+                                                habitFields.unitNameSingular
+                                            else
+                                                habitFields.unitNamePlural
+                                           )
+                                ]
                             ]
                 in
                 div

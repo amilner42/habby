@@ -14,8 +14,10 @@ type alias GoodHabitRecord =
     , name : String
     , description : Maybe String
     , suspended : Bool
-    , timeOfDay : HabitTime
+    , unitNameSingular : String
+    , unitNamePlural : String
     , frequency : Frequency
+    , timeOfDay : HabitTime
     }
 
 
@@ -24,6 +26,8 @@ type alias BadHabitRecord =
     , name : String
     , description : Maybe String
     , suspended : Bool
+    , unitNameSingular : String
+    , unitNamePlural : String
     , frequency : Frequency
     }
 
@@ -57,14 +61,35 @@ type HabitTime
 
 {-| Retrieve fields that exist on both good and bad habits.
 -}
-getCommonFields : Habit -> { id : String, name : String, description : Maybe String, frequency : Frequency }
+getCommonFields :
+    Habit
+    ->
+        { id : String
+        , name : String
+        , description : Maybe String
+        , frequency : Frequency
+        , unitNameSingular : String
+        , unitNamePlural : String
+        }
 getCommonFields habit =
     case habit of
-        GoodHabit { id, name, description, frequency } ->
-            { id = id, name = name, description = description, frequency = frequency }
+        GoodHabit { id, name, description, frequency, unitNameSingular, unitNamePlural } ->
+            { id = id
+            , name = name
+            , description = description
+            , frequency = frequency
+            , unitNameSingular = unitNameSingular
+            , unitNamePlural = unitNamePlural
+            }
 
-        BadHabit { id, name, description, frequency } ->
-            { id = id, name = name, description = description, frequency = frequency }
+        BadHabit { id, name, description, frequency, unitNameSingular, unitNamePlural } ->
+            { id = id
+            , name = name
+            , description = description
+            , frequency = frequency
+            , unitNameSingular = unitNameSingular
+            , unitNamePlural = unitNamePlural
+            }
 
 
 decodeHabit : Decode.Decoder Habit
@@ -76,8 +101,10 @@ decodeHabit =
                 |> required "name" Decode.string
                 |> optional "description" (Decode.maybe Decode.string) Nothing
                 |> required "suspended" Decode.bool
-                |> required "time_of_day" decodeHabitTime
+                |> required "unit_name_singular" Decode.string
+                |> required "unit_name_plural" Decode.string
                 |> required "target_frequency" decodeFrequency
+                |> required "time_of_day" decodeHabitTime
 
         decodeBadHabitRecord =
             decode BadHabitRecord
@@ -85,6 +112,8 @@ decodeHabit =
                 |> required "name" Decode.string
                 |> optional "description" (Decode.maybe Decode.string) Nothing
                 |> required "suspended" Decode.bool
+                |> required "unit_name_singular" Decode.string
+                |> required "unit_name_plural" Decode.string
                 |> required "threshold_frequency" decodeFrequency
     in
     Decode.at [ "__typename" ] Decode.string

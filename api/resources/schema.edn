@@ -35,6 +35,8 @@
                                  :suspended {:type (non-null Boolean)}
                                  :name {:type (non-null String)}
                                  :description {:type String}
+                                 :unit_name_singular {:type (non-null String)}
+                                 :unit_name_plural {:type (non-null String)}
                                  :time_of_day {:type (non-null :habit_time)}
                                  :target_frequency {:type (non-null :frequency)
                                                     :resolve :query/tag-type-for-target-frequency}}}
@@ -44,6 +46,8 @@
                                 :suspended {:type (non-null Boolean)}
                                 :name {:type (non-null String)}
                                 :description {:type String}
+                                :unit_name_singular {:type (non-null String)}
+                                :unit_name_plural {:type (non-null String)}
                                 :threshold_frequency {:type (non-null :frequency)
                                                       :resolve :query/tag-type-for-threshold-frequency}}}
 
@@ -97,11 +101,15 @@
                                           :fields {:name {:type (non-null String)}
                                                    :description {:type String}
                                                    :time_of_day {:type (non-null :habit_time)}
+                                                   :unit_name_singular {:type (non-null String)}
+                                                   :unit_name_plural {:type (non-null String)}
                                                    :target_frequency {:type (non-null :create_frequency_data)}}}
 
                  :create_bad_habit_data {:description "The data required to create a new bad habit."
                                          :fields {:name {:type (non-null String)}
                                                   :description {:type String}
+                                                  :unit_name_singular {:type (non-null String)}
+                                                  :unit_name_plural {:type (non-null String)}
                                                   :threshold_frequency {:type (non-null :create_frequency_data)}}}
 
                  :create_habit_data {:description "The data required to create a new habit."
