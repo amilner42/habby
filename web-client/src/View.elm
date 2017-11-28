@@ -1,6 +1,7 @@
 module View exposing (..)
 
 import DefaultServices.Infix exposing (..)
+import DefaultServices.Util as Util
 import Html exposing (Html, button, div, hr, input, span, text, textarea)
 import Html.Attributes exposing (class, classList, placeholder, value)
 import Html.Events exposing (onClick, onInput)
@@ -32,6 +33,10 @@ renderTodayPanel :
     -> Habit.AddHabitInputData
     -> Html Msg
 renderTodayPanel ymd rdHabits rdHabitData addHabit =
+    let
+        createHabitData =
+            Habit.extractCreateHabit addHabit
+    in
     div
         [ class "today-panel" ]
         [ div [ class "today-panel-title" ] [ text "Todays Progress" ]
@@ -274,5 +279,15 @@ renderTodayPanel ymd rdHabits rdHabitData addHabit =
                     ]
                     []
                 ]
+            , case createHabitData of
+                Nothing ->
+                    Util.hiddenDiv
+
+                Just createHabitData ->
+                    button
+                        [ class "add-new-habit"
+                        , onClick <| AddHabit createHabitData
+                        ]
+                        [ text "Create Habit" ]
             ]
         ]

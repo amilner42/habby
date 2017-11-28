@@ -31,6 +31,6 @@ type Msg
     | OnAddHabitSpecificDaySundayInput String
     | OnAddHabitTimesInput String
     | OnAddHabitDaysInput String
-    | AddHabit
+    | AddHabit Habit.CreateHabit
     | OnAddHabitFailure ApiError
     | OnAddHabitSuccess Habit.Habit

@@ -33,6 +33,18 @@
   }
 }
 
+.button-style-2 {
+  color: white;
+  display: block;
+  cursor: pointer;
+  background-color: #4caf50;
+  border: 1px solid green;
+
+  &:hover {
+    background-color: green;
+  }
+}
+
 // Different input styles.
 .input-style-1 {
   box-sizing: border-box;

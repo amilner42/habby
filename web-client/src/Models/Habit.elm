@@ -1,5 +1,7 @@
 module Models.Habit exposing (..)
 
+import DefaultServices.Infix exposing (..)
+import DefaultServices.Util as Util
 import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (decode, hardcoded, optional, required)
 
@@ -56,6 +58,30 @@ type alias AddHabitInputData =
     , sundayTimes : Maybe Int
     , times : Maybe Int
     , days : Maybe Int
+    }
+
+
+type CreateHabit
+    = CreateGoodHabit CreateGoodHabitRecord
+    | CreateBadHabit CreateBadHabitRecord
+
+
+type alias CreateGoodHabitRecord =
+    { name : String
+    , description : String
+    , timeOfDay : HabitTime
+    , unitNameSingular : String
+    , unitNamePlural : String
+    , frequency : Frequency
+    }
+
+
+type alias CreateBadHabitRecord =
+    { name : String
+    , description : String
+    , unitNameSingular : String
+    , unitNamePlural : String
+    , frequency : Frequency
     }
 
 
@@ -123,6 +149,109 @@ getCommonFields habit =
             , unitNameSingular = unitNameSingular
             , unitNamePlural = unitNamePlural
             }
+
+
+getCommonCreateFields :
+    CreateHabit
+    ->
+        { name : String
+        , description : String
+        , unitNameSingular : String
+        , unitNamePlural : String
+        , frequency : Frequency
+        }
+getCommonCreateFields createHabit =
+    case createHabit of
+        CreateGoodHabit { name, description, unitNameSingular, unitNamePlural, frequency } ->
+            { name = name
+            , description = description
+            , unitNameSingular = unitNameSingular
+            , unitNamePlural = unitNamePlural
+            , frequency = frequency
+            }
+
+        CreateBadHabit { name, description, unitNameSingular, unitNamePlural, frequency } ->
+            { name = name
+            , description = description
+            , unitNameSingular = unitNameSingular
+            , unitNamePlural = unitNamePlural
+            , frequency = frequency
+            }
+
+
+extractCreateHabit : AddHabitInputData -> Maybe CreateHabit
+extractCreateHabit addHabitInputData =
+    let
+        name =
+            Util.notEmpty addHabitInputData.name
+
+        description =
+            Util.notEmpty addHabitInputData.description
+
+        goodHabitTime =
+            addHabitInputData.goodHabitTime
+
+        unitNameSingular =
+            Util.notEmpty addHabitInputData.unitNameSingular
+
+        unitNamePlural =
+            Util.notEmpty addHabitInputData.unitNamePlural
+
+        frequency =
+            case addHabitInputData.frequencyKind of
+                EveryXDayFrequencyKind ->
+                    case ( addHabitInputData.days, addHabitInputData.times ) of
+                        ( Just days, Just times ) ->
+                            Just <| EveryXDayFrequency { times = times, days = days }
+
+                        _ ->
+                            Nothing
+
+                TotalWeekFrequencyKind ->
+                    addHabitInputData.timesPerWeek ||> TotalWeekFrequency
+
+                SpecificDayOfWeekFrequencyKind ->
+                    case
+                        ( addHabitInputData.mondayTimes
+                        , addHabitInputData.tuesdayTimes
+                        , addHabitInputData.wednesdayTimes
+                        , addHabitInputData.thursdayTimes
+                        , addHabitInputData.fridayTimes
+                        , addHabitInputData.saturdayTimes
+                        , addHabitInputData.sundayTimes
+                        )
+                    of
+                        ( Just monday, Just tuesday, Just wednesday, Just thursday, Just friday, Just saturday, Just sunday ) ->
+                            Just <|
+                                SpecificDayOfWeekFrequency
+                                    { monday = monday
+                                    , tuesday = tuesday
+                                    , wednesday = wednesday
+                                    , thursday = thursday
+                                    , friday = friday
+                                    , saturday = saturday
+                                    , sunday = sunday
+                                    }
+
+                        _ ->
+                            Nothing
+    in
+    case addHabitInputData.kind of
+        GoodHabitKind ->
+            case ( name, description, unitNameSingular, unitNamePlural, frequency ) of
+                ( Just name, Just description, Just unitNameSingular, Just unitNamePlural, Just frequency ) ->
+                    Just <| CreateGoodHabit <| CreateGoodHabitRecord name description goodHabitTime unitNameSingular unitNamePlural frequency
+
+                _ ->
+                    Nothing
+
+        BadHabitKind ->
+            case ( name, description, unitNameSingular, unitNamePlural, frequency ) of
+                ( Just name, Just description, Just unitNameSingular, Just unitNamePlural, Just frequency ) ->
+                    Just <| CreateBadHabit <| CreateBadHabitRecord name description unitNameSingular unitNamePlural frequency
+
+                _ ->
+                    Nothing
 
 
 decodeHabit : Decode.Decoder Habit

@@ -180,6 +180,16 @@
                     float: left;
                 }
             }
+
+            .add-new-habit {
+                @extend .button-style-2;
+
+                height: 40px;
+                margin-top: 10px;
+                width: 160px;
+                border-radius: 5px;
+                font-size: 20px;
+            }
         }
     }
 }

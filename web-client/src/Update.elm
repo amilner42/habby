@@ -114,7 +114,7 @@ update msg model =
             , Cmd.none
             )
 
-        AddHabit ->
+        AddHabit createHabitData ->
             -- TODO
             ( model, Cmd.none )
 
