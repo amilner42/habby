@@ -118,6 +118,29 @@ type HabitTime
     | Anytime
 
 
+initAddHabitData : AddHabitInputData
+initAddHabitData =
+    { openView = False
+    , kind = GoodHabitKind
+    , name = ""
+    , description = ""
+    , goodHabitTime = Anytime
+    , unitNameSingular = ""
+    , unitNamePlural = ""
+    , frequencyKind = TotalWeekFrequencyKind
+    , timesPerWeek = Nothing
+    , mondayTimes = Nothing
+    , tuesdayTimes = Nothing
+    , wednesdayTimes = Nothing
+    , thursdayTimes = Nothing
+    , fridayTimes = Nothing
+    , saturdayTimes = Nothing
+    , sundayTimes = Nothing
+    , times = Nothing
+    , days = Nothing
+    }
+
+
 {-| Retrieve fields that exist on both good and bad habits.
 -}
 getCommonFields :

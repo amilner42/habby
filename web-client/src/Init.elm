@@ -17,26 +17,7 @@ init { apiBaseUrl, currentTime } location =
       , apiBaseUrl = apiBaseUrl
       , allHabitData = RemoteData.Loading
       , allHabits = RemoteData.Loading
-      , addHabit =
-            { openView = False
-            , kind = Habit.GoodHabitKind
-            , name = ""
-            , description = ""
-            , goodHabitTime = Habit.Anytime
-            , unitNameSingular = ""
-            , unitNamePlural = ""
-            , frequencyKind = Habit.TotalWeekFrequencyKind
-            , timesPerWeek = Nothing
-            , mondayTimes = Nothing
-            , tuesdayTimes = Nothing
-            , wednesdayTimes = Nothing
-            , thursdayTimes = Nothing
-            , fridayTimes = Nothing
-            , saturdayTimes = Nothing
-            , sundayTimes = Nothing
-            , times = Nothing
-            , days = Nothing
-            }
+      , addHabit = Habit.initAddHabitData
       }
     , Api.queryHabitsAndHabitData apiBaseUrl OnGetHabitsAndHabitDataFailure OnGetHabitsAndHabitDataSuccess
     )

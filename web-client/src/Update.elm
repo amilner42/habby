@@ -3,6 +3,7 @@ module Update exposing (..)
 import Api
 import Date
 import Model exposing (Model)
+import Models.Habit as Habit
 import Models.YmdDate as YmdDate
 import Msg exposing (Msg(..))
 import RemoteData
@@ -125,8 +126,12 @@ update msg model =
             ( model, Cmd.none )
 
         OnAddHabitSuccess habit ->
-            -- TODO
-            ( model, Cmd.none )
+            ( { model
+                | allHabits = RemoteData.map (\allHabits -> allHabits ++ [ habit ]) model.allHabits
+                , addHabit = Habit.initAddHabitData
+              }
+            , Cmd.none
+            )
 
 
 extractInt : String -> Maybe Int -> Maybe Int
