@@ -1,5 +1,6 @@
 module Update exposing (..)
 
+import Api
 import Date
 import Model exposing (Model)
 import Models.YmdDate as YmdDate
@@ -115,8 +116,9 @@ update msg model =
             )
 
         AddHabit createHabitData ->
-            -- TODO
-            ( model, Cmd.none )
+            ( model
+            , Api.mutationAddHabit createHabitData model.apiBaseUrl OnAddHabitFailure OnAddHabitSuccess
+            )
 
         OnAddHabitFailure apiError ->
             -- TODO

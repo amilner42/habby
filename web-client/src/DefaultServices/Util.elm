@@ -1,7 +1,9 @@
 module DefaultServices.Util exposing (..)
 
+import Dict
 import Html exposing (Html, div)
 import Html.Attributes exposing (class)
+import String.Extra
 
 
 {-| Creates an empty div with class `display-none`.
@@ -19,3 +21,25 @@ notEmpty string =
         Nothing
     else
         Just string
+
+
+{-| TODO DOC.
+-}
+templater : Dict.Dict String String -> String -> String
+templater dict templateString =
+    Dict.foldr
+        (\key value template ->
+            String.Extra.replace ("{{" ++ key ++ "}}") value template
+        )
+        templateString
+        dict
+
+
+encodeBool : Bool -> String
+encodeBool bool =
+    case bool of
+        True ->
+            "true"
+
+        False ->
+            "false"
