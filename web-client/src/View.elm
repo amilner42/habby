@@ -6,6 +6,7 @@ import Dict
 import Html exposing (Html, button, div, hr, i, input, span, text, textarea)
 import Html.Attributes exposing (class, classList, placeholder, value)
 import Html.Events exposing (onClick, onInput)
+import Keyboard.Extra as KK
 import Maybe.Extra as Maybe
 import Model exposing (Model)
 import Models.ApiError as ApiError
@@ -112,6 +113,13 @@ renderTodayPanel ymd rdHabits rdHabitData addHabit editingHabitDataDict =
                                                )
                                             ++ " so far today..."
                                     , onInput <| OnHabitDataInput habitRecord.id
+                                    , Util.onKeydown
+                                        (\key ->
+                                            if key == KK.Enter then
+                                                Just <| SetHabitData ymd habitRecord.id editingHabitData
+                                            else
+                                                Nothing
+                                        )
                                     , value (editingHabitData ||> toString ?> "")
                                     ]
                                     []

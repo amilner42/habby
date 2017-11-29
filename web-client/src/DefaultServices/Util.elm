@@ -1,8 +1,12 @@
 module DefaultServices.Util exposing (..)
 
+import DefaultServices.Infix exposing (..)
 import Dict
-import Html exposing (Html, div)
+import Html exposing (Attribute, Html, div)
 import Html.Attributes exposing (class)
+import Html.Events exposing (Options, defaultOptions, keyCode, onWithOptions)
+import Json.Decode as Decode
+import Keyboard.Extra as KK
 import String.Extra
 
 
@@ -66,3 +70,40 @@ replaceOrAdd list pred replaceWith =
                 else
                     newList
            )
+
+
+{-| Event handler for handling `keyDown` events.
+-}
+onKeydownWithOptions : Options -> (KK.Key -> Maybe msg) -> Attribute msg
+onKeydownWithOptions options keyToMsg =
+    let
+        decodeMsgFromKeyCode code =
+            KK.fromCode code
+                |> keyToMsg
+                ||> Decode.succeed
+                ?> Decode.fail ""
+    in
+    onWithOptions
+        "keydown"
+        options
+        (Decode.andThen decodeMsgFromKeyCode keyCode)
+
+
+{-| Default event handler for `keyDown` events.
+-}
+onKeydown : (KK.Key -> Maybe msg) -> Attribute msg
+onKeydown =
+    onKeydownWithOptions defaultOptions
+
+
+{-| Event handler for `keyDown` events that also `preventDefault`.
+
+WARNING: It'll only prevent default if your function returns a message not `Nothing`.
+
+-}
+onKeydownPreventDefault : (KK.Key -> Maybe msg) -> Attribute msg
+onKeydownPreventDefault =
+    onKeydownWithOptions
+        { preventDefault = True
+        , stopPropagation = False
+        }
