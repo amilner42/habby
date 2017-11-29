@@ -43,3 +43,26 @@ encodeBool bool =
 
         False ->
             "false"
+
+
+{-| Replace item(s) in list or add item to list if no replacements took place.
+
+TODO Make more efficient
+
+-}
+replaceOrAdd : List a -> (a -> Bool) -> a -> List a
+replaceOrAdd list pred replaceWith =
+    list
+        |> List.map
+            (\a ->
+                if pred a then
+                    replaceWith
+                else
+                    a
+            )
+        |> (\newList ->
+                if newList == list then
+                    replaceWith :: list
+                else
+                    newList
+           )

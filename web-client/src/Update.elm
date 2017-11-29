@@ -2,6 +2,8 @@ module Update exposing (..)
 
 import Api
 import Date
+import DefaultServices.Util as Util
+import Dict
 import Model exposing (Model)
 import Models.Habit as Habit
 import Models.YmdDate as YmdDate
@@ -129,6 +131,56 @@ update msg model =
             ( { model
                 | allHabits = RemoteData.map (\allHabits -> allHabits ++ [ habit ]) model.allHabits
                 , addHabit = Habit.initAddHabitData
+              }
+            , Cmd.none
+            )
+
+        OnHabitDataInput habitID newVal ->
+            let
+                newEditingTodayHabitAmount amount =
+                    model.editingTodayHabitAmount
+                        |> Dict.update habitID (always <| amount)
+            in
+            if String.isEmpty newVal then
+                ( { model | editingTodayHabitAmount = newEditingTodayHabitAmount Nothing }, Cmd.none )
+            else
+                case String.toInt newVal of
+                    Result.Err _ ->
+                        ( model, Cmd.none )
+
+                    Result.Ok newInt ->
+                        ( { model | editingTodayHabitAmount = newEditingTodayHabitAmount <| Just newInt }, Cmd.none )
+
+        SetHabitData ymd habitId newVal ->
+            case newVal of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just newVal ->
+                    ( model
+                    , Api.mutationSetHabitData
+                        ymd
+                        habitId
+                        newVal
+                        model.apiBaseUrl
+                        OnSetHabitDataFailure
+                        OnSetHabitDataSuccess
+                    )
+
+        OnSetHabitDataFailure apiError ->
+            -- TODO
+            ( model, Cmd.none )
+
+        OnSetHabitDataSuccess updatedHabitDatum ->
+            ( { model
+                | allHabitData =
+                    RemoteData.map
+                        (\allHabitData ->
+                            Util.replaceOrAdd allHabitData (.id >> (==) updatedHabitDatum.id) updatedHabitDatum
+                        )
+                        model.allHabitData
+                , editingTodayHabitAmount =
+                    Dict.update updatedHabitDatum.habitId (always Nothing) model.editingTodayHabitAmount
               }
             , Cmd.none
             )

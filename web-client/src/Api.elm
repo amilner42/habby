@@ -9,6 +9,7 @@ import Json.Encode as Encode
 import Models.ApiError exposing (ApiError)
 import Models.Habit as Habit
 import Models.HabitData as HabitData
+import Models.YmdDate as YmdDate
 
 
 {-| Send the `query` to the graphql endpoint.
@@ -273,3 +274,33 @@ mutationAddHabit createHabit =
                 |> Util.templater templateDict
     in
     graphQLRequest queryString <| Decode.at [ "data", "add_habit" ] Habit.decodeHabit
+
+
+mutationSetHabitData : YmdDate.YmdDate -> String -> Int -> String -> (ApiError -> b) -> (HabitData.HabitData -> b) -> Cmd b
+mutationSetHabitData { day, month, year } habitId amount =
+    let
+        templateDict =
+            Dict.fromList <|
+                [ ( "day", toString day )
+                , ( "month", toString month )
+                , ( "year", toString year )
+                , ( "amount", toString amount )
+                , ( "habit_id", habitId )
+                ]
+
+        query =
+            """mutation {
+\tset_habit_data(date: { day: {{day}}, month: {{month}}, year: {{year}}}, amount: {{amount}}, habit_id: "{{habit_id}}") {
+\t\t_id,
+\t\tamount,
+\t\tdate {
+\t\t\tyear,
+\t\t\tmonth,
+\t\t\tday
+\t\t},
+\t\thabit_id
+\t}
+}"""
+                |> Util.templater templateDict
+    in
+    graphQLRequest query (Decode.at [ "data", "set_habit_data" ] HabitData.decodeHabitData)

@@ -1,5 +1,6 @@
 module Model exposing (..)
 
+import Dict
 import Models.ApiError as ApiError
 import Models.Habit as Habit
 import Models.HabitData as HabitData
@@ -10,6 +11,7 @@ import RemoteData
 type alias Model =
     { ymd : YmdDate.YmdDate
     , apiBaseUrl : String
+    , editingTodayHabitAmount : Dict.Dict String Int
     , allHabits : RemoteData.RemoteData ApiError.ApiError (List Habit.Habit)
     , allHabitData : RemoteData.RemoteData ApiError.ApiError (List HabitData.HabitData)
     , addHabit :

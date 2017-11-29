@@ -4,7 +4,6 @@ import Date
 import Date.Extra
 import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (decode, hardcoded, optional, required)
-import Set
 
 
 type alias YmdDate =

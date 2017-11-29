@@ -2,9 +2,11 @@ module View exposing (..)
 
 import DefaultServices.Infix exposing (..)
 import DefaultServices.Util as Util
-import Html exposing (Html, button, div, hr, input, span, text, textarea)
+import Dict
+import Html exposing (Html, button, div, hr, i, input, span, text, textarea)
 import Html.Attributes exposing (class, classList, placeholder, value)
 import Html.Events exposing (onClick, onInput)
+import Maybe.Extra as Maybe
 import Model exposing (Model)
 import Models.ApiError as ApiError
 import Models.Habit as Habit
@@ -23,6 +25,7 @@ view model =
             model.allHabits
             model.allHabitData
             model.addHabit
+            model.editingTodayHabitAmount
         ]
 
 
@@ -31,8 +34,9 @@ renderTodayPanel :
     -> RemoteData.RemoteData ApiError.ApiError (List Habit.Habit)
     -> RemoteData.RemoteData ApiError.ApiError (List HabitData.HabitData)
     -> Habit.AddHabitInputData
+    -> Dict.Dict String Int
     -> Html Msg
-renderTodayPanel ymd rdHabits rdHabitData addHabit =
+renderTodayPanel ymd rdHabits rdHabitData addHabit editingHabitDataDict =
     let
         createHabitData =
             Habit.extractCreateHabit addHabit
@@ -44,13 +48,34 @@ renderTodayPanel ymd rdHabits rdHabitData addHabit =
         , case ( rdHabits, rdHabitData ) of
             ( RemoteData.Success habits, RemoteData.Success habitData ) ->
                 let
-                    renderHabit habit =
-                        let
-                            habitFields =
-                                Habit.getCommonFields habit
+                    goodHabits =
+                        List.filterMap
+                            (\habit ->
+                                case habit of
+                                    Habit.GoodHabit goodHabitRecord ->
+                                        Just goodHabitRecord
 
+                                    _ ->
+                                        Nothing
+                            )
+                            habits
+
+                    badHabits =
+                        List.filterMap
+                            (\habit ->
+                                case habit of
+                                    Habit.BadHabit badHabitRecord ->
+                                        Just badHabitRecord
+
+                                    _ ->
+                                        Nothing
+                            )
+                            habits
+
+                    renderHabit habitRecord =
+                        let
                             relevantHabitData =
-                                List.filter (.habitId >> (==) habitFields.id) habitData
+                                List.filter (.habitId >> (==) habitRecord.id) habitData
 
                             habitDataForToday =
                                 List.filter (.date >> (==) ymd) relevantHabitData
@@ -63,42 +88,63 @@ renderTodayPanel ymd rdHabits rdHabitData addHabit =
                                                 Just { amount } ->
                                                     amount
                                        )
+
+                            editingHabitData =
+                                Dict.get habitRecord.id editingHabitDataDict
                         in
                         div
                             [ class "habit" ]
-                            [ div [ class "habit-name" ] [ text <| habitFields.name ]
+                            [ div [ class "habit-name" ] [ text <| habitRecord.name ]
                             , div
-                                [ class "habit-amount-complete" ]
-                                [ text <|
-                                    toString habitDataForToday
-                                        ++ " "
-                                        ++ (if habitDataForToday == 1 then
-                                                habitFields.unitNameSingular
-                                            else
-                                                habitFields.unitNamePlural
-                                           )
+                                [ classList
+                                    [ ( "habit-amount-complete", True )
+                                    , ( "editing", Maybe.isJust <| editingHabitData )
+                                    ]
+                                ]
+                                [ input
+                                    [ placeholder <|
+                                        toString habitDataForToday
+                                            ++ " "
+                                            ++ (if habitDataForToday == 1 then
+                                                    habitRecord.unitNameSingular
+                                                else
+                                                    habitRecord.unitNamePlural
+                                               )
+                                            ++ " so far today..."
+                                    , onInput <| OnHabitDataInput habitRecord.id
+                                    , value (editingHabitData ||> toString ?> "")
+                                    ]
+                                    []
+                                , i
+                                    [ classList [ ( "material-icons", True ) ]
+                                    , onClick <| SetHabitData ymd habitRecord.id editingHabitData
+                                    ]
+                                    [ text "check_box" ]
                                 ]
                             ]
                 in
-                div
-                    [ class "habit-list" ]
-                    (List.map renderHabit habits
-                        ++ [ button
-                                [ class "add-habit"
-                                , onClick <|
-                                    if addHabit.openView then
-                                        OnCancelAddHabit
-                                    else
-                                        OnOpenAddHabit
-                                ]
-                                [ text <|
-                                    if addHabit.openView then
-                                        "Cancel"
-                                    else
-                                        "Add Habit"
-                                ]
-                           ]
-                    )
+                div []
+                    [ div
+                        [ class "habit-list good-habits" ]
+                        (List.map renderHabit goodHabits)
+                    , div
+                        [ class "habit-list bad-habits" ]
+                        (List.map renderHabit badHabits)
+                    , button
+                        [ class "add-habit"
+                        , onClick <|
+                            if addHabit.openView then
+                                OnCancelAddHabit
+                            else
+                                OnOpenAddHabit
+                        ]
+                        [ text <|
+                            if addHabit.openView then
+                                "Cancel"
+                            else
+                                "Add Habit"
+                        ]
+                    ]
 
             ( RemoteData.Failure apiError, _ ) ->
                 text "Failure..."
