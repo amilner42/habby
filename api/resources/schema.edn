@@ -56,7 +56,18 @@
                                        :habit_id {:type (non-null ID)}
                                        :date {:type (non-null :date)
                                               :resolve :query/date-to-y-m-d-format}
-                                       :amount {:type (non-null Int)}}}}
+                                       :amount {:type (non-null Int)}}}
+
+           :habit_frequency_stats {:description "Statistics for how the user has performed with this habit."
+                                   :fields {:habit_id {:type (non-null ID)}
+                                            :total_fragments {:type Int}
+                                            :successful_fragments {:type Int}
+                                            :total_done {:type Int}
+                                            :current_fragment_streak {:type Int}
+                                            :best_fragment_streak {:type Int}
+                                            :current_fragment_total {:type Int}
+                                            :current_fragment_goal {:type Int}
+                                            :current_fragment_days_left {:type Int}}}}
 
  :queries {:get_habits {:type (non-null (list (non-null :habit)))
                         :description "Get all habits."
@@ -65,7 +76,13 @@
            :get_habit_data {:type (non-null (list (non-null :habit_day_record)))
                             :description "Get all the habit data that matches the request specifications."
                             :args {:after_date {:type :date_data}, :for_habit {:type ID}}
-                            :resolve :query/get-habit-data}}
+                            :resolve :query/get-habit-data}
+
+           :get_frequency_stats {:type (non-null (list (non-null :habit_frequency_stats)))
+                                 :description "Get a success percentage for each habit requested."
+                                 :args {:habit_ids {:type (list (non-null ID))}
+                                        :current_client_date {:type (non-null :date_data)}}
+                                 :resolve :query/get-frequency-stats}}
 
  :input-objects {:date_data {:description "A year/month/day."
                               :fields {:year {:type (non-null Int)}

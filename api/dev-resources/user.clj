@@ -4,7 +4,9 @@
             [com.walmartlabs.lacinia :as lacinia]
             [com.walmartlabs.lacinia.pedestal :as lp]
             [io.pedestal.http :as http]
-            [clojure.walk :as walk])
+            [clojure.walk :as walk]
+            [clojure.tools.namespace.repl :refer [refresh]]
+            [clojure.test :refer [run-tests]])
   (:import (clojure.lang IPersistentMap)))
 
 (def schema (s/load-schema))
