@@ -9,6 +9,7 @@ import Json.Encode as Encode
 import Models.ApiError exposing (ApiError)
 import Models.Habit as Habit
 import Models.HabitData as HabitData
+import Models.FrequencyStats as FrequencyStats
 import Models.YmdDate as YmdDate
 
 
@@ -19,95 +20,124 @@ graphQLRequest query decoder url handleError handleSuccess =
     post url decoder (Encode.object [ ( "query", Encode.string query ) ]) handleError handleSuccess
 
 
-type alias HabitsAndHabitData =
-    { habits : List Habit.Habit, habitData : List HabitData.HabitData }
+type alias HabitsAndHabitDataAndFrequencyStats =
+    { habits : List Habit.Habit
+    , habitData : List HabitData.HabitData
+    , frequencyStatsList : List FrequencyStats.FrequencyStats
+    }
 
 
 {-| Query for all fields on all habits and habit data.
 -}
-queryHabitsAndHabitData : String -> (ApiError -> b) -> (HabitsAndHabitData -> b) -> Cmd b
-queryHabitsAndHabitData =
+queryHabitsAndHabitDataAndFrequencyStats :
+    YmdDate.YmdDate
+    -> String
+    -> (ApiError -> b)
+    -> (HabitsAndHabitDataAndFrequencyStats -> b)
+    -> Cmd b
+queryHabitsAndHabitDataAndFrequencyStats ymd url handleError handleSuccess =
     let
-        habitAndHabitDataQueryString =
-            """{
-        \t\thabitData: get_habit_data {
-        \t\t\t\t_id,
-        \t\t\tamount,
-        \t\t\tdate {
-        \t\t\t\tday,
-        \t\t\t\tmonth,
-        \t\t\t\tyear
-        \t\t\t},
-        \t\t\thabit_id
-        \t\t},
-        \t
-        \t\thabits: get_habits {
-        \t\t\t__typename
-        \t\t\t...on good_habit {
-        \t\t\t\t_id,
-        \t\t\t\tdescription,
-        \t\t\t\tname,
-        \t\t\t\tsuspended,
-        \t\t\t\tunit_name_singular,
-        \t\t\t\tunit_name_plural,
-        \t\t\t\ttarget_frequency {
-        \t\t\t\t\t__typename
-        \t\t\t\t\t... on every_x_days_frequency {
-        \t\t\t\t\t\tdays,
-        \t\t\t\t\t\ttimes
-        \t\t\t\t\t}
-        \t\t\t\t\t...on total_week_frequency {
-        \t\t\t\t\t\tweek
-        \t\t\t\t\t}
-        \t\t\t\t\t...on specific_day_of_week_frequency {
-        \t\t\t\t\t\tfriday,
-        \t\t\t\t\t\tmonday,
-        \t\t\t\t\t\tsaturday,
-        \t\t\t\t\t\tsunday,
-        \t\t\t\t\t\tthursday,
-        \t\t\t\t\t\ttuesday,
-        \t\t\t\t\t\twednesday
-        \t\t\t\t\t}
-        \t\t\t\t}
-        \t\t\t\ttime_of_day
-        \t\t\t}
-        \t\t\t...on bad_habit {
-        \t\t\t\t_id,
-        \t\t\t\tdescription,
-        \t\t\t\tname,
-        \t\t\t\tsuspended,
-        \t\t\t\tunit_name_singular,
-        \t\t\t\tunit_name_plural,
-        \t\t\t\tthreshold_frequency {
-        \t\t\t\t\t\t__typename
-        \t\t\t\t\t... on every_x_days_frequency {
-        \t\t\t\t\t\tdays,
-        \t\t\t\t\t\ttimes
-        \t\t\t\t\t}
-        \t\t\t\t\t...on total_week_frequency {
-        \t\t\t\t\t\tweek
-        \t\t\t\t\t}
-        \t\t\t\t\t...on specific_day_of_week_frequency {
-        \t\t\t\t\t\tfriday,
-        \t\t\t\t\t\tmonday,
-        \t\t\t\t\t\tsaturday,
-        \t\t\t\t\t\tsunday,
-        \t\t\t\t\t\tthursday,
-        \t\t\t\t\t\ttuesday,
-        \t\t\t\t\t\twednesday
-        \t\t\t\t\t}
-        \t\t\t\t}\t\t
-        \t\t\t}
-        \t\t}
-        }"""
+        queryString =
+            ("""{
+  habits: get_habits {
+    __typename
+    ... on good_habit {
+      _id
+      description
+      name
+      suspended
+      unit_name_singular
+      unit_name_plural
+      target_frequency {
+        __typename
+        ... on every_x_days_frequency {
+          days
+          times
+        }
+        ... on total_week_frequency {
+          week
+        }
+        ... on specific_day_of_week_frequency {
+          monday
+          tuesday
+          wednesday
+          thursday
+          friday
+          saturday
+          sunday
+        }
+      }
+      time_of_day
+    }
+    ... on bad_habit {
+      _id
+      description
+      name
+      suspended
+      unit_name_singular
+      unit_name_plural
+      threshold_frequency {
+        __typename
+        ... on every_x_days_frequency {
+          days
+          times
+        }
+        ... on total_week_frequency {
+          week
+        }
+        ... on specific_day_of_week_frequency {
+          monday
+          tuesday
+          wednesday
+          thursday
+          friday
+          saturday
+          sunday
+        }
+      }
+    }
+  }
+  habitData: get_habit_data {
+    _id
+    amount
+    date {
+      day
+      month
+      year
+    }
+    habit_id
+  }
+  frequencyStatsList: get_frequency_stats(current_client_date: {year: """
+                ++ (toString ymd.year)
+                ++ ", month: "
+                ++ (toString ymd.month)
+                ++ ", day: "
+                ++ (toString ymd.day)
+                ++ """}) {
+    habit_id
+    total_fragments
+    successful_fragments
+    total_done
+    current_fragment_streak
+    best_fragment_streak
+    current_fragment_total
+    current_fragment_goal
+    current_fragment_days_left
+  }
+}"""
+            )
     in
-    graphQLRequest
-        habitAndHabitDataQueryString
-        (decode HabitsAndHabitData
-            |> required "habits" (Decode.list Habit.decodeHabit)
-            |> required "habitData" (Decode.list HabitData.decodeHabitData)
-            |> Decode.at [ "data" ]
-        )
+        graphQLRequest
+            queryString
+            (decode HabitsAndHabitDataAndFrequencyStats
+                |> required "habits" (Decode.list Habit.decodeHabit)
+                |> required "habitData" (Decode.list HabitData.decodeHabitData)
+                |> required "frequencyStatsList" (Decode.list FrequencyStats.decodeFrequencyStats)
+                |> Decode.at [ "data" ]
+            )
+            url
+            handleError
+            handleSuccess
 
 
 mutationAddHabit : Habit.CreateHabit -> String -> (ApiError -> b) -> (Habit.Habit -> b) -> Cmd b
@@ -273,7 +303,7 @@ mutationAddHabit createHabit =
         }"""
                 |> Util.templater templateDict
     in
-    graphQLRequest queryString <| Decode.at [ "data", "add_habit" ] Habit.decodeHabit
+        graphQLRequest queryString <| Decode.at [ "data", "add_habit" ] Habit.decodeHabit
 
 
 mutationSetHabitData : YmdDate.YmdDate -> String -> Int -> String -> (ApiError -> b) -> (HabitData.HabitData -> b) -> Cmd b
@@ -303,4 +333,4 @@ mutationSetHabitData { day, month, year } habitId amount =
 }"""
                 |> Util.templater templateDict
     in
-    graphQLRequest query (Decode.at [ "data", "set_habit_data" ] HabitData.decodeHabitData)
+        graphQLRequest query (Decode.at [ "data", "set_habit_data" ] HabitData.decodeHabitData)
