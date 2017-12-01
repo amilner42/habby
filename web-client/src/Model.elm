@@ -2,6 +2,7 @@ module Model exposing (..)
 
 import Dict
 import Models.ApiError as ApiError
+import Models.FrequencyStats as FrequencyStats
 import Models.Habit as Habit
 import Models.HabitData as HabitData
 import Models.YmdDate as YmdDate
@@ -15,6 +16,7 @@ type alias Model =
     , editingHistoryHabitAmount : Dict.Dict String (Dict.Dict String Int)
     , allHabits : RemoteData.RemoteData ApiError.ApiError (List Habit.Habit)
     , allHabitData : RemoteData.RemoteData ApiError.ApiError (List HabitData.HabitData)
+    , allFrequencyStats : RemoteData.RemoteData ApiError.ApiError (List FrequencyStats.FrequencyStats)
     , addHabit :
         { openView : Bool
         , kind : Habit.HabitKind
@@ -39,4 +41,5 @@ type alias Model =
     , openHistoryViewer : Bool
     , historyViewerDateInput : String
     , historyViewerSelectedDate : Maybe YmdDate.YmdDate
+    , historyViewerFrequencyStats : RemoteData.RemoteData ApiError.ApiError (List FrequencyStats.FrequencyStats)
     }

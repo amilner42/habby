@@ -17,6 +17,22 @@ update msg model =
     let
         updateAddHabit updater =
             { model | addHabit = updater model.addHabit }
+
+        getHabitsAndHabitDataAndFrequencyStats : Cmd Msg
+        getHabitsAndHabitDataAndFrequencyStats =
+            Api.queryHabitsAndHabitDataAndFrequencyStats
+                model.ymd
+                model.apiBaseUrl
+                OnGetHabitsAndHabitDataAndFrequencyStatsFailure
+                OnGetHabitsAndHabitDataAndFrequencyStatsSuccess
+
+        getHistoryViewerFrequencyStats : YmdDate.YmdDate -> Cmd Msg
+        getHistoryViewerFrequencyStats ymd =
+            Api.queryPastFrequencyStats
+                ymd
+                model.apiBaseUrl
+                OnGetPastFrequencyStatsFailure
+                OnGetPastFrequencyStatsSuccess
     in
     case msg of
         NoOp ->
@@ -27,20 +43,35 @@ update msg model =
             ( model, Cmd.none )
 
         TickMinute time ->
-            ( { model | ymd = time |> Date.fromTime |> YmdDate.fromDate }, Cmd.none )
+            let
+                newYmd =
+                    time |> Date.fromTime |> YmdDate.fromDate
+            in
+            if model.ymd /= newYmd then
+                ( { model | ymd = newYmd }
+                , Api.queryHabitsAndHabitDataAndFrequencyStats
+                    newYmd
+                    model.apiBaseUrl
+                    OnGetHabitsAndHabitDataAndFrequencyStatsFailure
+                    OnGetHabitsAndHabitDataAndFrequencyStatsSuccess
+                )
+            else
+                ( model, Cmd.none )
 
-        OnGetHabitsAndHabitDataFailure apiError ->
+        OnGetHabitsAndHabitDataAndFrequencyStatsFailure apiError ->
             ( { model
                 | allHabits = RemoteData.Failure apiError
                 , allHabitData = RemoteData.Failure apiError
+                , allFrequencyStats = RemoteData.Failure apiError
               }
             , Cmd.none
             )
 
-        OnGetHabitsAndHabitDataSuccess { habits, habitData } ->
+        OnGetHabitsAndHabitDataAndFrequencyStatsSuccess { habits, habitData, frequencyStatsList } ->
             ( { model
                 | allHabits = RemoteData.Success habits
                 , allHabitData = RemoteData.Success habitData
+                , allFrequencyStats = RemoteData.Success frequencyStatsList
               }
             , Cmd.none
             )
@@ -176,23 +207,33 @@ update msg model =
             ( model, Cmd.none )
 
         OnSetHabitDataSuccess updatedHabitDatum ->
-            ( { model
-                | allHabitData =
-                    RemoteData.map
-                        (\allHabitData ->
-                            Util.replaceOrAdd allHabitData (.id >> (==) updatedHabitDatum.id) updatedHabitDatum
-                        )
-                        model.allHabitData
-                , editingTodayHabitAmount =
-                    Dict.update updatedHabitDatum.habitId (always Nothing) model.editingTodayHabitAmount
-                , editingHistoryHabitAmount =
-                    Dict.update
-                        (YmdDate.toSimpleString updatedHabitDatum.date)
-                        (Maybe.map (Dict.update updatedHabitDatum.habitId (always Nothing)))
-                        model.editingHistoryHabitAmount
-              }
-            , Cmd.none
-            )
+            let
+                newModel =
+                    { model
+                        | allHabitData =
+                            RemoteData.map
+                                (\allHabitData ->
+                                    Util.replaceOrAdd allHabitData (.id >> (==) updatedHabitDatum.id) updatedHabitDatum
+                                )
+                                model.allHabitData
+                        , editingTodayHabitAmount =
+                            Dict.update updatedHabitDatum.habitId (always Nothing) model.editingTodayHabitAmount
+                        , editingHistoryHabitAmount =
+                            Dict.update
+                                (YmdDate.toSimpleString updatedHabitDatum.date)
+                                (Maybe.map (Dict.update updatedHabitDatum.habitId (always Nothing)))
+                                model.editingHistoryHabitAmount
+                    }
+            in
+            newModel
+                ! [ getHabitsAndHabitDataAndFrequencyStats
+                  , case newModel.historyViewerSelectedDate of
+                        Just ymd ->
+                            getHistoryViewerFrequencyStats ymd
+
+                        Nothing ->
+                            Cmd.none
+                  ]
 
         OnToggleHistoryViewer ->
             ( { model | openHistoryViewer = not model.openHistoryViewer }
@@ -217,26 +258,36 @@ update msg model =
                 yesterday =
                     YmdDate.addDays -1 model.ymd
             in
-            ( { model | historyViewerSelectedDate = Just yesterday }, Cmd.none )
+            update (SetHistoryViewerSelectedDate yesterday) model
 
         OnHistoryViewerSelectBeforeYesterday ->
             let
                 beforeYesterday =
                     YmdDate.addDays -2 model.ymd
             in
-            ( { model | historyViewerSelectedDate = Just beforeYesterday }
-            , Cmd.none
-            )
+            update (SetHistoryViewerSelectedDate beforeYesterday) model
 
         OnHistoryViewerSelectDateInput ->
-            model.historyViewerDateInput
-                |> YmdDate.fromSimpleString
-                ||> (\ymd ->
-                        ( { model | historyViewerSelectedDate = Just ymd }
-                        , Cmd.none
-                        )
-                    )
-                ?> ( model, Cmd.none )
+            let
+                ymd =
+                    YmdDate.fromSimpleString model.historyViewerDateInput
+            in
+            case ymd of
+                Just ymd ->
+                    update (SetHistoryViewerSelectedDate ymd) model
+
+                Nothing ->
+                    -- TODO: show error message because of invalid date input
+                    ( model, Cmd.none )
+
+        SetHistoryViewerSelectedDate ymd ->
+            { model | historyViewerSelectedDate = Just ymd } ! [ getHistoryViewerFrequencyStats ymd ]
+
+        OnGetPastFrequencyStatsFailure apiError ->
+            ( { model | historyViewerFrequencyStats = RemoteData.Failure apiError }, Cmd.none )
+
+        OnGetPastFrequencyStatsSuccess { frequencyStatsList } ->
+            ( { model | historyViewerFrequencyStats = RemoteData.Success frequencyStatsList }, Cmd.none )
 
         OnHistoryViewerChangeDate ->
             ( { model | historyViewerSelectedDate = Nothing }, Cmd.none )
