@@ -99,6 +99,11 @@
   [context {:keys [habit_id, suspended]} value]
   (db/set-suspend-habit habit_id suspended))
 
+(defn resolve-query-get-frequency-stats
+  "@refer `db/get-frequency-stats`."
+  [context {:keys [habit_ids]} value]
+  (db/get-frequency-stats habit_ids))
+
 (defn resolver-map
   []
   {:query/get-habits (create-async-resolver resolve-get-habits)
@@ -109,7 +114,8 @@
    :query/get-habit-data (create-async-resolver resolve-get-habit-data)
    :query/date-to-y-m-d-format (create-date-to-y-m-d-resolver :date)
    :query/resolve-mutation-delete-habit (create-async-resolver resolve-mutation-delete-habit)
-   :query/resolve-mutation-set-suspend-habit (create-async-resolver resolve-mutation-set-suspend-habit)})
+   :query/resolve-mutation-set-suspend-habit (create-async-resolver resolve-mutation-set-suspend-habit)
+   :query/get-frequency-stats (create-async-resolver resolve-query-get-frequency-stats)})
 
 (defn load-schema
   []

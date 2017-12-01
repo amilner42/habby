@@ -60,3 +60,9 @@
              {$set {:amount amount}
               $setOnInsert {:date date-time, :habit_id (ObjectId. habit_id), :_id (ObjectId.)}}
              {:upsert true, :return-new true}))
+
+
+(defn get-frequency-stats
+  "TODO - Implement + Document"
+  [habit_ids]
+  5)
