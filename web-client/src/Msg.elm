@@ -40,3 +40,4 @@ type Msg
     | SetHabitData YmdDate.YmdDate String (Maybe Int)
     | OnSetHabitDataFailure ApiError
     | OnSetHabitDataSuccess HabitData.HabitData
+    | OnToggleHistoryViewer

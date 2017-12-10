@@ -185,6 +185,13 @@ update msg model =
             , Cmd.none
             )
 
+        OnToggleHistoryViewer ->
+            let
+                historyViewer =
+                    model.historyViewer
+            in
+            ( { model | historyViewer = { historyViewer | openView = not historyViewer.openView } }, Cmd.none )
+
 
 extractInt : String -> Maybe Int -> Maybe Int
 extractInt string default =

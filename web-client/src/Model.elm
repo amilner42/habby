@@ -34,4 +34,6 @@ type alias Model =
         , times : Maybe Int
         , days : Maybe Int
         }
+    , historyViewer :
+        { openView : Bool }
     }

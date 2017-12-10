@@ -27,6 +27,7 @@ view model =
             model.allHabitData
             model.addHabit
             model.editingTodayHabitAmount
+        , renderHistoryViewerPanel model.historyViewer.openView
         ]
 
 
@@ -343,5 +344,29 @@ renderTodayPanel ymd rdHabits rdHabitData addHabit editingHabitDataDict =
                         , onClick <| AddHabit createHabitData
                         ]
                         [ text "Create Habit" ]
+            ]
+        ]
+
+
+renderHistoryViewerPanel : Bool -> Html Msg
+renderHistoryViewerPanel openView =
+    div
+        [ class "history-viewer-panel" ]
+        [ span [ class "history-viewer-panel-title", onClick OnToggleHistoryViewer ] [ text "Browse and Edit History" ]
+        , i
+            [ class "material-icons"
+            , onClick OnToggleHistoryViewer
+            ]
+            [ text <|
+                if openView then
+                    "arrow_drop_down"
+                else
+                    "arrow_drop_up"
+            ]
+        , div
+            [ classList [ ( "date-entry", True ), ( "display-none", not openView ) ] ]
+            [ input [ placeholder "dd/mm/yy" ] []
+            , span [ class "select-yesterday" ] [ text "yesterday" ]
+            , span [ class "before-yesterday" ] [ text "before yesterday" ]
             ]
         ]

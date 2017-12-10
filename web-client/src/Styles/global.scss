@@ -6,17 +6,10 @@
     color: #444;
 
     .today-panel {
-        box-sizing: border-box;
-        display: block;
-        padding: 15px;
-        float: left;
-        width: 100%;
-
-        @extend .box-shadow-5;
+        @extend .panel;
 
         .today-panel-title {
-            font-size: 26px;
-            font-weight: 600;
+            @extend .panel-title;
         }
 
         .today-panel-date {
@@ -251,6 +244,49 @@
             }
         }
     }
+
+    .history-viewer-panel {
+        @extend .panel;
+        @extend .no-select;
+
+        margin-top: 10px;
+
+        .history-viewer-panel-title {
+            @extend .panel-title;
+        }
+
+        i {
+            @extend .panel-open-close-arrow;
+            cursor: pointer;
+
+            &:hover {
+                color: #111;
+            }
+        }
+
+        .date-entry {
+            display: block;
+
+            input {
+                margin-top: 10px;
+                @extend .input-style-1;
+            }
+
+            .select-yesterday, .before-yesterday {
+                border: 1px solid #AAA;
+                color: #999;
+                border-radius: 5px;
+                padding: 5px;
+                margin-left: 10px;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: #CCC;
+                    color: #777;
+                }
+            }
+        }
+    }
 }
 
 .display-none {
@@ -259,4 +295,32 @@
 
 .visibility-hidden {
     visibility: hidden !important;
+}
+
+.panel {
+    position: relative;
+    box-sizing: border-box;
+    display: block;
+    padding: 15px;
+    float: left;
+    width: 100%;
+
+    @extend .box-shadow-5;
+}
+
+.panel-title {
+    font-size: 26px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:hover {
+        color: #111;
+    }
+}
+
+.panel-open-close-arrow {
+    position: absolute;
+    right: 0px;
+    top: 10px;
+    font-size: 48px;
 }
