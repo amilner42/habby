@@ -43,3 +43,7 @@ type Msg
     | OnSetHabitDataSuccess HabitData.HabitData
     | OnToggleHistoryViewer
     | OnToggleTodayViewer
+    | OnHistoryViewerDateInput String
+    | OnHistoryViewerSelectYesterday
+    | OnHistoryViewerSelectBeforeYesterday
+    | OnHistoryViewerSelectDateInput

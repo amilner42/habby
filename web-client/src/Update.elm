@@ -2,6 +2,7 @@ module Update exposing (..)
 
 import Api
 import Date
+import DefaultServices.Infix exposing (..)
 import DefaultServices.Util as Util
 import Dict
 import Model exposing (Model)
@@ -16,6 +17,12 @@ update msg model =
     let
         updateAddHabit updater =
             { model | addHabit = updater model.addHabit }
+
+        updateHistoryViewer updater =
+            { model | historyViewer = updater model.historyViewer }
+
+        updateTodayViewer updater =
+            { model | todayViewer = updater model.todayViewer }
     in
     case msg of
         NoOp ->
@@ -189,18 +196,48 @@ update msg model =
             )
 
         OnToggleHistoryViewer ->
-            let
-                historyViewer =
-                    model.historyViewer
-            in
-            ( { model | historyViewer = { historyViewer | openView = not historyViewer.openView } }, Cmd.none )
+            ( updateHistoryViewer (\historyViewer -> { historyViewer | openView = not historyViewer.openView })
+            , Cmd.none
+            )
 
         OnToggleTodayViewer ->
+            ( updateTodayViewer (\todayViewer -> { todayViewer | openView = not todayViewer.openView }), Cmd.none )
+
+        OnHistoryViewerDateInput newDateInput ->
+            ( updateHistoryViewer
+                (\historyViewer ->
+                    newDateInput
+                        |> String.filter (\char -> List.member char [ '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '/' ])
+                        |> (\newDateInput -> { historyViewer | dateInput = newDateInput })
+                )
+            , Cmd.none
+            )
+
+        OnHistoryViewerSelectYesterday ->
             let
-                todayViewer =
-                    model.todayViewer
+                yesterday =
+                    YmdDate.addDays -1 model.ymd
             in
-            ( { model | todayViewer = { todayViewer | openView = not todayViewer.openView } }, Cmd.none )
+            ( updateHistoryViewer (\historyViewer -> { historyViewer | selectedDate = Just yesterday }), Cmd.none )
+
+        OnHistoryViewerSelectBeforeYesterday ->
+            let
+                beforeYesterday =
+                    YmdDate.addDays -2 model.ymd
+            in
+            ( updateHistoryViewer (\historyViewer -> { historyViewer | selectedDate = Just beforeYesterday })
+            , Cmd.none
+            )
+
+        OnHistoryViewerSelectDateInput ->
+            model.historyViewer.dateInput
+                |> YmdDate.fromString
+                ||> (\ymd ->
+                        ( updateHistoryViewer (\historyViewer -> { historyViewer | selectedDate = Just ymd })
+                        , Cmd.none
+                        )
+                    )
+                ?> ( model, Cmd.none )
 
 
 extractInt : String -> Maybe Int -> Maybe Int

@@ -28,7 +28,10 @@ view model =
             model.addHabit
             model.editingTodayHabitAmount
             model.todayViewer.openView
-        , renderHistoryViewerPanel model.historyViewer.openView
+        , renderHistoryViewerPanel
+            model.historyViewer.openView
+            model.historyViewer.dateInput
+            model.historyViewer.selectedDate
         ]
 
 
@@ -351,18 +354,40 @@ renderTodayPanel ymd rdHabits rdHabitData addHabit editingHabitDataDict openView
         ]
 
 
-renderHistoryViewerPanel : Bool -> Html Msg
-renderHistoryViewerPanel openView =
+renderHistoryViewerPanel : Bool -> String -> Maybe YmdDate.YmdDate -> Html Msg
+renderHistoryViewerPanel openView dateInput selectedDate =
     div
         [ class "history-viewer-panel" ]
         [ div [ class "history-viewer-panel-title", onClick OnToggleHistoryViewer ] [ text "Browse and Edit History" ]
         , dropdownIcon openView NoOp
-        , div
-            [ classList [ ( "date-entry", True ), ( "display-none", not openView ) ] ]
-            [ input [ placeholder "dd/mm/yy" ] []
-            , span [ class "select-yesterday" ] [ text "yesterday" ]
-            , span [ class "before-yesterday" ] [ text "before yesterday" ]
-            ]
+        , if not openView then
+            Util.hiddenDiv
+          else
+            case selectedDate of
+                Nothing ->
+                    div
+                        [ classList [ ( "date-entry", True ), ( "display-none", not openView ) ] ]
+                        [ input
+                            [ placeholder "dd/mm/yy"
+                            , onInput OnHistoryViewerDateInput
+                            , value dateInput
+                            , Util.onKeydown
+                                (\key ->
+                                    if key == KK.Enter then
+                                        Just OnHistoryViewerSelectDateInput
+                                    else
+                                        Nothing
+                                )
+                            ]
+                            []
+                        , span [ class "select-yesterday", onClick OnHistoryViewerSelectYesterday ] [ text "yesterday" ]
+                        , span
+                            [ class "before-yesterday", onClick OnHistoryViewerSelectBeforeYesterday ]
+                            [ text "before yesterday" ]
+                        ]
+
+                Just selectedDate ->
+                    div [] [ text <| "Viewing " ++ YmdDate.prettyPrint selectedDate ]
         ]
 
 
