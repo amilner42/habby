@@ -21,6 +21,7 @@ init { apiBaseUrl, currentTime } location =
       , allHabits = RemoteData.Loading
       , addHabit = Habit.initAddHabitData
       , historyViewer = { openView = False }
+      , todayViewer = { openView = True }
       }
     , Api.queryHabitsAndHabitData apiBaseUrl OnGetHabitsAndHabitDataFailure OnGetHabitsAndHabitDataSuccess
     )

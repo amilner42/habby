@@ -27,6 +27,7 @@ view model =
             model.allHabitData
             model.addHabit
             model.editingTodayHabitAmount
+            model.todayViewer.openView
         , renderHistoryViewerPanel model.historyViewer.openView
         ]
 
@@ -37,15 +38,17 @@ renderTodayPanel :
     -> RemoteData.RemoteData ApiError.ApiError (List HabitData.HabitData)
     -> Habit.AddHabitInputData
     -> Dict.Dict String Int
+    -> Bool
     -> Html Msg
-renderTodayPanel ymd rdHabits rdHabitData addHabit editingHabitDataDict =
+renderTodayPanel ymd rdHabits rdHabitData addHabit editingHabitDataDict openView =
     let
         createHabitData =
             Habit.extractCreateHabit addHabit
     in
     div
         [ class "today-panel" ]
-        [ div [ class "today-panel-title" ] [ text "Todays Progress" ]
+        [ div [ class "today-panel-title", onClick OnToggleTodayViewer ] [ text "Todays Progress" ]
+        , dropdownIcon openView NoOp
         , div [ class "today-panel-date" ] [ text <| YmdDate.prettyPrint ymd ]
         , case ( rdHabits, rdHabitData ) of
             ( RemoteData.Success habits, RemoteData.Success habitData ) ->
@@ -132,7 +135,7 @@ renderTodayPanel ymd rdHabits rdHabitData addHabit editingHabitDataDict =
                                 ]
                             ]
                 in
-                div []
+                div [ classList [ ( "display-none", not openView ) ] ]
                     [ div
                         [ class "habit-list good-habits" ]
                         (List.map renderHabit goodHabits)
@@ -163,7 +166,7 @@ renderTodayPanel ymd rdHabits rdHabitData addHabit editingHabitDataDict =
 
             _ ->
                 text "Loading..."
-        , hr [ classList [ ( "add-habit-line-breaker", True ), ( "visibility-hidden", not addHabit.openView ) ] ] []
+        , hr [ classList [ ( "add-habit-line-breaker", True ), ( "visibility-hidden height-0", not addHabit.openView ) ] ] []
         , div
             [ classList [ ( "add-habit-input-form", True ), ( "display-none", not addHabit.openView ) ] ]
             [ div
@@ -352,21 +355,26 @@ renderHistoryViewerPanel : Bool -> Html Msg
 renderHistoryViewerPanel openView =
     div
         [ class "history-viewer-panel" ]
-        [ span [ class "history-viewer-panel-title", onClick OnToggleHistoryViewer ] [ text "Browse and Edit History" ]
-        , i
-            [ class "material-icons"
-            , onClick OnToggleHistoryViewer
-            ]
-            [ text <|
-                if openView then
-                    "arrow_drop_down"
-                else
-                    "arrow_drop_up"
-            ]
+        [ div [ class "history-viewer-panel-title", onClick OnToggleHistoryViewer ] [ text "Browse and Edit History" ]
+        , dropdownIcon openView NoOp
         , div
             [ classList [ ( "date-entry", True ), ( "display-none", not openView ) ] ]
             [ input [ placeholder "dd/mm/yy" ] []
             , span [ class "select-yesterday" ] [ text "yesterday" ]
             , span [ class "before-yesterday" ] [ text "before yesterday" ]
             ]
+        ]
+
+
+dropdownIcon : Bool -> msg -> Html msg
+dropdownIcon openView msg =
+    i
+        [ class "material-icons"
+        , onClick msg
+        ]
+        [ text <|
+            if openView then
+                "arrow_drop_down"
+            else
+                "arrow_drop_up"
         ]

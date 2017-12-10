@@ -18,6 +18,9 @@ update msg model =
             { model | addHabit = updater model.addHabit }
     in
     case msg of
+        NoOp ->
+            ( model, Cmd.none )
+
         OnLocationChange location ->
             -- TODO
             ( model, Cmd.none )
@@ -191,6 +194,13 @@ update msg model =
                     model.historyViewer
             in
             ( { model | historyViewer = { historyViewer | openView = not historyViewer.openView } }, Cmd.none )
+
+        OnToggleTodayViewer ->
+            let
+                todayViewer =
+                    model.todayViewer
+            in
+            ( { model | todayViewer = { todayViewer | openView = not todayViewer.openView } }, Cmd.none )
 
 
 extractInt : String -> Maybe Int -> Maybe Int

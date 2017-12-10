@@ -7,28 +7,34 @@
 
     .today-panel {
         @extend .panel;
+        @extend .no-select;
+
+        i {
+            @extend .panel-open-close-arrow;
+        }
 
         .today-panel-title {
             @extend .panel-title;
         }
 
         .today-panel-date {
+            color: #AAA;
             font-size: 16px;
             display: inline-block;
-            margin-bottom: 10px;
             font-style: italic;
         }
 
         .habit-list {
             display: block;
             overflow: auto;
+            margin-top: -5px;
 
             .habit {
                 float: left;
                 display: inline-block;
                 position: relative;
                 padding: 7px;
-                margin: 2px 15px 15px 2px; // 2px left/right margin cause otherwise box-shadow gets cut off
+                margin: 15px 15px 0 2px;
                 min-width: 200px;
                 min-height: 80px;
                 box-sizing: content-box;
@@ -106,6 +112,7 @@
             font-weight: 600;
             cursor: pointer;
             height: 60px;
+            margin-top: 15px;
         }
 
         .add-habit-line-breaker {
@@ -257,11 +264,6 @@
 
         i {
             @extend .panel-open-close-arrow;
-            cursor: pointer;
-
-            &:hover {
-                color: #111;
-            }
         }
 
         .date-entry {
@@ -295,6 +297,10 @@
 
 .visibility-hidden {
     visibility: hidden !important;
+    height: 0;
+    width: 0;
+    padding: 0;
+    margin: 0;
 }
 
 .panel {
@@ -309,12 +315,13 @@
 }
 
 .panel-title {
+    color: #555;
     font-size: 26px;
     font-weight: 600;
     cursor: pointer;
 
     &:hover {
-        color: #111;
+        color: #333;
     }
 }
 
@@ -323,4 +330,5 @@
     right: 0px;
     top: 10px;
     font-size: 48px;
+    color: #999;
 }
