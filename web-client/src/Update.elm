@@ -17,12 +17,6 @@ update msg model =
     let
         updateAddHabit updater =
             { model | addHabit = updater model.addHabit }
-
-        updateHistoryViewer updater =
-            { model | historyViewer = updater model.historyViewer }
-
-        updateTodayViewer updater =
-            { model | todayViewer = updater model.todayViewer }
     in
     case msg of
         NoOp ->
@@ -201,20 +195,20 @@ update msg model =
             )
 
         OnToggleHistoryViewer ->
-            ( updateHistoryViewer (\historyViewer -> { historyViewer | openView = not historyViewer.openView })
+            ( { model | openHistoryViewer = not model.openHistoryViewer }
             , Cmd.none
             )
 
         OnToggleTodayViewer ->
-            ( updateTodayViewer (\todayViewer -> { todayViewer | openView = not todayViewer.openView }), Cmd.none )
+            ( { model | openTodayViewer = not model.openTodayViewer }, Cmd.none )
 
         OnHistoryViewerDateInput newDateInput ->
-            ( updateHistoryViewer
-                (\historyViewer ->
+            ( { model
+                | historyViewerDateInput =
                     newDateInput
-                        |> String.filter (\char -> List.member char [ '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '/' ])
-                        |> (\newDateInput -> { historyViewer | dateInput = newDateInput })
-                )
+                        |> String.filter
+                            (\char -> List.member char [ '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '/' ])
+              }
             , Cmd.none
             )
 
@@ -223,29 +217,29 @@ update msg model =
                 yesterday =
                     YmdDate.addDays -1 model.ymd
             in
-            ( updateHistoryViewer (\historyViewer -> { historyViewer | selectedDate = Just yesterday }), Cmd.none )
+            ( { model | historyViewerSelectedDate = Just yesterday }, Cmd.none )
 
         OnHistoryViewerSelectBeforeYesterday ->
             let
                 beforeYesterday =
                     YmdDate.addDays -2 model.ymd
             in
-            ( updateHistoryViewer (\historyViewer -> { historyViewer | selectedDate = Just beforeYesterday })
+            ( { model | historyViewerSelectedDate = Just beforeYesterday }
             , Cmd.none
             )
 
         OnHistoryViewerSelectDateInput ->
-            model.historyViewer.dateInput
+            model.historyViewerDateInput
                 |> YmdDate.fromSimpleString
                 ||> (\ymd ->
-                        ( updateHistoryViewer (\historyViewer -> { historyViewer | selectedDate = Just ymd })
+                        ( { model | historyViewerSelectedDate = Just ymd }
                         , Cmd.none
                         )
                     )
                 ?> ( model, Cmd.none )
 
         OnHistoryViewerChangeDate ->
-            ( updateHistoryViewer (\historyViewer -> { historyViewer | selectedDate = Nothing }), Cmd.none )
+            ( { model | historyViewerSelectedDate = Nothing }, Cmd.none )
 
         OnHistoryViewerHabitDataInput forDate habitId newInput ->
             let
@@ -258,14 +252,14 @@ update msg model =
                     extractInt newInput (Dict.get habitId editingHabitDataDict)
 
                 updatedEditingHabitDataDict =
-                    Dict.update habitId (always newAmount) editingHabitDataDict
+                    editingHabitDataDict |> Dict.update habitId (always newAmount)
             in
             ( { model
                 | editingHistoryHabitAmount =
-                    Dict.update
-                        (YmdDate.toSimpleString forDate)
-                        (always <| Just updatedEditingHabitDataDict)
-                        model.editingHistoryHabitAmount
+                    model.editingHistoryHabitAmount
+                        |> Dict.update
+                            (YmdDate.toSimpleString forDate)
+                            (always <| Just updatedEditingHabitDataDict)
               }
             , Cmd.none
             )

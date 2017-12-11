@@ -141,7 +141,7 @@ initAddHabitData =
     }
 
 
-{-| TODO DOC.
+{-| Returns the habits split by good/bad: (good habits, bad habits).
 -}
 splitHabits : List Habit -> ( List Habit, List Habit )
 splitHabits habits =

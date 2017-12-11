@@ -35,11 +35,8 @@ type alias Model =
         , times : Maybe Int
         , days : Maybe Int
         }
-    , todayViewer :
-        { openView : Bool }
-    , historyViewer :
-        { openView : Bool
-        , dateInput : String
-        , selectedDate : Maybe YmdDate.YmdDate
-        }
+    , openTodayViewer : Bool
+    , openHistoryViewer : Bool
+    , historyViewerDateInput : String
+    , historyViewerSelectedDate : Maybe YmdDate.YmdDate
     }

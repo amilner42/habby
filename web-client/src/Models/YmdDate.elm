@@ -70,7 +70,7 @@ prettyPrint ymd =
     prettyMonth ymd ++ " " ++ prettyDay ymd ++ ", " ++ toString ymd.year
 
 
-{-| TODO DOC
+{-| Add days to a date to get a new date that many days away, you can add negative days to go back in time.
 -}
 addDays : Int -> YmdDate -> YmdDate
 addDays dayDelta ymd =

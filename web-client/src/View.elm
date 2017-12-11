@@ -27,11 +27,11 @@ view model =
             model.allHabitData
             model.addHabit
             model.editingTodayHabitAmount
-            model.todayViewer.openView
+            model.openTodayViewer
         , renderHistoryViewerPanel
-            model.historyViewer.openView
-            model.historyViewer.dateInput
-            model.historyViewer.selectedDate
+            model.openHistoryViewer
+            model.historyViewerDateInput
+            model.historyViewerSelectedDate
             model.allHabits
             model.allHabitData
             model.editingHistoryHabitAmount
@@ -331,31 +331,22 @@ renderHistoryViewerPanel openView dateInput selectedDate rdHabits rdHabitData ed
                                 editingHabitDataDict =
                                     Dict.get (YmdDate.toSimpleString selectedDate) editingHabitDataDictDict
                                         ?> Dict.empty
+
+                                renderHabit habit =
+                                    renderHabitBox
+                                        selectedDate
+                                        habitData
+                                        editingHabitDataDict
+                                        (OnHistoryViewerHabitDataInput selectedDate)
+                                        SetHabitData
+                                        habit
                             in
                             div
                                 []
                                 [ span [ class "selected-date-title" ] [ text <| YmdDate.prettyPrint selectedDate ]
                                 , span [ class "change-date", onClick OnHistoryViewerChangeDate ] [ text "change date" ]
-                                , div [ class "habit-list good-habits" ] <|
-                                    List.map
-                                        (renderHabitBox
-                                            selectedDate
-                                            habitData
-                                            editingHabitDataDict
-                                            (OnHistoryViewerHabitDataInput selectedDate)
-                                            SetHabitData
-                                        )
-                                        goodHabits
-                                , div [ class "habit-list bad-habits" ] <|
-                                    List.map
-                                        (renderHabitBox
-                                            selectedDate
-                                            habitData
-                                            editingHabitDataDict
-                                            (OnHistoryViewerHabitDataInput selectedDate)
-                                            SetHabitData
-                                        )
-                                        badHabits
+                                , div [ class "habit-list good-habits" ] <| List.map renderHabit goodHabits
+                                , div [ class "habit-list bad-habits" ] <| List.map renderHabit badHabits
                                 ]
                 ]
 
@@ -383,7 +374,11 @@ dropdownIcon openView msg =
         ]
 
 
-{-| TODO
+{-| Renders a habit box with the habit data loaded for that particular date.
+
+Requires 2 event handlers, 1 for handling when data is input into the habit box and 1 for when the user wants to
+update the habit data.
+
 -}
 renderHabitBox :
     YmdDate.YmdDate
