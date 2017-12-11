@@ -141,6 +141,38 @@ initAddHabitData =
     }
 
 
+{-| Returns the habits split by good/bad: (good habits, bad habits).
+-}
+splitHabits : List Habit -> ( List Habit, List Habit )
+splitHabits habits =
+    let
+        goodHabits =
+            List.filter
+                (\habit ->
+                    case habit of
+                        GoodHabit goodHabitRecord ->
+                            True
+
+                        _ ->
+                            False
+                )
+                habits
+
+        badHabits =
+            List.filter
+                (\habit ->
+                    case habit of
+                        BadHabit badHabitRecord ->
+                            True
+
+                        _ ->
+                            False
+                )
+                habits
+    in
+    ( goodHabits, badHabits )
+
+
 {-| Retrieve fields that exist on both good and bad habits.
 -}
 getCommonFields :

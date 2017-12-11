@@ -10,7 +10,8 @@ import Time
 
 
 type Msg
-    = OnLocationChange Navigation.Location
+    = NoOp
+    | OnLocationChange Navigation.Location
     | TickMinute Time.Time
     | OnGetHabitsAndHabitDataFailure ApiError
     | OnGetHabitsAndHabitDataSuccess Api.HabitsAndHabitData
@@ -40,3 +41,11 @@ type Msg
     | SetHabitData YmdDate.YmdDate String (Maybe Int)
     | OnSetHabitDataFailure ApiError
     | OnSetHabitDataSuccess HabitData.HabitData
+    | OnToggleHistoryViewer
+    | OnToggleTodayViewer
+    | OnHistoryViewerDateInput String
+    | OnHistoryViewerSelectYesterday
+    | OnHistoryViewerSelectBeforeYesterday
+    | OnHistoryViewerSelectDateInput
+    | OnHistoryViewerChangeDate
+    | OnHistoryViewerHabitDataInput YmdDate.YmdDate String String

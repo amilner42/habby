@@ -1,7 +1,8 @@
 module Models.YmdDate exposing (..)
 
 import Date
-import Date.Extra
+import Date.Extra as Date
+import Date.Extra.Facts exposing (monthFromMonthNumber)
 import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (decode, hardcoded, optional, required)
 
@@ -69,9 +70,53 @@ prettyPrint ymd =
     prettyMonth ymd ++ " " ++ prettyDay ymd ++ ", " ++ toString ymd.year
 
 
+{-| Add days to a date to get a new date that many days away, you can add negative days to go back in time.
+-}
+addDays : Int -> YmdDate -> YmdDate
+addDays dayDelta ymd =
+    Date.fromCalendarDate ymd.year (monthFromMonthNumber ymd.month) ymd.day
+        |> Date.add Date.Day dayDelta
+        |> fromDate
+
+
 fromDate : Date.Date -> YmdDate
 fromDate date =
-    { year = Date.year date, month = Date.Extra.monthNumber date, day = Date.day date }
+    { year = Date.year date, month = Date.monthNumber date, day = Date.day date }
+
+
+{-| From format "dd/mm/yy" where it's not required that dd or mm be 2 characters.
+
+@refer toSimpleString
+
+-}
+fromSimpleString : String -> Maybe YmdDate
+fromSimpleString date =
+    String.split "/" date
+        |> (\dateComponents ->
+                case dateComponents of
+                    [ day, monthNumber, shortenedYear ] ->
+                        case ( String.toInt day, String.toInt monthNumber, String.toInt <| "20" ++ shortenedYear ) of
+                            ( Ok day, Ok monthNumber, Ok year ) ->
+                                Date.fromCalendarDate year (monthFromMonthNumber monthNumber) day
+                                    |> fromDate
+                                    |> Just
+
+                            _ ->
+                                Nothing
+
+                    _ ->
+                        Nothing
+           )
+
+
+{-| To format "dd/mm/yy", where dd and mm can be 1-char, they are not zero-padded.
+
+@refer fromSimpleString
+
+-}
+toSimpleString : YmdDate -> String
+toSimpleString { year, month, day } =
+    Basics.toString day ++ "/" ++ Basics.toString month ++ "/" ++ (String.dropLeft 2 <| Basics.toString year)
 
 
 decodeYmdDate : Decode.Decoder YmdDate

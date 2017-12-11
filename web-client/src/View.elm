@@ -27,6 +27,14 @@ view model =
             model.allHabitData
             model.addHabit
             model.editingTodayHabitAmount
+            model.openTodayViewer
+        , renderHistoryViewerPanel
+            model.openHistoryViewer
+            model.historyViewerDateInput
+            model.historyViewerSelectedDate
+            model.allHabits
+            model.allHabitData
+            model.editingHistoryHabitAmount
         ]
 
 
@@ -36,102 +44,28 @@ renderTodayPanel :
     -> RemoteData.RemoteData ApiError.ApiError (List HabitData.HabitData)
     -> Habit.AddHabitInputData
     -> Dict.Dict String Int
+    -> Bool
     -> Html Msg
-renderTodayPanel ymd rdHabits rdHabitData addHabit editingHabitDataDict =
+renderTodayPanel ymd rdHabits rdHabitData addHabit editingHabitDataDict openView =
     let
         createHabitData =
             Habit.extractCreateHabit addHabit
     in
     div
         [ class "today-panel" ]
-        [ div [ class "today-panel-title" ] [ text "Todays Progress" ]
+        [ div [ class "today-panel-title", onClick OnToggleTodayViewer ] [ text "Todays Progress" ]
+        , dropdownIcon openView NoOp
         , div [ class "today-panel-date" ] [ text <| YmdDate.prettyPrint ymd ]
         , case ( rdHabits, rdHabitData ) of
             ( RemoteData.Success habits, RemoteData.Success habitData ) ->
                 let
-                    goodHabits =
-                        List.filterMap
-                            (\habit ->
-                                case habit of
-                                    Habit.GoodHabit goodHabitRecord ->
-                                        Just goodHabitRecord
+                    ( goodHabits, badHabits ) =
+                        Habit.splitHabits habits
 
-                                    _ ->
-                                        Nothing
-                            )
-                            habits
-
-                    badHabits =
-                        List.filterMap
-                            (\habit ->
-                                case habit of
-                                    Habit.BadHabit badHabitRecord ->
-                                        Just badHabitRecord
-
-                                    _ ->
-                                        Nothing
-                            )
-                            habits
-
-                    renderHabit habitRecord =
-                        let
-                            relevantHabitData =
-                                List.filter (.habitId >> (==) habitRecord.id) habitData
-
-                            habitDataForToday =
-                                List.filter (.date >> (==) ymd) relevantHabitData
-                                    |> List.head
-                                    |> (\habitDatum ->
-                                            case habitDatum of
-                                                Nothing ->
-                                                    0
-
-                                                Just { amount } ->
-                                                    amount
-                                       )
-
-                            editingHabitData =
-                                Dict.get habitRecord.id editingHabitDataDict
-                        in
-                        div
-                            [ class "habit" ]
-                            [ div [ class "habit-name" ] [ text <| habitRecord.name ]
-                            , div
-                                [ classList
-                                    [ ( "habit-amount-complete", True )
-                                    , ( "editing", Maybe.isJust <| editingHabitData )
-                                    ]
-                                ]
-                                [ input
-                                    [ placeholder <|
-                                        toString habitDataForToday
-                                            ++ " "
-                                            ++ (if habitDataForToday == 1 then
-                                                    habitRecord.unitNameSingular
-                                                else
-                                                    habitRecord.unitNamePlural
-                                               )
-                                            ++ " so far today..."
-                                    , onInput <| OnHabitDataInput habitRecord.id
-                                    , Util.onKeydown
-                                        (\key ->
-                                            if key == KK.Enter then
-                                                Just <| SetHabitData ymd habitRecord.id editingHabitData
-                                            else
-                                                Nothing
-                                        )
-                                    , value (editingHabitData ||> toString ?> "")
-                                    ]
-                                    []
-                                , i
-                                    [ classList [ ( "material-icons", True ) ]
-                                    , onClick <| SetHabitData ymd habitRecord.id editingHabitData
-                                    ]
-                                    [ text "check_box" ]
-                                ]
-                            ]
+                    renderHabit habit =
+                        renderHabitBox ymd habitData editingHabitDataDict OnHabitDataInput SetHabitData habit
                 in
-                div []
+                div [ classList [ ( "display-none", not openView ) ] ]
                     [ div
                         [ class "habit-list good-habits" ]
                         (List.map renderHabit goodHabits)
@@ -162,7 +96,7 @@ renderTodayPanel ymd rdHabits rdHabitData addHabit editingHabitDataDict =
 
             _ ->
                 text "Loading..."
-        , hr [ classList [ ( "add-habit-line-breaker", True ), ( "visibility-hidden", not addHabit.openView ) ] ] []
+        , hr [ classList [ ( "add-habit-line-breaker", True ), ( "visibility-hidden height-0", not addHabit.openView ) ] ] []
         , div
             [ classList [ ( "add-habit-input-form", True ), ( "display-none", not addHabit.openView ) ] ]
             [ div
@@ -343,5 +277,170 @@ renderTodayPanel ymd rdHabits rdHabitData addHabit editingHabitDataDict =
                         , onClick <| AddHabit createHabitData
                         ]
                         [ text "Create Habit" ]
+            ]
+        ]
+
+
+renderHistoryViewerPanel :
+    Bool
+    -> String
+    -> Maybe YmdDate.YmdDate
+    -> RemoteData.RemoteData ApiError.ApiError (List Habit.Habit)
+    -> RemoteData.RemoteData ApiError.ApiError (List HabitData.HabitData)
+    -> Dict.Dict String (Dict.Dict String Int)
+    -> Html Msg
+renderHistoryViewerPanel openView dateInput selectedDate rdHabits rdHabitData editingHabitDataDictDict =
+    case ( rdHabits, rdHabitData ) of
+        ( RemoteData.Success habits, RemoteData.Success habitData ) ->
+            div
+                [ class "history-viewer-panel" ]
+                [ div [ class "history-viewer-panel-title", onClick OnToggleHistoryViewer ] [ text "Browse and Edit History" ]
+                , dropdownIcon openView NoOp
+                , if not openView then
+                    Util.hiddenDiv
+                  else
+                    case selectedDate of
+                        Nothing ->
+                            div
+                                [ classList [ ( "date-entry", True ), ( "display-none", not openView ) ] ]
+                                [ span [ class "select-yesterday", onClick OnHistoryViewerSelectYesterday ] [ text "yesterday" ]
+                                , span
+                                    [ class "before-yesterday", onClick OnHistoryViewerSelectBeforeYesterday ]
+                                    [ text "before yesterday" ]
+                                , span [ class "separating-text" ] [ text "or exact date" ]
+                                , input
+                                    [ placeholder "dd/mm/yy"
+                                    , onInput OnHistoryViewerDateInput
+                                    , value dateInput
+                                    , Util.onKeydown
+                                        (\key ->
+                                            if key == KK.Enter then
+                                                Just OnHistoryViewerSelectDateInput
+                                            else
+                                                Nothing
+                                        )
+                                    ]
+                                    []
+                                ]
+
+                        Just selectedDate ->
+                            let
+                                ( goodHabits, badHabits ) =
+                                    Habit.splitHabits habits
+
+                                editingHabitDataDict =
+                                    Dict.get (YmdDate.toSimpleString selectedDate) editingHabitDataDictDict
+                                        ?> Dict.empty
+
+                                renderHabit habit =
+                                    renderHabitBox
+                                        selectedDate
+                                        habitData
+                                        editingHabitDataDict
+                                        (OnHistoryViewerHabitDataInput selectedDate)
+                                        SetHabitData
+                                        habit
+                            in
+                            div
+                                []
+                                [ span [ class "selected-date-title" ] [ text <| YmdDate.prettyPrint selectedDate ]
+                                , span [ class "change-date", onClick OnHistoryViewerChangeDate ] [ text "change date" ]
+                                , div [ class "habit-list good-habits" ] <| List.map renderHabit goodHabits
+                                , div [ class "habit-list bad-habits" ] <| List.map renderHabit badHabits
+                                ]
+                ]
+
+        ( RemoteData.Failure apiError, _ ) ->
+            text "Failure..."
+
+        ( _, RemoteData.Failure apiError ) ->
+            text "Failure..."
+
+        _ ->
+            text "Loading..."
+
+
+dropdownIcon : Bool -> msg -> Html msg
+dropdownIcon openView msg =
+    i
+        [ class "material-icons"
+        , onClick msg
+        ]
+        [ text <|
+            if openView then
+                "arrow_drop_down"
+            else
+                "arrow_drop_up"
+        ]
+
+
+{-| Renders a habit box with the habit data loaded for that particular date.
+
+Requires 2 event handlers, 1 for handling when data is input into the habit box and 1 for when the user wants to
+update the habit data.
+
+-}
+renderHabitBox :
+    YmdDate.YmdDate
+    -> List HabitData.HabitData
+    -> Dict.Dict String Int
+    -> (String -> String -> Msg)
+    -> (YmdDate.YmdDate -> String -> Maybe Int -> Msg)
+    -> Habit.Habit
+    -> Html Msg
+renderHabitBox ymd habitData editingHabitDataDict onHabitDataInput setHabitData habit =
+    let
+        habitRecord =
+            Habit.getCommonFields habit
+
+        habitDatum =
+            List.filter (\{ habitId, date } -> habitId == habitRecord.id && date == ymd) habitData
+                |> List.head
+                |> (\habitDatum ->
+                        case habitDatum of
+                            Nothing ->
+                                0
+
+                            Just { amount } ->
+                                amount
+                   )
+
+        editingHabitData =
+            Dict.get habitRecord.id editingHabitDataDict
+    in
+    div
+        [ class "habit" ]
+        [ div [ class "habit-name" ] [ text habitRecord.name ]
+        , div
+            [ classList
+                [ ( "habit-amount-complete", True )
+                , ( "editing", Maybe.isJust <| editingHabitData )
+                ]
+            ]
+            [ input
+                [ placeholder <|
+                    toString habitDatum
+                        ++ " "
+                        ++ (if habitDatum == 1 then
+                                habitRecord.unitNameSingular
+                            else
+                                habitRecord.unitNamePlural
+                           )
+                , onInput <| onHabitDataInput habitRecord.id
+                , Util.onKeydown
+                    (\key ->
+                        if key == KK.Enter then
+                            Just <| setHabitData ymd habitRecord.id editingHabitData
+                        else
+                            Nothing
+                    )
+                , value (editingHabitData ||> toString ?> "")
+                ]
+                []
+            , i
+                [ classList [ ( "material-icons", True ) ]
+                , onClick <| setHabitData ymd habitRecord.id editingHabitData
+                ]
+                [ text "check_box" ]
             ]
         ]

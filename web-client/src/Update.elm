@@ -2,6 +2,7 @@ module Update exposing (..)
 
 import Api
 import Date
+import DefaultServices.Infix exposing (..)
 import DefaultServices.Util as Util
 import Dict
 import Model exposing (Model)
@@ -18,6 +19,9 @@ update msg model =
             { model | addHabit = updater model.addHabit }
     in
     case msg of
+        NoOp ->
+            ( model, Cmd.none )
+
         OnLocationChange location ->
             -- TODO
             ( model, Cmd.none )
@@ -181,6 +185,81 @@ update msg model =
                         model.allHabitData
                 , editingTodayHabitAmount =
                     Dict.update updatedHabitDatum.habitId (always Nothing) model.editingTodayHabitAmount
+                , editingHistoryHabitAmount =
+                    Dict.update
+                        (YmdDate.toSimpleString updatedHabitDatum.date)
+                        (Maybe.map (Dict.update updatedHabitDatum.habitId (always Nothing)))
+                        model.editingHistoryHabitAmount
+              }
+            , Cmd.none
+            )
+
+        OnToggleHistoryViewer ->
+            ( { model | openHistoryViewer = not model.openHistoryViewer }
+            , Cmd.none
+            )
+
+        OnToggleTodayViewer ->
+            ( { model | openTodayViewer = not model.openTodayViewer }, Cmd.none )
+
+        OnHistoryViewerDateInput newDateInput ->
+            ( { model
+                | historyViewerDateInput =
+                    newDateInput
+                        |> String.filter
+                            (\char -> List.member char [ '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '/' ])
+              }
+            , Cmd.none
+            )
+
+        OnHistoryViewerSelectYesterday ->
+            let
+                yesterday =
+                    YmdDate.addDays -1 model.ymd
+            in
+            ( { model | historyViewerSelectedDate = Just yesterday }, Cmd.none )
+
+        OnHistoryViewerSelectBeforeYesterday ->
+            let
+                beforeYesterday =
+                    YmdDate.addDays -2 model.ymd
+            in
+            ( { model | historyViewerSelectedDate = Just beforeYesterday }
+            , Cmd.none
+            )
+
+        OnHistoryViewerSelectDateInput ->
+            model.historyViewerDateInput
+                |> YmdDate.fromSimpleString
+                ||> (\ymd ->
+                        ( { model | historyViewerSelectedDate = Just ymd }
+                        , Cmd.none
+                        )
+                    )
+                ?> ( model, Cmd.none )
+
+        OnHistoryViewerChangeDate ->
+            ( { model | historyViewerSelectedDate = Nothing }, Cmd.none )
+
+        OnHistoryViewerHabitDataInput forDate habitId newInput ->
+            let
+                editingHabitDataDict =
+                    model.editingHistoryHabitAmount
+                        |> Dict.get (YmdDate.toSimpleString forDate)
+                        ?> Dict.empty
+
+                newAmount =
+                    extractInt newInput (Dict.get habitId editingHabitDataDict)
+
+                updatedEditingHabitDataDict =
+                    editingHabitDataDict |> Dict.update habitId (always newAmount)
+            in
+            ( { model
+                | editingHistoryHabitAmount =
+                    model.editingHistoryHabitAmount
+                        |> Dict.update
+                            (YmdDate.toSimpleString forDate)
+                            (always <| Just updatedEditingHabitDataDict)
               }
             , Cmd.none
             )

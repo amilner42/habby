@@ -17,9 +17,14 @@ init { apiBaseUrl, currentTime } location =
     ( { ymd = currentTime |> Date.fromTime |> YmdDate.fromDate
       , apiBaseUrl = apiBaseUrl
       , editingTodayHabitAmount = Dict.empty
+      , editingHistoryHabitAmount = Dict.empty
       , allHabitData = RemoteData.Loading
       , allHabits = RemoteData.Loading
       , addHabit = Habit.initAddHabitData
+      , openTodayViewer = True
+      , openHistoryViewer = False
+      , historyViewerDateInput = ""
+      , historyViewerSelectedDate = Nothing
       }
     , Api.queryHabitsAndHabitData apiBaseUrl OnGetHabitsAndHabitDataFailure OnGetHabitsAndHabitDataSuccess
     )
