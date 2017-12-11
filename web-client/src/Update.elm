@@ -191,6 +191,11 @@ update msg model =
                         model.allHabitData
                 , editingTodayHabitAmount =
                     Dict.update updatedHabitDatum.habitId (always Nothing) model.editingTodayHabitAmount
+                , editingHistoryHabitAmount =
+                    Dict.update
+                        (YmdDate.toSimpleString updatedHabitDatum.date)
+                        (Maybe.map (Dict.update updatedHabitDatum.habitId (always Nothing)))
+                        model.editingHistoryHabitAmount
               }
             , Cmd.none
             )
@@ -231,13 +236,39 @@ update msg model =
 
         OnHistoryViewerSelectDateInput ->
             model.historyViewer.dateInput
-                |> YmdDate.fromString
+                |> YmdDate.fromSimpleString
                 ||> (\ymd ->
                         ( updateHistoryViewer (\historyViewer -> { historyViewer | selectedDate = Just ymd })
                         , Cmd.none
                         )
                     )
                 ?> ( model, Cmd.none )
+
+        OnHistoryViewerChangeDate ->
+            ( updateHistoryViewer (\historyViewer -> { historyViewer | selectedDate = Nothing }), Cmd.none )
+
+        OnHistoryViewerHabitDataInput forDate habitId newInput ->
+            let
+                editingHabitDataDict =
+                    model.editingHistoryHabitAmount
+                        |> Dict.get (YmdDate.toSimpleString forDate)
+                        ?> Dict.empty
+
+                newAmount =
+                    extractInt newInput (Dict.get habitId editingHabitDataDict)
+
+                updatedEditingHabitDataDict =
+                    Dict.update habitId (always newAmount) editingHabitDataDict
+            in
+            ( { model
+                | editingHistoryHabitAmount =
+                    Dict.update
+                        (YmdDate.toSimpleString forDate)
+                        (always <| Just updatedEditingHabitDataDict)
+                        model.editingHistoryHabitAmount
+              }
+            , Cmd.none
+            )
 
 
 extractInt : String -> Maybe Int -> Maybe Int

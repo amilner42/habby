@@ -17,6 +17,7 @@ init { apiBaseUrl, currentTime } location =
     ( { ymd = currentTime |> Date.fromTime |> YmdDate.fromDate
       , apiBaseUrl = apiBaseUrl
       , editingTodayHabitAmount = Dict.empty
+      , editingHistoryHabitAmount = Dict.empty
       , allHabitData = RemoteData.Loading
       , allHabits = RemoteData.Loading
       , addHabit = Habit.initAddHabitData

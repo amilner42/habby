@@ -47,3 +47,5 @@ type Msg
     | OnHistoryViewerSelectYesterday
     | OnHistoryViewerSelectBeforeYesterday
     | OnHistoryViewerSelectDateInput
+    | OnHistoryViewerChangeDate
+    | OnHistoryViewerHabitDataInput YmdDate.YmdDate String String

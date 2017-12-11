@@ -84,10 +84,13 @@ fromDate date =
     { year = Date.year date, month = Date.monthNumber date, day = Date.day date }
 
 
-{-| TODO DOC
+{-| From format "dd/mm/yy" where it's not required that dd or mm be 2 characters.
+
+@refer toSimpleString
+
 -}
-fromString : String -> Maybe YmdDate
-fromString date =
+fromSimpleString : String -> Maybe YmdDate
+fromSimpleString date =
     String.split "/" date
         |> (\dateComponents ->
                 case dateComponents of
@@ -104,6 +107,16 @@ fromString date =
                     _ ->
                         Nothing
            )
+
+
+{-| To format "dd/mm/yy", where dd and mm can be 1-char, they are not zero-padded.
+
+@refer fromSimpleString
+
+-}
+toSimpleString : YmdDate -> String
+toSimpleString { year, month, day } =
+    Basics.toString day ++ "/" ++ Basics.toString month ++ "/" ++ (String.dropLeft 2 <| Basics.toString year)
 
 
 decodeYmdDate : Decode.Decoder YmdDate
