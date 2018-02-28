@@ -13,6 +13,20 @@
   [{:keys [year month day]}]
   (t/date-time year month day))
 
+(defn ratio-to-percentage
+  "Input: <x> and <y> where the ratio is x/y
+  Output: x/y as an integer percentage"
+  [x y]
+  (int (* 100 (float (/ x y)))))
+
+(defn are-datetimes-same-date
+  "Input: two clj-time.core/date-time objects
+  Output: true iff they are on the same date (i.e. ignore time)"
+  [dt1 dt2]
+  (and (= (t/year dt1) (t/year dt2))
+       (= (t/month dt1) (t/month dt2))
+       (= (t/day dt1) (t/day dt2))))
+
 (defn value-map
   "Maps a function on the values of a map, returns a map with the updated values."
   [m f]

@@ -67,8 +67,8 @@
                             :args {:after_date {:type :date_data}, :for_habit {:type ID}}
                             :resolve :query/get-habit-data}
 
-           :get_frequency_stats {:type Int
-                                 :description "TODO - Describe this endpoint."
+           :get_frequency_stats {:type (non-null (list (non-null Int)))
+                                 :description "Get a success percentage for each habit requested."
                                  :args {:habit_ids {:type (list (non-null ID))}}
                                  :resolve :query/get-frequency-stats}}
 
