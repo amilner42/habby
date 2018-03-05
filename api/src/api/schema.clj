@@ -102,7 +102,7 @@
 (defn resolve-query-get-frequency-stats
   "@refer `db/get-frequency-stats`."
   [context {:keys [habit_ids]} value]
-  (db/get-frequency-stats habit_ids))
+  (map tag-type (db/get-frequency-stats habit_ids)))
 
 (defn resolver-map
   []

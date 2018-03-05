@@ -13,12 +13,6 @@
   [{:keys [year month day]}]
   (t/date-time year month day))
 
-(defn ratio-to-percentage
-  "Input: <x> and <y> where the ratio is x/y
-  Output: x/y as an integer percentage"
-  [x y]
-  (int (* 100 (float (/ x y)))))
-
 (defn are-datetimes-same-date
   "Input: two clj-time.core/date-time objects
   Output: true iff they are on the same date (i.e. ignore time)"

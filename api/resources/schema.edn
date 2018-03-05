@@ -56,7 +56,14 @@
                                        :habit_id {:type (non-null ID)}
                                        :date {:type (non-null :date)
                                               :resolve :query/date-to-y-m-d-format}
-                                       :amount {:type (non-null Int)}}}}
+                                       :amount {:type (non-null Int)}}}
+
+           :habit_frequency_stats {:description "Statistics for how the user has performed with this habit."
+                                   :fields {:habit_id {:type (non-null ID)}
+                                            :total_fragments {:type Int}
+                                            :successful_fragments {:type Int}
+                                            :total_done {:type Int}
+                                            :fragment_streak {:type Int}}}}
 
  :queries {:get_habits {:type (non-null (list (non-null :habit)))
                         :description "Get all habits."
@@ -67,7 +74,7 @@
                             :args {:after_date {:type :date_data}, :for_habit {:type ID}}
                             :resolve :query/get-habit-data}
 
-           :get_frequency_stats {:type (non-null (list (non-null Int)))
+           :get_frequency_stats {:type (non-null (list :habit_frequency_stats))  ; an element can be null if a habit_id is invalid
                                  :description "Get a success percentage for each habit requested."
                                  :args {:habit_ids {:type (list (non-null ID))}}
                                  :resolve :query/get-frequency-stats}}
