@@ -74,7 +74,7 @@
                             :args {:after_date {:type :date_data}, :for_habit {:type ID}}
                             :resolve :query/get-habit-data}
 
-           :get_frequency_stats {:type (non-null (list :habit_frequency_stats))  ; an element can be null if a habit_id is invalid
+           :get_frequency_stats {:type (non-null (list :habit_frequency_stats))  ; element will be nil if no habit data exists yet
                                  :description "Get a success percentage for each habit requested."
                                  :args {:habit_ids {:type (list (non-null ID))}}
                                  :resolve :query/get-frequency-stats}}
