@@ -244,7 +244,7 @@
 (defn get-frequency-stats
   "Input: a list of habit IDs
   Output: A list of habit_frequency_stats (one for each habit ID provided)"
-  [habit_ids compress]
+  [habit_ids]
   (map (fn [habit] (let [habit_type (:type_name habit)
                          freq (if (= habit_type "good_habit")
                                 (:target_frequency habit)
