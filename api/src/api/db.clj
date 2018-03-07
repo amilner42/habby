@@ -17,12 +17,12 @@
 
 (defonce connection (mg/connect))
 
-(defonce db (mg/get-db connection "habby"))
+(defonce habby_db (mg/get-db connection "habby"))
 
 (defn add-habit
   "Add a habit to the database and returns that habit including the ID.
   Will create an ID if the habit passed doesn't have an ID. Will set `suspended` to false."
-  [habit]
+  [{:keys [db habit] :or {db habby_db}}]
   (let [ final_habit (as-> habit habit
                           (if (contains? habit :_id) habit (assoc habit :_id (ObjectId.)))
                           (assoc habit :suspended false))]
@@ -30,22 +30,22 @@
 
 (defn delete-habit
   "Deletes a habit from the database, returns true if the habit was deleted."
-  [habit_id]
+  [{:keys [db habit_id] :or {db habby_db}}]
   (= 1 (.getN (mc/remove-by-id db (:habits collection-names) (ObjectId. habit_id)))))
 
 (defn set-suspend-habit
   "Set the `suspended` for a habit, returns true if the update was performed on the habit."
-  [habit_id suspended]
+  [{:keys [db habit_id suspended] :or {db habby_db}}]
   (= 1 (.getN (mc/update db (:habits collection-names) {:_id (ObjectId. habit_id)} {$set {:suspended suspended}}))))
 
 (defn get-habits
   "Retrieves all habits sync from the database as clojure maps."
-  []
+  [{:keys [db] :or {db habby_db}}]
   (mc/find-maps db (:habits collection-names)))
 
 (defn get-habit-data
   "Gets habit data from the db, optionally after a specific date or for a specific habit."
-  [after_date for_habit]
+  [{:keys [db after_date for_habit] :or {db habby_db}}]
   (as-> {} find-query-filter
         (if (nil? for_habit) find-query-filter (assoc find-query-filter :habit_id (ObjectId. for_habit)))
         (if (nil? after_date) find-query-filter (assoc find-query-filter :date {$gte (date-from-y-m-d-map after_date)}))
@@ -53,21 +53,20 @@
 
 (defn set-habit-data
   "Set the `amount` for a habit on a specfic day."
-  [habit_id amount date-time]
-  (mc/find-and-modify
-             db
-             (:habit_data collection-names)
-             {:date date-time, :habit_id (ObjectId. habit_id)}
-             {$set {:amount amount}
-              $setOnInsert {:date date-time, :habit_id (ObjectId. habit_id), :_id (ObjectId.)}}
-             {:upsert true, :return-new true}))
+  [{:keys [db habit_id amount date-time] :or {db habby_db}}]
+  (mc/find-and-modify db
+                      (:habit_data collection-names)
+                      {:date date-time, :habit_id (ObjectId. habit_id)}
+                      {$set {:amount amount}
+                       $setOnInsert {:date date-time, :habit_id (ObjectId. habit_id), :_id (ObjectId.)}}
+                      {:upsert true, :return-new true}))
 
 (defn get-frequency-stats
   "Input: a list of habit IDs
   Output: A list of habit_frequency_stats (one for each habit ID provided)"
-  [habit_ids]
+  [{:keys [db habit_ids] :or {db habby_db}}]
   (map (fn [habit]
-         (let [sorted_habit_data (sort-by :date (get-habit-data nil (str (:_id habit))))]
+         (let [sorted_habit_data (sort-by :date (get-habit-data {:db db :for_habit (str (:_id habit))}))]
            (if (empty? sorted_habit_data)
              nil  ; Return nil if no habit data exists for the habit being checked
              (let [habit_type (:type_name habit)
@@ -145,7 +144,7 @@
                                                    "total_week_frequency" 7
                                                    "every_x_days_frequency" (:days freq)))))))))))))
        (if (nil? habit_ids)
-         (get-habits)
+         (get-habits {:db db})
          (map (fn [habit_id] (mc/find-map-by-id db
                                                 (:habits collection-names)
                                                 (ObjectId. habit_id)))
