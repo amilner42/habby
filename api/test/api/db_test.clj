@@ -20,7 +20,21 @@
   [habit]
   (add-habit {:db test_db :habit habit}))
 
-(deftest test-add-habit
+(defn compare_clojure_habit_with_db_habit
+  "Returns true iff all fields of `clojure_habit` have the same value in `db_habit`.
+  Checks Keyword values in `clojure_habit` against the Keyword-ed version of the value in `db_habit`
+  since Keywords are converted to Strings by Monger.
+  Note that this function doesn't care if `db_habit` has a field that `clojure_habit` doesn't have."
+  [clojure_habit db_habit]
+  (every? (fn [key]
+           (let [clj_val (key clojure_habit)
+                 db_val (key db_habit)]
+             (if (= (type clj_val) clojure.lang.Keyword)
+               (= clj_val (keyword db_val))
+               (= clj_val db_val))))
+          (keys clojure_habit)))
+
+(deftest add-habit-test
   (is (= 0 (count (get-habits {:db test_db}))))
   (let [habit_1 (assoc default_habit
                      :type_name "good_habit"
@@ -29,23 +43,23 @@
         _ (add-habit-to-test-db habit_1)
         all_habits (get-habits {:db test_db})]
     (is (= 1 (count all_habits)))
-    (is (some #(nil? (first (diff habit_1 %))) all_habits) "Habit 1's inputted fields weren't set properly")
+    (is (some #(compare_clojure_habit_with_db_habit habit_1 %) all_habits) "Habit 1 not added properly")
     (is (every? #(= false (:suspended %)) all_habits) ":suspended field not set to false")
-    (is (every? #(not (nil? (:_id %))) all_habits) ":_id field not set"))
-  (let [habit_2 (assoc default_habit
-                       :type_name "bad_habit"
-                       :threshold_frequency {:type_name "every_x_days_frequency"
-                                             :days 4
-                                             :times 3})
-        _ (add-habit-to-test-db habit_2)
-        all_habits (get-habits {:db test_db})]
-    (is (= 2 (count all_habits)))
-    (is (some #(nil? (first (diff habit_1 %))) all_habits) "Habit 1's inputted fields weren't set properly")
-    (is (some #(nil? (first (diff habit_2 %))) all_habits) "Habit 2's inputted fields weren't set properly")
-    (is (every? #(= false (:suspended %)) all_habits) ":suspended field not set to false")
-    (is (every? #(not (nil? (:_id %))) all_habits) ":_id field not set")))
+    (is (every? #(not (nil? (:_id %))) all_habits) ":_id field not set")
+    (let [habit_2 (assoc default_habit
+                         :type_name "bad_habit"
+                         :threshold_frequency {:type_name "every_x_days_frequency"
+                                               :days 4
+                                               :times 3})
+          _ (add-habit-to-test-db habit_2)
+          all_habits (get-habits {:db test_db})]
+      (is (= 2 (count all_habits)))
+      (is (some #(compare_clojure_habit_with_db_habit habit_1 %) all_habits) "Habit 1 not added properly")
+      (is (some #(compare_clojure_habit_with_db_habit habit_2 %) all_habits) "Habit 2 not added properly")
+      (is (every? #(= false (:suspended %)) all_habits) ":suspended field not set to false")
+      (is (every? #(not (nil? (:_id %))) all_habits) ":_id field not set"))))
 
-(deftest test-get-specific-day-of-week-target-frequency-stats
+(deftest get-specific-day-of-week-target-frequency-stats-test
   (is (= (count (get-habits {:db test_db})) 0))
   (let [habit_name "habit 1"
         habit_desc "Good habit, specific day of week freq"
