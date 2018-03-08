@@ -35,17 +35,19 @@
           (keys clojure_habit)))
 
 (deftest add-habit-test
-  (is (= 0 (count (get-habits {:db test_db}))))
+  (testing "No habits"
+    (is (= 0 (count (get-habits {:db test_db})))))
   (let [habit_1 (assoc default_habit
-                     :type_name "good_habit"
-                     :target_frequency {:type_name "total_week_frequency"
-                                        :week 6})
+                       :type_name "good_habit"
+                       :target_frequency {:type_name "total_week_frequency"
+                                          :week 6})
         _ (add-habit-to-test-db habit_1)
         all_habits (get-habits {:db test_db})]
-    (is (= 1 (count all_habits)))
-    (is (some #(compare_clojure_habit_with_db_habit habit_1 %) all_habits) "Habit 1 not added properly")
-    (is (every? #(= false (:suspended %)) all_habits) ":suspended field not set to false")
-    (is (every? #(not (nil? (:_id %))) all_habits) ":_id field not set")
+    (testing "One habit"
+      (is (= 1 (count all_habits)))
+      (is (some #(compare_clojure_habit_with_db_habit habit_1 %) all_habits) "Habit 1 not added properly")
+      (is (every? #(= false (:suspended %)) all_habits) ":suspended field not set to false")
+      (is (every? #(not (nil? (:_id %))) all_habits) ":_id field not set"))
     (let [habit_2 (assoc default_habit
                          :type_name "bad_habit"
                          :threshold_frequency {:type_name "every_x_days_frequency"
@@ -53,11 +55,12 @@
                                                :times 3})
           _ (add-habit-to-test-db habit_2)
           all_habits (get-habits {:db test_db})]
-      (is (= 2 (count all_habits)))
-      (is (some #(compare_clojure_habit_with_db_habit habit_1 %) all_habits) "Habit 1 not added properly")
-      (is (some #(compare_clojure_habit_with_db_habit habit_2 %) all_habits) "Habit 2 not added properly")
-      (is (every? #(= false (:suspended %)) all_habits) ":suspended field not set to false")
-      (is (every? #(not (nil? (:_id %))) all_habits) ":_id field not set"))))
+      (testing "Two habits"
+        (is (= 2 (count all_habits)))
+        (is (some #(compare_clojure_habit_with_db_habit habit_1 %) all_habits) "Habit 1 not added properly")
+        (is (some #(compare_clojure_habit_with_db_habit habit_2 %) all_habits) "Habit 2 not added properly")
+        (is (every? #(= false (:suspended %)) all_habits) ":suspended field not set to false")
+        (is (every? #(not (nil? (:_id %))) all_habits) ":_id field not set")))))
 
 (deftest get-specific-day-of-week-target-frequency-stats-test
   (is (= (count (get-habits {:db test_db})) 0))
