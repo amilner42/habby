@@ -6,14 +6,12 @@
             [monger.db :as mdb]
             [clj-time.core :as t]))
 
-(defonce test_conn (mg/connect))
-(defonce test_db (mg/get-db test_conn "test_db"))
-
-(def default_habit {:name "test habit"
-                    :description "test description"
-                    :unit_name_singular "test unit"
-                    :unit_name_plural "test units"
-                    :time_of_day :ANYTIME})
+; Useful variables
+(def test_conn (mg/connect))
+(def test_db (mg/get-db test_conn "test_db"))
+(def default_habit {:name "test habit" :description "test description" :unit_name_singular "test unit"
+                    :unit_name_plural "test units" :time_of_day :ANYTIME})
+(def today (t/today-at 0 0))
 
 (defn add-habit-to-test-db
   "Add a habit to the test database"
@@ -44,7 +42,7 @@
         _ (add-habit-to-test-db habit_1)
         all_habits (get-habits {:db test_db})]
     (testing "One habit"
-      (is (= 1 (count all_habits)))
+      (is (= 1 (count all_habits)) "There should be one habit in the db")
       (is (some #(compare_clojure_habit_with_db_habit habit_1 %) all_habits) "Habit 1 not added properly")
       (is (every? #(= false (:suspended %)) all_habits) ":suspended field not set to false")
       (is (every? #(not (nil? (:_id %))) all_habits) ":_id field not set"))
@@ -56,72 +54,70 @@
           _ (add-habit-to-test-db habit_2)
           all_habits (get-habits {:db test_db})]
       (testing "Two habits"
-        (is (= 2 (count all_habits)))
+        (is (= 2 (count all_habits)) "There should be two habits in the db")
         (is (some #(compare_clojure_habit_with_db_habit habit_1 %) all_habits) "Habit 1 not added properly")
         (is (some #(compare_clojure_habit_with_db_habit habit_2 %) all_habits) "Habit 2 not added properly")
         (is (every? #(= false (:suspended %)) all_habits) ":suspended field not set to false")
         (is (every? #(not (nil? (:_id %))) all_habits) ":_id field not set")))))
 
-(deftest get-specific-day-of-week-target-frequency-stats-test
-  (is (= (count (get-habits {:db test_db})) 0))
-  (let [habit_name "habit 1"
-        habit_desc "Good habit, specific day of week freq"
-        habit_type "good_habit"
-        habit_freq {:monday 1
-                    :tuesday 1
-                    :wednesday 1
-                    :thursday 1
-                    :friday 1
-                    :saturday 1
-                    :sunday 1
-                    :type_name "specific_day_of_week_frequency"}
-        habit_freq_type :target_frequency
-        _ (add-habit-to-test-db {:name habit_name
-                                 :description habit_desc
-                                 :type_name habit_type
-                                 habit_freq_type habit_freq})
-        all_habits (get-habits {:db test_db})
-        habit_from_db (first all_habits)
-        id (str (:_id habit_from_db))]
-    (is (= 1 (count all_habits)))
-    (are [value key] (= value (key habit_from_db))
-         habit_name :name
-         habit_desc :description
-         habit_freq habit_freq_type)
-    (is (not= "" id) "Habit should've been given an id")
-    (testing "Get frequency stats"
+(deftest get-frequency-stats-test
+  (testing "No habits added yet"
+    (is (= 0 (count (get-habits {:db test_db})))))
+  (testing "Good habit, specific day of week frequency"
+    (let [habit (assoc default_habit
+                       :type_name "good_habit"
+                       :target_frequency {:type_name "specific_day_of_week_frequency"
+                                          :monday 2 :tuesday 2 :wednesday 2 :thursday 2
+                                          :friday 2 :saturday 2 :sunday 2})
+          final_habit (add-habit-to-test-db habit)
+          habit_id (str (:_id final_habit))]
       (testing "with no habit data"
-        (is (= [nil] (get-frequency-stats {:db test_db}))))
+        (is (= 1 (count (get-habits {:db test_db}))) "There should only be one habit so far")
+        (is (= [nil] (get-frequency-stats {:db test_db :habit_ids [habit_id]})))
+        (is (= [nil] (get-frequency-stats {:db test_db})) "`habit_ids` should be an optional param"))
       (testing "with a successful habit record yesterday"
-        (let [_ (set-habit-data {:db test_db
-                                 :habit_id id
-                                 :amount 4
-                                 :date-time (t/minus (t/today-at 0 0) (t/days 1))})
-               stats (first (get-frequency-stats {:db test_db}))]
-            (are [value key] (= value (key stats))
-                 id :habit_id
-                 1 :total_fragments
-                 1 :successful_fragments
-                 4 :total_done
-                 1 :fragment_streak)
-            (testing "and a failure habit record the day before"
-               (let [_ (set-habit-data {:db test_db
-                                        :habit_id id
-                                        :amount 0
-                                        :date-time (t/minus (t/today-at 0 0) (t/days 2))})
-                     stats (first (get-frequency-stats {:db test_db}))]
-                  (are [value key] (= value (key stats))
-                       id :habit_id
-                       2 :total_fragments
-                       1 :successful_fragments
-                       4 :total_done
-                       1 :fragment_streak))))))))
+        (let [_ (set-habit-data {:db test_db :habit_id habit_id :amount 4
+                                 :date-time (t/minus today (t/days 1))})
+              stats (get-frequency-stats {:db test_db :habit_ids [habit_id]})]
+          (is (= stats [{:habit_id habit_id
+                         :total_fragments 1 :successful_fragments 1
+                         :total_done 4 :fragment_streak 1}])))
+        (testing "and a failure habit record the day before"
+          (let [_ (set-habit-data {:db test_db :habit_id habit_id :amount 1
+                                   :date-time (t/minus today (t/days 2))})
+                stats (get-frequency-stats {:db test_db :habit_ids [habit_id]})]
+            (is (= stats [{:habit_id habit_id
+                           :total_fragments 2 :successful_fragments 1
+                           :total_done 5 :fragment_streak 1}])))))))
+  (testing "Good habit, total week frequency"
+    (let [habit (assoc default_habit
+                       :type_name "good_habit"
+                       :target_frequency {:type_name "total_week_frequency"
+                                          :week 5})
+          final_habit (add-habit-to-test-db habit)
+          habit_id (str (:_id final_habit))]
+      (testing "with last week as a failure"
+        (let [_ (set-habit-data {:db test_db :habit_id habit_id :amount 3
+                                 ; 7 days ago was in the previous week, which has now ended
+                                 :date-time (t/minus today (t/days 7))})
+              stats (get-frequency-stats {:db test_db :habit_ids [habit_id]})]
+          (is (= stats [{:habit_id habit_id
+                         ; the only fragment that has ended (starting from the first habit data) was last week
+                         :total_fragments 1 :successful_fragments 0
+                         :total_done 3 :fragment_streak 0}])))
+        (testing "and the week before as a success"
+          (let [_ (set-habit-data {:db test_db :habit_id habit_id :amount 5
+                                   :date-time (t/minus today (t/days 14))})
+                stats (get-frequency-stats {:db test_db :habit_ids [habit_id]})]
+            (is (= stats [{:habit_id habit_id
+                           :total_fragments 2 :successful_fragments 1
+                           :total_done 8 :fragment_streak 1}]))))))))
 
-(defn each-fixture
+(defn drop-test-db-fixture
   "Drop test database before and after each test"
   [f]
   (mdb/drop-db test_db)
   (f)
   (mdb/drop-db test_db))
 
-(use-fixtures :each each-fixture)
+(use-fixtures :each drop-test-db-fixture)

@@ -83,9 +83,10 @@
                      best_fragment_streak 0
                      remaining_habit_data sorted_habit_data
                      fragment_start_date (if (= freq_type "total_week_frequency")
-                                           ; Start calendar week fragment on the Monday after the first habit record
-                                           (t/plus (:date (first sorted_habit_data))
-                                                   (t/days (- 7 (t/day-of-week (:date (first sorted_habit_data))))))
+                                           ; Start calendar week fragment on the Monday before the first habit record
+                                           (t/minus (:date (first sorted_habit_data))
+                                                    (t/days (- (t/day-of-week (:date (first sorted_habit_data)))
+                                                               1)))
                                            ; Start fragment at the date of the first habit record
                                            (:date (first sorted_habit_data)))]
                     (let
