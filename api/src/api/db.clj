@@ -70,9 +70,7 @@
            (if (empty? sorted_habit_data)
              nil  ; Return nil if no habit data exists for the habit being checked
              (let [habit_type (:type_name habit)
-                   freq (if (= habit_type "good_habit")
-                          (:target_frequency habit)
-                          (:threshold_frequency habit))
+                   freq (if (= habit_type "good_habit") (:target_frequency habit) (:threshold_frequency habit))
                    freq_type (:type_name freq)
                    compare_fn (if (= habit_type "good_habit") >= <=)]
                   (loop
@@ -98,39 +96,34 @@
                                                                             (t/days (dec (:days freq)))))
                        fragment_goal (condp = freq_type
                                        "specific_day_of_week_frequency" ((condp = (t/day-of-week fragment_start_date)
-                                                                           1 :monday
-                                                                           2 :tuesday
-                                                                           3 :wednesday
-                                                                           4 :thursday
-                                                                           5 :friday
-                                                                           6 :saturday
-                                                                           7 :sunday)
+                                                                           1 :monday 2 :tuesday 3 :wednesday 4 :thursday
+                                                                           5 :friday 6 :saturday 7 :sunday)
                                                                          freq)
                                        "total_week_frequency" (:week freq)
-                                       "every_x_days_frequency" (:times freq))]
+                                       "every_x_days_frequency" (:times freq))
+                       habit_data_partition (group-by #(if (or (are-datetimes-same-date (:date %) fragment_start_date)
+                                                               (are-datetimes-same-date (:date %) fragment_end_date)
+                                                               (and (t/after? (:date %) fragment_start_date)
+                                                                    (t/before? (:date %) fragment_end_date)))
+                                                         :fragment_data
+                                                         :other_data)
+                                                      remaining_habit_data)
+                       total_done_during_fragment (reduce #(+ %1 (:amount %2)) 0 (:fragment_data habit_data_partition))]
                       (if (or (t/after? fragment_end_date (t/today-at 0 0))
                               (t/equal? fragment_end_date (t/today-at 0 0)))
-                        ; Don't track a fragment that hasn't ended yet, return now
+                        ; We've reached the current fragment the user is on, return now.
+                        ; We don't include the current fragment in success stats but we do increase total_done.
                         {:habit_id (str (:_id habit))
                          :total_fragments total_fragments
                          :successful_fragments successful_fragments
-                         :total_done total_done
+                         :total_done (+ total_done total_done_during_fragment)
                          :current_fragment_streak current_fragment_streak
-                         :best_fragment_streak best_fragment_streak}
+                         :best_fragment_streak best_fragment_streak
+                         :current_fragment_total total_done_during_fragment
+                         :current_fragment_goal fragment_goal
+                         :current_fragment_days_left (inc (t/in-days (t/interval (t/today-at 0 0) fragment_end_date)))}
                         ; Track the current fragment
-                        (let [habit_data_partition (group-by #(if (or (are-datetimes-same-date (:date %)
-                                                                                               fragment_start_date)
-                                                                      (are-datetimes-same-date (:date %)
-                                                                                               fragment_end_date)
-                                                                      (and (t/after? (:date %) fragment_start_date)
-                                                                           (t/before? (:date %) fragment_end_date)))
-                                                                :habit_data_within_fragment
-                                                                :habit_data_outside_fragment)
-                                                             remaining_habit_data)
-                              total_done_during_fragment (reduce #(+ %1 (:amount %2))
-                                                                 0
-                                                                 (:habit_data_within_fragment habit_data_partition))
-                              fragment_is_successful (compare_fn total_done_during_fragment fragment_goal)
+                        (let [fragment_is_successful (compare_fn total_done_during_fragment fragment_goal)
                               new_current_fragment_streak (if fragment_is_successful (inc current_fragment_streak) 0)]
                           (recur (inc total_fragments)
                                  (if fragment_is_successful (inc successful_fragments) successful_fragments)
@@ -139,7 +132,7 @@
                                  (if (> new_current_fragment_streak best_fragment_streak)
                                    new_current_fragment_streak
                                    best_fragment_streak)
-                                 (:habit_data_outside_fragment habit_data_partition)
+                                 (:other_data habit_data_partition)
                                  (t/plus fragment_start_date
                                          (t/days (condp = freq_type
                                                    "specific_day_of_week_frequency" 1

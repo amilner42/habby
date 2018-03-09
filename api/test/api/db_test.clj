@@ -32,6 +32,12 @@
                (= clj_val db_val))))
           (keys clojure_habit)))
 
+(defn supermap?
+  "Returns true iff all fields of `map2` have the same value in `map1`.
+  I.e., `map1` is a supermap of `map2`. Patent pending."
+  [map1 map2]
+  (nil? (first (diff map2 map1))))
+
 (deftest add-habit-test
   (testing "No habits"
     (is (= 0 (count (get-habits {:db test_db})))))
@@ -81,14 +87,16 @@
               stats (get-frequency-stats {:db test_db :habit_ids [habit_id]})]
           (is (= stats [{:habit_id habit_id
                          :total_fragments 1 :successful_fragments 1 :total_done 4
-                         :current_fragment_streak 1 :best_fragment_streak 1}])))
+                         :current_fragment_streak 1 :best_fragment_streak 1
+                         :current_fragment_total 0 :current_fragment_goal 2 :current_fragment_days_left 1}])))
         (testing "and a failure habit record the day before"
           (let [_ (set-habit-data {:db test_db :habit_id habit_id :amount 1
                                    :date-time (t/minus today (t/days 2))})
                 stats (get-frequency-stats {:db test_db :habit_ids [habit_id]})]
             (is (= stats [{:habit_id habit_id
                            :total_fragments 2 :successful_fragments 1 :total_done 5
-                           :current_fragment_streak 1 :best_fragment_streak 1}])))))))
+                           :current_fragment_streak 1 :best_fragment_streak 1
+                           :current_fragment_total 0 :current_fragment_goal 2 :current_fragment_days_left 1}])))))))
   (testing "Good habit, total week frequency"
     (let [habit (assoc default_habit
                        :type_name "good_habit"
@@ -101,17 +109,26 @@
                                  ; 7 days ago was in the previous week, which has now ended
                                  :date-time (t/minus today (t/days 7))})
               stats (get-frequency-stats {:db test_db :habit_ids [habit_id]})]
-          (is (= stats [{:habit_id habit_id
-                         ; this week hasn't ended so we only track last week
-                         :total_fragments 1 :successful_fragments 0 :total_done 3
-                         :current_fragment_streak 0 :best_fragment_streak 0}])))
+          (is (supermap? stats [{:habit_id habit_id
+                                 ; this week hasn't ended so we only track last week
+                                 :total_fragments 1 :successful_fragments 0 :total_done 3
+                                 :current_fragment_streak 0 :best_fragment_streak 0
+                                 :current_fragment_total 0 :current_fragment_goal 5}])))
         (testing "and the week before as a success"
           (let [_ (set-habit-data {:db test_db :habit_id habit_id :amount 5
                                    :date-time (t/minus today (t/days 14))})
                 stats (get-frequency-stats {:db test_db :habit_ids [habit_id]})]
-            (is (= stats [{:habit_id habit_id
-                           :total_fragments 2 :successful_fragments 1 :total_done 8
-                           :current_fragment_streak 0 :best_fragment_streak 1}])))))))
+            (is (supermap? stats [{:habit_id habit_id
+                                   :total_fragments 2 :successful_fragments 1 :total_done 8
+                                   :current_fragment_streak 0 :best_fragment_streak 1
+                                   :current_fragment_total 0 :current_fragment_goal 5}])))
+          (testing "and today the user did 6 units"
+            (let [_ (set-habit-data {:db test_db :habit_id habit_id :amount 6 :date-time today})
+                  stats (get-frequency-stats {:db test_db :habit_ids [habit_id]})]
+              (is (supermap? stats [{:habit_id habit_id
+                                     :total_fragments 2 :successful_fragments 1 :total_done 14
+                                     :current_fragment_streak 0 :best_fragment_streak 1
+                                     :current_fragment_total 6 :current_fragment_goal 5}]))))))))
   (testing "Good habit, every x days frequency"
     (let [habit (assoc default_habit
                        :type_name "good_habit"
@@ -123,16 +140,18 @@
         (let [_ (set-habit-data {:db test_db :habit_id habit_id :amount 200
                                  :date-time (t/minus today (t/days 5))})
               stats (get-frequency-stats {:db test_db :habit_ids [habit_id]})]
-          (is (= stats [{:habit_id habit_id
-                         :total_fragments 1 :successful_fragments 1 :total_done 200
-                         :current_fragment_streak 1 :best_fragment_streak 1}])))
+          (is (supermap? stats [{:habit_id habit_id
+                                 :total_fragments 1 :successful_fragments 1 :total_done 200
+                                 :current_fragment_streak 1 :best_fragment_streak 1
+                                 :current_fragment_total 0 :current_fragment_goal 3}])))
         (testing "and three fragments ago as a failure"
           (let [_ (set-habit-data {:db test_db :habit_id habit_id :amount 2
                                    :date-time (t/minus today (t/days 15))})
                 stats (get-frequency-stats {:db test_db :habit_ids [habit_id]})]
-            (is (= stats [{:habit_id habit_id
-                           :total_fragments 3 :successful_fragments 1 :total_done 202
-                           :current_fragment_streak 1 :best_fragment_streak 1}])))))))
+            (is (supermap? stats [{:habit_id habit_id
+                                   :total_fragments 3 :successful_fragments 1 :total_done 202
+                                   :current_fragment_streak 1 :best_fragment_streak 1
+                                   :current_fragment_total 0 :current_fragment_goal 3}])))))))
   (testing "Bad habit, total week frequency"
     (let [habit (assoc default_habit
                        :type_name "bad_habit"
@@ -144,23 +163,26 @@
         (let [_ (set-habit-data {:db test_db :habit_id habit_id :amount 0
                                  :date-time (t/minus today (t/days 7))})
               stats (get-frequency-stats {:db test_db :habit_ids [habit_id]})]
-          (is (= stats [{:habit_id habit_id
-                         :total_fragments 1 :successful_fragments 1 :total_done 0
-                         :current_fragment_streak 1 :best_fragment_streak 1}])))
+          (is (supermap? stats [{:habit_id habit_id
+                                 :total_fragments 1 :successful_fragments 1 :total_done 0
+                                 :current_fragment_streak 1 :best_fragment_streak 1
+                                 :current_fragment_total 0 :current_fragment_goal 20}])))
         (testing "and the week before that as a success"
           (let [_ (set-habit-data {:db test_db :habit_id habit_id :amount 20
                                    :date-time (t/minus today (t/days 14))})
                 stats (get-frequency-stats {:db test_db :habit_ids [habit_id]})]
-            (is (= stats [{:habit_id habit_id
-                           :total_fragments 2 :successful_fragments 2 :total_done 20
-                           :current_fragment_streak 2 :best_fragment_streak 2}])))
+            (is (supermap? stats [{:habit_id habit_id
+                                   :total_fragments 2 :successful_fragments 2 :total_done 20
+                                   :current_fragment_streak 2 :best_fragment_streak 2
+                                   :current_fragment_total 0 :current_fragment_goal 20}])))
           (testing "and three weeks ago as a failure"
             (let [_ (set-habit-data {:db test_db :habit_id habit_id :amount 21
                                      :date-time (t/minus today (t/days 21))})
                   stats (get-frequency-stats {:db test_db :habit_ids [habit_id]})]
-              (is (= stats [{:habit_id habit_id
-                             :total_fragments 3 :successful_fragments 2 :total_done 41
-                             :current_fragment_streak 2 :best_fragment_streak 2}])))))))))
+              (is (supermap? stats [{:habit_id habit_id
+                                     :total_fragments 3 :successful_fragments 2 :total_done 41
+                                     :current_fragment_streak 2 :best_fragment_streak 2
+                                     :current_fragment_total 0 :current_fragment_goal 20}])))))))))
 
 (defn drop-test-db-fixture
   "Drop test database before and after each test"

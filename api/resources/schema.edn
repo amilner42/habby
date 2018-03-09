@@ -64,7 +64,10 @@
                                             :successful_fragments {:type Int}
                                             :total_done {:type Int}
                                             :current_fragment_streak {:type Int}
-                                            :best_fragment_streak {:type Int}}}}
+                                            :best_fragment_streak {:type Int}
+                                            :current_fragment_total {:type Int}
+                                            :current_fragment_goal {:type Int}
+                                            :current_fragment_days_left {:type Int}}}}
 
  :queries {:get_habits {:type (non-null (list (non-null :habit)))
                         :description "Get all habits."
