@@ -66,7 +66,8 @@
   Output: A list of habit_frequency_stats (one for each habit ID provided)"
   [{:keys [db habit_ids] :or {db habby_db}}]
   (map (fn [habit]
-         (let [sorted_habit_data (sort-by :date (get-habit-data {:db db :for_habit (str (:_id habit))}))]
+         (let [sorted_habit_data (sort-by :date (get-habit-data {:db db :for_habit (str (:_id habit))}))
+               today (t/today-at 0 0)]
            (if (empty? sorted_habit_data)
              nil  ; Return nil if no habit data exists for the habit being checked
              (let [habit_type (:type_name habit)
@@ -109,8 +110,8 @@
                                                          :other_data)
                                                       remaining_habit_data)
                        total_done_during_fragment (reduce #(+ %1 (:amount %2)) 0 (:fragment_data habit_data_partition))]
-                      (if (or (t/after? fragment_end_date (t/today-at 0 0))
-                              (t/equal? fragment_end_date (t/today-at 0 0)))
+                      (if (or (t/after? fragment_end_date today)
+                              (t/equal? fragment_end_date today))
                         ; We've reached the current fragment the user is on, return now.
                         ; We don't include the current fragment in success stats but we do increase total_done.
                         {:habit_id (str (:_id habit))
@@ -121,7 +122,7 @@
                          :best_fragment_streak best_fragment_streak
                          :current_fragment_total total_done_during_fragment
                          :current_fragment_goal fragment_goal
-                         :current_fragment_days_left (inc (t/in-days (t/interval (t/today-at 0 0) fragment_end_date)))}
+                         :current_fragment_days_left (inc (t/in-days (t/interval today fragment_end_date)))}
                         ; Track the current fragment
                         (let [fragment_is_successful (compare_fn total_done_during_fragment fragment_goal)
                               new_current_fragment_streak (if fragment_is_successful (inc current_fragment_streak) 0)]
