@@ -115,7 +115,8 @@
                          :total_fragments total_fragments
                          :successful_fragments successful_fragments
                          :total_done total_done
-                         :fragment_streak best_fragment_streak}
+                         :current_fragment_streak current_fragment_streak
+                         :best_fragment_streak best_fragment_streak}
                         ; Track the current fragment
                         (let [habit_data_partition (group-by #(if (or (are-datetimes-same-date (:date %)
                                                                                                fragment_start_date)
