@@ -80,7 +80,8 @@
 
            :get_frequency_stats {:type (non-null (list :habit_frequency_stats))  ; element will be nil if no habit data exists yet
                                  :description "Get a success percentage for each habit requested."
-                                 :args {:habit_ids {:type (list (non-null ID))}}
+                                 :args {:habit_ids {:type (list (non-null ID))}
+                                        :current_client_date {:type (non-null :date_data)}}
                                  :resolve :query/get-frequency-stats}}
 
  :input-objects {:date_data {:description "A year/month/day."

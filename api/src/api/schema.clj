@@ -100,8 +100,8 @@
 
 (defn resolve-query-get-frequency-stats
   "@refer `db/get-frequency-stats`."
-  [context {:keys [habit_ids] :as all} value]
-  (map tag-type (db/get-frequency-stats all)))
+  [context {:keys [habit_ids current_client_date] :as all} value]
+  (map tag-type (db/get-frequency-stats (assoc all :current_client_date (date-from-y-m-d-map current_client_date)))))
 
 (defn resolver-map
   []
