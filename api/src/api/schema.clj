@@ -75,32 +75,32 @@
 
 (defn resolve-mutation-add-habit
   "@refer `db/add-habit`."
-  [context {:keys [db create_habit_data] :as all} value]
+  [context {:keys [create_habit_data] :as all} value]
   (tag-type (db/add-habit (assoc all :habit (unnest-tagged-unions-on-input-object create_habit_data)))))
 
 (defn resolve-mutation-set-habit-data
   "@refer `db/set-habit-data`."
-  [context {:keys [db habit_id amount date] :as all} value]
-  (db/set-habit-data (assoc all :date-time (date-from-y-m-d-map date))))
+  [context {:keys [habit_id amount date] :as all} value]
+  (db/set-habit-data (assoc (dissoc all :date) :date-time (date-from-y-m-d-map date))))
 
 (defn resolve-get-habit-data
   "@refer `db/get-habit-data`."
-  [context {:keys [db after_date for_habit] :as all} value]
+  [context {:keys [after_date for_habit] :as all} value]
   (db/get-habit-data all))
 
 (defn resolve-mutation-delete-habit
   "@refer `db/delete-habit`."
-  [context {:keys [db habit_id] :as all} value]
+  [context {:keys [habit_id] :as all} value]
   (db/delete-habit all))
 
 (defn resolve-mutation-set-suspend-habit
   "@refer `db/set-suspend-habit`."
-  [context {:keys [db habit_id suspended] :as all} value]
+  [context {:keys [habit_id suspended] :as all} value]
   (db/set-suspend-habit all))
 
 (defn resolve-query-get-frequency-stats
   "@refer `db/get-frequency-stats`."
-  [context {:keys [db habit_ids] :as all} value]
+  [context {:keys [habit_ids] :as all} value]
   (map tag-type (db/get-frequency-stats all)))
 
 (defn resolver-map
