@@ -101,13 +101,13 @@ queryHabitsAndHabitData =
         \t\t}
         }"""
     in
-    graphQLRequest
-        habitAndHabitDataQueryString
-        (decode HabitsAndHabitData
-            |> required "habits" (Decode.list Habit.decodeHabit)
-            |> required "habitData" (Decode.list HabitData.decodeHabitData)
-            |> Decode.at [ "data" ]
-        )
+        graphQLRequest
+            habitAndHabitDataQueryString
+            (decode HabitsAndHabitData
+                |> required "habits" (Decode.list Habit.decodeHabit)
+                |> required "habitData" (Decode.list HabitData.decodeHabitData)
+                |> Decode.at [ "data" ]
+            )
 
 
 mutationAddHabit : Habit.CreateHabit -> String -> (ApiError -> b) -> (Habit.Habit -> b) -> Cmd b
@@ -273,7 +273,7 @@ mutationAddHabit createHabit =
         }"""
                 |> Util.templater templateDict
     in
-    graphQLRequest queryString <| Decode.at [ "data", "add_habit" ] Habit.decodeHabit
+        graphQLRequest queryString <| Decode.at [ "data", "add_habit" ] Habit.decodeHabit
 
 
 mutationSetHabitData : YmdDate.YmdDate -> String -> Int -> String -> (ApiError -> b) -> (HabitData.HabitData -> b) -> Cmd b
@@ -303,4 +303,4 @@ mutationSetHabitData { day, month, year } habitId amount =
 }"""
                 |> Util.templater templateDict
     in
-    graphQLRequest query (Decode.at [ "data", "set_habit_data" ] HabitData.decodeHabitData)
+        graphQLRequest query (Decode.at [ "data", "set_habit_data" ] HabitData.decodeHabitData)
