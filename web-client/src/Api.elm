@@ -30,76 +30,75 @@ queryHabitsAndHabitData =
     let
         habitAndHabitDataQueryString =
             """{
-        \t\thabitData: get_habit_data {
-        \t\t\t\t_id,
-        \t\t\tamount,
-        \t\t\tdate {
-        \t\t\t\tday,
-        \t\t\t\tmonth,
-        \t\t\t\tyear
-        \t\t\t},
-        \t\t\thabit_id
-        \t\t},
-        \t
-        \t\thabits: get_habits {
-        \t\t\t__typename
-        \t\t\t...on good_habit {
-        \t\t\t\t_id,
-        \t\t\t\tdescription,
-        \t\t\t\tname,
-        \t\t\t\tsuspended,
-        \t\t\t\tunit_name_singular,
-        \t\t\t\tunit_name_plural,
-        \t\t\t\ttarget_frequency {
-        \t\t\t\t\t__typename
-        \t\t\t\t\t... on every_x_days_frequency {
-        \t\t\t\t\t\tdays,
-        \t\t\t\t\t\ttimes
-        \t\t\t\t\t}
-        \t\t\t\t\t...on total_week_frequency {
-        \t\t\t\t\t\tweek
-        \t\t\t\t\t}
-        \t\t\t\t\t...on specific_day_of_week_frequency {
-        \t\t\t\t\t\tfriday,
-        \t\t\t\t\t\tmonday,
-        \t\t\t\t\t\tsaturday,
-        \t\t\t\t\t\tsunday,
-        \t\t\t\t\t\tthursday,
-        \t\t\t\t\t\ttuesday,
-        \t\t\t\t\t\twednesday
-        \t\t\t\t\t}
-        \t\t\t\t}
-        \t\t\t\ttime_of_day
-        \t\t\t}
-        \t\t\t...on bad_habit {
-        \t\t\t\t_id,
-        \t\t\t\tdescription,
-        \t\t\t\tname,
-        \t\t\t\tsuspended,
-        \t\t\t\tunit_name_singular,
-        \t\t\t\tunit_name_plural,
-        \t\t\t\tthreshold_frequency {
-        \t\t\t\t\t\t__typename
-        \t\t\t\t\t... on every_x_days_frequency {
-        \t\t\t\t\t\tdays,
-        \t\t\t\t\t\ttimes
-        \t\t\t\t\t}
-        \t\t\t\t\t...on total_week_frequency {
-        \t\t\t\t\t\tweek
-        \t\t\t\t\t}
-        \t\t\t\t\t...on specific_day_of_week_frequency {
-        \t\t\t\t\t\tfriday,
-        \t\t\t\t\t\tmonday,
-        \t\t\t\t\t\tsaturday,
-        \t\t\t\t\t\tsunday,
-        \t\t\t\t\t\tthursday,
-        \t\t\t\t\t\ttuesday,
-        \t\t\t\t\t\twednesday
-        \t\t\t\t\t}
-        \t\t\t\t}\t\t
-        \t\t\t}
-        \t\t}
-        }"""
+  habits: get_habits {
+    __typename
+    ... on good_habit {
+      _id
+      description
+      name
+      suspended
+      unit_name_singular
+      unit_name_plural
+      target_frequency {
+        __typename
+        ... on every_x_days_frequency {
+          days
+          times
+        }
+        ... on total_week_frequency {
+          week
+        }
+        ... on specific_day_of_week_frequency {
+          monday
+          tuesday
+          wednesday
+          thursday
+          friday
+          saturday
+          sunday
+        }
+      }
+      time_of_day
+    }
+    ... on bad_habit {
+      _id
+      description
+      name
+      suspended
+      unit_name_singular
+      unit_name_plural
+      threshold_frequency {
+        __typename
+        ... on every_x_days_frequency {
+          days
+          times
+        }
+        ... on total_week_frequency {
+          week
+        }
+        ... on specific_day_of_week_frequency {
+          monday
+          tuesday
+          wednesday
+          thursday
+          friday
+          saturday
+          sunday
+        }
+      }
+    }
+  }
+  habitData: get_habit_data {
+    _id
+    amount
+    date {
+      day
+      month
+      year
+    }
+    habit_id
+  }
+}"""
     in
         graphQLRequest
             habitAndHabitDataQueryString
