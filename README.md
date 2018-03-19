@@ -54,6 +54,9 @@ lein repl;
 # (ns user) to switch to the user namespace.
 possbily-something-else => (ns user)
 user => (start)
+# If you have changed code within /habby/api since starting the repl, use `refresh` to start using the new code
+# without needing to restart the repl
+user => (refresh)
 ```
 
 Great, you're good to develop now!
