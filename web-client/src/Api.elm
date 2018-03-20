@@ -9,6 +9,7 @@ import Json.Encode as Encode
 import Models.ApiError exposing (ApiError)
 import Models.Habit as Habit
 import Models.HabitData as HabitData
+import Models.FrequencyStats as FrequencyStats
 import Models.YmdDate as YmdDate
 
 
@@ -19,17 +20,25 @@ graphQLRequest query decoder url handleError handleSuccess =
     post url decoder (Encode.object [ ( "query", Encode.string query ) ]) handleError handleSuccess
 
 
-type alias HabitsAndHabitData =
-    { habits : List Habit.Habit, habitData : List HabitData.HabitData }
+type alias HabitsAndHabitDataAndFrequencyStats =
+    { habits : List Habit.Habit
+    , habitData : List HabitData.HabitData
+    , frequencyStats : List FrequencyStats.FrequencyStats
+    }
 
 
 {-| Query for all fields on all habits and habit data.
 -}
-queryHabitsAndHabitData : String -> (ApiError -> b) -> (HabitsAndHabitData -> b) -> Cmd b
-queryHabitsAndHabitData =
+queryHabitsAndHabitDataAndFrequencyStats :
+    YmdDate.YmdDate
+    -> String
+    -> (ApiError -> b)
+    -> (HabitsAndHabitDataAndFrequencyStats -> b)
+    -> Cmd b
+queryHabitsAndHabitDataAndFrequencyStats ymd url handleError handleSuccess =
     let
-        habitAndHabitDataQueryString =
-            """{
+        queryString =
+            ("""{
   habits: get_habits {
     __typename
     ... on good_habit {
@@ -98,15 +107,37 @@ queryHabitsAndHabitData =
     }
     habit_id
   }
+  frequencyStats: get_frequency_stats(current_client_date: {year: """
+                ++ (toString ymd.year)
+                ++ ", month: "
+                ++ (toString ymd.month)
+                ++ ", day: "
+                ++ (toString ymd.day)
+                ++ """}) {
+    habit_id
+    total_fragments
+    successful_fragments
+    total_done
+    current_fragment_streak
+    best_fragment_streak
+    current_fragment_total
+    current_fragment_goal
+    current_fragment_days_left
+  }
 }"""
+            )
     in
         graphQLRequest
-            habitAndHabitDataQueryString
-            (decode HabitsAndHabitData
+            queryString
+            (decode HabitsAndHabitDataAndFrequencyStats
                 |> required "habits" (Decode.list Habit.decodeHabit)
                 |> required "habitData" (Decode.list HabitData.decodeHabitData)
+                |> required "frequencyStats" (Decode.list FrequencyStats.decodeFrequencyStats)
                 |> Decode.at [ "data" ]
             )
+            url
+            handleError
+            handleSuccess
 
 
 mutationAddHabit : Habit.CreateHabit -> String -> (ApiError -> b) -> (Habit.Habit -> b) -> Cmd b
