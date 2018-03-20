@@ -68,7 +68,16 @@
   (map (fn [habit]
          (let [sorted_habit_data (sort-by :date (get-habit-data {:db db :for_habit (str (:_id habit))}))]
            (if (empty? sorted_habit_data)
-             nil  ; Return nil if no habit data exists for the habit being checked
+             ; User has not started habit yet
+             {:habit_id (str (:_id habit))
+              :total_fragments 0
+              :successful_fragments 0
+              :total_done 0
+              :current_fragment_streak 0
+              :best_fragment_streak 0
+              :current_fragment_total 0
+              :current_fragment_goal 0
+              :current_fragment_days_left 0}
              (let [habit_type (:type_name habit)
                    freq (if (= habit_type "good_habit") (:target_frequency habit) (:threshold_frequency habit))
                    freq_type (:type_name freq)
