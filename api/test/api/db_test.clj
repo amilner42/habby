@@ -12,6 +12,9 @@
 (def default_habit {:name "test habit" :description "test description" :unit_name_singular "test unit"
                     :unit_name_plural "test units" :time_of_day :ANYTIME})
 (def today (t/today-at 0 0))
+(def default_frequency_stats {:total_fragments 0, :successful_fragments 0, :total_done 0,
+                              :current_fragment_streak 0, :best_fragment_streak 0,
+                              :current_fragment_total 0, :current_fragment_goal 0, :current_fragment_days_left 0})
 
 (defn add-habit-to-test-db
   "Add a habit to the test database"
@@ -79,8 +82,10 @@
           habit_id (str (:_id final_habit))]
       (testing "with no habit data"
         (is (= 1 (count (get-habits {:db test_db}))) "There should only be one habit so far")
-        (is (= [nil] (get-frequency-stats {:db test_db :habit_ids [habit_id]})))
-        (is (= [nil] (get-frequency-stats {:db test_db})) "`habit_ids` should be an optional param"))
+        (is (= [(assoc default_frequency_stats :habit_id habit_id)]
+               (get-frequency-stats {:db test_db :habit_ids [habit_id]})))
+        (is (= [(assoc default_frequency_stats :habit_id habit_id)]
+               (get-frequency-stats {:db test_db})) "`habit_ids` should be an optional param"))
       (testing "with a successful habit record yesterday"
         (let [_ (set-habit-data {:db test_db :habit_id habit_id :amount 4
                                  :date-time (t/minus today (t/days 1))})
