@@ -38,11 +38,11 @@ update msg model =
                 , Cmd.none
                 )
 
-            OnGetHabitsAndHabitDataAndFrequencyStatsSuccess { habits, habitData, frequencyStats } ->
+            OnGetHabitsAndHabitDataAndFrequencyStatsSuccess { habits, habitData, frequencyStatsList } ->
                 ( { model
                     | allHabits = RemoteData.Success habits
                     , allHabitData = RemoteData.Success habitData
-                    , allFrequencyStats = RemoteData.Success frequencyStats
+                    , allFrequencyStats = RemoteData.Success frequencyStatsList
                   }
                 , Cmd.none
                 )

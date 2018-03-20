@@ -3,6 +3,7 @@ module View exposing (..)
 import DefaultServices.Infix exposing (..)
 import DefaultServices.Util as Util
 import Dict
+import HabitUtil
 import Html exposing (Html, button, div, hr, i, input, span, text, textarea)
 import Html.Attributes exposing (class, classList, placeholder, value)
 import Html.Events exposing (onClick, onInput)
@@ -11,7 +12,7 @@ import Maybe.Extra as Maybe
 import Model exposing (Model)
 import Models.ApiError as ApiError
 import Models.FrequencyStats as FrequencyStats
-import Models.Habit as Habit exposing (getCommonFields)
+import Models.Habit as Habit
 import Models.HabitData as HabitData
 import Models.YmdDate as YmdDate
 import Msg exposing (Msg(..))
@@ -50,7 +51,7 @@ renderTodayPanel :
     -> Dict.Dict String Int
     -> Bool
     -> Html Msg
-renderTodayPanel ymd rdHabits rdHabitData rdFrequencyStats addHabit editingHabitDataDict openView =
+renderTodayPanel ymd rdHabits rdHabitData rdFrequencyStatsList addHabit editingHabitDataDict openView =
     let
         createHabitData =
             Habit.extractCreateHabit addHabit
@@ -67,10 +68,10 @@ renderTodayPanel ymd rdHabits rdHabitData rdFrequencyStats addHabit editingHabit
                             Habit.splitHabits habits
 
                         ( sortedGoodHabits, sortedBadHabits ) =
-                            case rdFrequencyStats of
-                                RemoteData.Success frequencyStats ->
-                                    ( sortHabitsNicely frequencyStats goodHabits
-                                    , sortHabitsNicely frequencyStats badHabits
+                            case rdFrequencyStatsList of
+                                RemoteData.Success frequencyStatsList ->
+                                    ( HabitUtil.sortHabitsByCurrentFragment frequencyStatsList goodHabits
+                                    , HabitUtil.sortHabitsByCurrentFragment frequencyStatsList badHabits
                                     )
 
                                 _ ->
@@ -78,11 +79,11 @@ renderTodayPanel ymd rdHabits rdHabitData rdFrequencyStats addHabit editingHabit
 
                         renderHabit habit =
                             renderHabitBox
-                                (case rdFrequencyStats of
-                                    RemoteData.Success frequencyStats ->
-                                        FrequencyStats.findFrequencyStatsByHabitId
-                                            (.id (getCommonFields habit))
-                                            frequencyStats
+                                (case rdFrequencyStatsList of
+                                    RemoteData.Success frequencyStatsList ->
+                                        HabitUtil.findFrequencyStatsForHabit
+                                            (.id (Habit.getCommonFields habit))
+                                            frequencyStatsList
 
                                     _ ->
                                         Err "Frequency stats not available for any habits"
@@ -319,7 +320,7 @@ renderHistoryViewerPanel :
     -> RemoteData.RemoteData ApiError.ApiError (List FrequencyStats.FrequencyStats)
     -> Dict.Dict String (Dict.Dict String Int)
     -> Html Msg
-renderHistoryViewerPanel openView dateInput selectedDate rdHabits rdHabitData rdFrequencyStats editingHabitDataDictDict =
+renderHistoryViewerPanel openView dateInput selectedDate rdHabits rdHabitData rdFrequencyStatsList editingHabitDataDictDict =
     case ( rdHabits, rdHabitData ) of
         ( RemoteData.Success habits, RemoteData.Success habitData ) ->
             div
@@ -364,11 +365,11 @@ renderHistoryViewerPanel openView dateInput selectedDate rdHabits rdHabitData rd
 
                                 renderHabit habit =
                                     renderHabitBox
-                                        -- (case rdFrequencyStats of
-                                        --     RemoteData.Success frequencyStats ->
-                                        --         FrequencyStats.findFrequencyStatsByHabitId
+                                        -- (case rdFrequencyStatsList of
+                                        --     RemoteData.Success frequencyStatsList ->
+                                        --         HabitUtil.findFrequencyStatsForHabit
                                         --             (.id (Habit.getCommonFields habit))
-                                        --             frequencyStats
+                                        --             frequencyStatsList
                                         --
                                         --     _ ->
                                         --         Err "Frequency stats not available for any habits"
@@ -414,62 +415,6 @@ dropdownIcon openView msg =
         ]
 
 
-{-| Returns the habits sorted by the number of days left in the current time fragment.
--}
-sortHabitsNicely : List FrequencyStats.FrequencyStats -> List Habit.Habit -> List Habit.Habit
-sortHabitsNicely frequencyStats habits =
-    let
-        compareHabitsByDaysLeft : Habit.Habit -> Habit.Habit -> Order
-        compareHabitsByDaysLeft habitOne habitTwo =
-            let
-                findHabitCurrentFragmentDaysLeft : Habit.Habit -> Maybe Int
-                findHabitCurrentFragmentDaysLeft habit =
-                    let
-                        habitId =
-                            case habit of
-                                Habit.GoodHabit record ->
-                                    record.id
-
-                                Habit.BadHabit record ->
-                                    record.id
-
-                        habitFrequencyStats =
-                            FrequencyStats.findFrequencyStatsByHabitId habitId frequencyStats
-                    in
-                        case habitFrequencyStats of
-                            Err err ->
-                                Nothing
-
-                            Ok stats ->
-                                Just (.currentFragmentDaysLeft stats)
-
-                habitOneCurrentFragmentDaysLeft =
-                    findHabitCurrentFragmentDaysLeft habitOne
-
-                habitTwoCurrentFragmentDaysLeft =
-                    findHabitCurrentFragmentDaysLeft habitTwo
-            in
-                case ( habitOneCurrentFragmentDaysLeft, habitTwoCurrentFragmentDaysLeft ) of
-                    ( Nothing, Nothing ) ->
-                        EQ
-
-                    ( Nothing, Just _ ) ->
-                        GT
-
-                    ( Just _, Nothing ) ->
-                        LT
-
-                    ( Just a, Just b ) ->
-                        if a < b then
-                            LT
-                        else if a == b then
-                            EQ
-                        else
-                            GT
-    in
-        List.sortWith compareHabitsByDaysLeft habits
-
-
 {-| Renders a habit box with the habit data loaded for that particular date.
 
 Requires 2 event handlers, 1 for handling when data is input into the habit box and 1 for when the user wants to
@@ -508,19 +453,38 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
         div
             [ class "habit" ]
             [ div [ class "habit-name" ] [ text habitRecord.name ]
-            , div
-                [ class "frequency-stats" ]
-                (case habitStats of
-                    Err _ ->
-                        [ text "Frequency stats not available" ]
+            , (case habitStats of
+                Err _ ->
+                    div [ class "frequency-stats" ] [ text "Frequency stats not available" ]
 
-                    Ok stats ->
+                Ok stats ->
+                    div [ class "frequency-stats" ]
                         [ div []
                             [ text <|
                                 "Days left: "
                                     ++ (toString stats.currentFragmentDaysLeft)
                             ]
-                        , div []
+                        , div
+                            (case (compare stats.currentFragmentTotal stats.currentFragmentGoal) of
+                                EQ ->
+                                    [ class "current-fragment-success" ]
+
+                                LT ->
+                                    case habit of
+                                        Habit.GoodHabit _ ->
+                                            []
+
+                                        Habit.BadHabit _ ->
+                                            [ class "current-fragment-success" ]
+
+                                GT ->
+                                    case habit of
+                                        Habit.GoodHabit _ ->
+                                            [ class "current-fragment-success" ]
+
+                                        Habit.BadHabit _ ->
+                                            [ class "current-fragment-failure" ]
+                            )
                             [ text <|
                                 "Done: "
                                     ++ (toString stats.currentFragmentTotal)
@@ -528,7 +492,7 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
                                     ++ (toString stats.currentFragmentGoal)
                             ]
                         ]
-                )
+              )
             , div
                 [ classList
                     [ ( "habit-amount-complete", True )
