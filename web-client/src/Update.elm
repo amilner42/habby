@@ -29,18 +29,20 @@ update msg model =
             TickMinute time ->
                 ( { model | ymd = time |> Date.fromTime |> YmdDate.fromDate }, Cmd.none )
 
-            OnGetHabitsAndHabitDataFailure apiError ->
+            OnGetHabitsAndHabitDataAndFrequencyStatsFailure apiError ->
                 ( { model
                     | allHabits = RemoteData.Failure apiError
                     , allHabitData = RemoteData.Failure apiError
+                    , allFrequencyStats = RemoteData.Failure apiError
                   }
                 , Cmd.none
                 )
 
-            OnGetHabitsAndHabitDataSuccess { habits, habitData } ->
+            OnGetHabitsAndHabitDataAndFrequencyStatsSuccess { habits, habitData, frequencyStats } ->
                 ( { model
                     | allHabits = RemoteData.Success habits
                     , allHabitData = RemoteData.Success habitData
+                    , allFrequencyStats = RemoteData.Success frequencyStats
                   }
                 , Cmd.none
                 )
