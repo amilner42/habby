@@ -414,24 +414,19 @@ dropdownIcon openView msg =
         ]
 
 
-{-| Returns the habits sorted by the number of days left in the current time fragment.
+{-| Returns the habits sorted first by completion, and then by the number of days left in the current time fragment.
 -}
 sortHabitsNicely : List FrequencyStats.FrequencyStats -> List Habit.Habit -> List Habit.Habit
 sortHabitsNicely frequencyStats habits =
     let
-        compareHabitsByDaysLeft : Habit.Habit -> Habit.Habit -> Order
-        compareHabitsByDaysLeft habitOne habitTwo =
+        compareHabits : Habit.Habit -> Habit.Habit -> Order
+        compareHabits habitOne habitTwo =
             let
                 findHabitCurrentFragmentDaysLeft : Habit.Habit -> Maybe Int
                 findHabitCurrentFragmentDaysLeft habit =
                     let
                         habitId =
-                            case habit of
-                                Habit.GoodHabit record ->
-                                    record.id
-
-                                Habit.BadHabit record ->
-                                    record.id
+                            (.id (Habit.getCommonFields habit))
 
                         habitFrequencyStats =
                             FrequencyStats.findFrequencyStatsByHabitId habitId frequencyStats
@@ -467,7 +462,7 @@ sortHabitsNicely frequencyStats habits =
                         else
                             GT
     in
-        List.sortWith compareHabitsByDaysLeft habits
+        List.sortWith compareHabits habits
 
 
 {-| Renders a habit box with the habit data loaded for that particular date.
@@ -508,19 +503,38 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
         div
             [ class "habit" ]
             [ div [ class "habit-name" ] [ text habitRecord.name ]
-            , div
-                [ class "frequency-stats" ]
-                (case habitStats of
-                    Err _ ->
-                        [ text "Frequency stats not available" ]
+            , (case habitStats of
+                Err _ ->
+                    div [ class "frequency-stats" ] [ text "Frequency stats not available" ]
 
-                    Ok stats ->
+                Ok stats ->
+                    div [ class "frequency-stats" ]
                         [ div []
                             [ text <|
                                 "Days left: "
                                     ++ (toString stats.currentFragmentDaysLeft)
                             ]
-                        , div []
+                        , div
+                            (case (compare stats.currentFragmentTotal stats.currentFragmentGoal) of
+                                EQ ->
+                                    [ class "current-fragment-success" ]
+
+                                LT ->
+                                    case habit of
+                                        Habit.GoodHabit _ ->
+                                            []
+
+                                        Habit.BadHabit _ ->
+                                            [ class "current-fragment-success" ]
+
+                                GT ->
+                                    case habit of
+                                        Habit.GoodHabit _ ->
+                                            [ class "current-fragment-success" ]
+
+                                        Habit.BadHabit _ ->
+                                            [ class "current-fragment-failure" ]
+                            )
                             [ text <|
                                 "Done: "
                                     ++ (toString stats.currentFragmentTotal)
@@ -528,7 +542,7 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
                                     ++ (toString stats.currentFragmentGoal)
                             ]
                         ]
-                )
+              )
             , div
                 [ classList
                     [ ( "habit-amount-complete", True )

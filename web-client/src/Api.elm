@@ -23,7 +23,7 @@ graphQLRequest query decoder url handleError handleSuccess =
 type alias HabitsAndHabitDataAndFrequencyStats =
     { habits : List Habit.Habit
     , habitData : List HabitData.HabitData
-    , frequencyStats : List FrequencyStats.FrequencyStats
+    , frequencyStatsList : List FrequencyStats.FrequencyStats
     }
 
 
@@ -107,7 +107,7 @@ queryHabitsAndHabitDataAndFrequencyStats ymd url handleError handleSuccess =
     }
     habit_id
   }
-  frequencyStats: get_frequency_stats(current_client_date: {year: """
+  frequencyStatsList: get_frequency_stats(current_client_date: {year: """
                 ++ (toString ymd.year)
                 ++ ", month: "
                 ++ (toString ymd.month)
@@ -132,7 +132,7 @@ queryHabitsAndHabitDataAndFrequencyStats ymd url handleError handleSuccess =
             (decode HabitsAndHabitDataAndFrequencyStats
                 |> required "habits" (Decode.list Habit.decodeHabit)
                 |> required "habitData" (Decode.list HabitData.decodeHabitData)
-                |> required "frequencyStats" (Decode.list FrequencyStats.decodeFrequencyStats)
+                |> required "frequencyStatsList" (Decode.list FrequencyStats.decodeFrequencyStats)
                 |> Decode.at [ "data" ]
             )
             url
