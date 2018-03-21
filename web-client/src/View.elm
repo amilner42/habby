@@ -3,6 +3,7 @@ module View exposing (..)
 import DefaultServices.Infix exposing (..)
 import DefaultServices.Util as Util
 import Dict
+import HabitUtil
 import Html exposing (Html, button, div, hr, i, input, span, text, textarea)
 import Html.Attributes exposing (class, classList, placeholder, value)
 import Html.Events exposing (onClick, onInput)
@@ -69,8 +70,8 @@ renderTodayPanel ymd rdHabits rdHabitData rdFrequencyStatsList addHabit editingH
                         ( sortedGoodHabits, sortedBadHabits ) =
                             case rdFrequencyStatsList of
                                 RemoteData.Success frequencyStatsList ->
-                                    ( sortHabitsByCurrentFragment frequencyStatsList goodHabits
-                                    , sortHabitsByCurrentFragment frequencyStatsList badHabits
+                                    ( HabitUtil.sortHabitsByCurrentFragment frequencyStatsList goodHabits
+                                    , HabitUtil.sortHabitsByCurrentFragment frequencyStatsList badHabits
                                     )
 
                                 _ ->
@@ -80,7 +81,7 @@ renderTodayPanel ymd rdHabits rdHabitData rdFrequencyStatsList addHabit editingH
                             renderHabitBox
                                 (case rdFrequencyStatsList of
                                     RemoteData.Success frequencyStatsList ->
-                                        FrequencyStats.findFrequencyStatsByHabitId
+                                        HabitUtil.findFrequencyStatsForHabit
                                             (.id (Habit.getCommonFields habit))
                                             frequencyStatsList
 
@@ -366,7 +367,7 @@ renderHistoryViewerPanel openView dateInput selectedDate rdHabits rdHabitData rd
                                     renderHabitBox
                                         -- (case rdFrequencyStatsList of
                                         --     RemoteData.Success frequencyStatsList ->
-                                        --         FrequencyStats.findFrequencyStatsByHabitId
+                                        --         HabitUtil.findFrequencyStatsForHabit
                                         --             (.id (Habit.getCommonFields habit))
                                         --             frequencyStatsList
                                         --
@@ -412,59 +413,6 @@ dropdownIcon openView msg =
             else
                 "arrow_drop_up"
         ]
-
-
-{-| Returns the habits sorted first by whether the current fragment goal has already been achieved
-(unfinished habits come first), and then by the number of days remaining in the current time fragment
-(more urgent habit goals come first).
--}
-sortHabitsByCurrentFragment : List FrequencyStats.FrequencyStats -> List Habit.Habit -> List Habit.Habit
-sortHabitsByCurrentFragment frequencyStatsList habits =
-    let
-        compareHabits : Habit.Habit -> Habit.Habit -> Order
-        compareHabits habitOne habitTwo =
-            let
-                findHabitCurrentFragmentDaysLeft : Habit.Habit -> Maybe Int
-                findHabitCurrentFragmentDaysLeft habit =
-                    let
-                        habitId =
-                            (.id (Habit.getCommonFields habit))
-
-                        habitFrequencyStats =
-                            FrequencyStats.findFrequencyStatsByHabitId habitId frequencyStatsList
-                    in
-                        case habitFrequencyStats of
-                            Err err ->
-                                Nothing
-
-                            Ok stats ->
-                                Just (.currentFragmentDaysLeft stats)
-
-                habitOneCurrentFragmentDaysLeft =
-                    findHabitCurrentFragmentDaysLeft habitOne
-
-                habitTwoCurrentFragmentDaysLeft =
-                    findHabitCurrentFragmentDaysLeft habitTwo
-            in
-                case ( habitOneCurrentFragmentDaysLeft, habitTwoCurrentFragmentDaysLeft ) of
-                    ( Nothing, Nothing ) ->
-                        EQ
-
-                    ( Nothing, Just _ ) ->
-                        GT
-
-                    ( Just _, Nothing ) ->
-                        LT
-
-                    ( Just a, Just b ) ->
-                        if a < b then
-                            LT
-                        else if a == b then
-                            EQ
-                        else
-                            GT
-    in
-        List.sortWith compareHabits habits
 
 
 {-| Renders a habit box with the habit data loaded for that particular date.

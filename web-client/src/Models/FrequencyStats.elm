@@ -29,20 +29,3 @@ decodeFrequencyStats =
         |> required "current_fragment_total" Decode.int
         |> required "current_fragment_goal" Decode.int
         |> required "current_fragment_days_left" Decode.int
-
-
-findFrequencyStatsByHabitId : String -> List FrequencyStats -> Result String FrequencyStats
-findFrequencyStatsByHabitId habitId frequencyStats =
-    let
-        filteredFrequencyStatsByHabitId =
-            List.filter (\stats -> stats.habitId == habitId) frequencyStats
-    in
-        case filteredFrequencyStatsByHabitId of
-            [] ->
-                Err ("No frequency stats found for habit " ++ habitId)
-
-            [ s ] ->
-                Ok s
-
-            s1 :: s2 :: _ ->
-                Err ("More than one frequency stats found for habit " ++ habitId ++ ", something fishy is going on")
