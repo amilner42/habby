@@ -47,41 +47,37 @@ sortHabitsByCurrentFragment frequencyStatsList habits =
         compareHabits : Habit.Habit -> Habit.Habit -> Order
         compareHabits habitOne habitTwo =
             let
-                findHabitCurrentFragmentDaysLeft : Habit.Habit -> Maybe Int
-                findHabitCurrentFragmentDaysLeft habit =
-                    let
-                        habitFrequencyStats =
-                            findFrequencyStatsForHabit habit frequencyStatsList
-                    in
-                        case habitFrequencyStats of
-                            Err err ->
-                                Nothing
+                habitOneFrequencyStats =
+                    findFrequencyStatsForHabit habitOne frequencyStatsList
 
-                            Ok stats ->
-                                Just (.currentFragmentDaysLeft stats)
-
-                habitOneCurrentFragmentDaysLeft =
-                    findHabitCurrentFragmentDaysLeft habitOne
-
-                habitTwoCurrentFragmentDaysLeft =
-                    findHabitCurrentFragmentDaysLeft habitTwo
+                habitTwoFrequencyStats =
+                    findFrequencyStatsForHabit habitTwo frequencyStatsList
             in
-                case ( habitOneCurrentFragmentDaysLeft, habitTwoCurrentFragmentDaysLeft ) of
-                    ( Nothing, Nothing ) ->
+                case ( habitOneFrequencyStats, habitTwoFrequencyStats ) of
+                    ( Err _, Err _ ) ->
                         EQ
 
-                    ( Nothing, Just _ ) ->
+                    ( Err _, Ok _ ) ->
                         GT
 
-                    ( Just _, Nothing ) ->
+                    ( Ok _, Err _ ) ->
                         LT
 
-                    ( Just a, Just b ) ->
-                        if a < b then
-                            LT
-                        else if a == b then
-                            EQ
-                        else
-                            GT
+                    ( Ok statsOne, Ok statsTwo ) ->
+                        let
+                            isHabitOneAlreadySuccessful =
+                                isHabitCurrentFragmentSuccessful habitOne statsOne
+
+                            isHabitTwoAlreadySuccessful =
+                                isHabitCurrentFragmentSuccessful habitTwo statsTwo
+                        in
+                            if isHabitOneAlreadySuccessful == isHabitTwoAlreadySuccessful then
+                                compare statsOne.currentFragmentDaysLeft statsTwo.currentFragmentDaysLeft
+                            else if isHabitOneAlreadySuccessful then
+                                -- We know they are different so if `isHabitOneAlreadySuccessful` is true
+                                -- then `isHabitTwoAlreadySuccessful` must be false
+                                GT
+                            else
+                                LT
     in
         List.sortWith compareHabits habits
