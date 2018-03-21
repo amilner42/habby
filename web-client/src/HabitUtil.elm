@@ -7,9 +7,12 @@ import Models.Habit as Habit
 import Models.FrequencyStats as FrequencyStats
 
 
-findFrequencyStatsForHabit : String -> List FrequencyStats.FrequencyStats -> Result String FrequencyStats.FrequencyStats
-findFrequencyStatsForHabit habitId frequencyStats =
+findFrequencyStatsForHabit : Habit.Habit -> List FrequencyStats.FrequencyStats -> Result String FrequencyStats.FrequencyStats
+findFrequencyStatsForHabit habit frequencyStats =
     let
+        habitId =
+            (.id (Habit.getCommonFields habit))
+
         filteredFrequencyStatsByHabitId =
             List.filter (\stats -> stats.habitId == habitId) frequencyStats
     in
@@ -37,11 +40,8 @@ sortHabitsByCurrentFragment frequencyStatsList habits =
                 findHabitCurrentFragmentDaysLeft : Habit.Habit -> Maybe Int
                 findHabitCurrentFragmentDaysLeft habit =
                     let
-                        habitId =
-                            (.id (Habit.getCommonFields habit))
-
                         habitFrequencyStats =
-                            findFrequencyStatsForHabit habitId frequencyStatsList
+                            findFrequencyStatsForHabit habit frequencyStatsList
                     in
                         case habitFrequencyStats of
                             Err err ->
