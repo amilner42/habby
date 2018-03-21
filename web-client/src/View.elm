@@ -11,7 +11,7 @@ import Maybe.Extra as Maybe
 import Model exposing (Model)
 import Models.ApiError as ApiError
 import Models.FrequencyStats as FrequencyStats
-import Models.Habit as Habit exposing (getCommonFields)
+import Models.Habit as Habit
 import Models.HabitData as HabitData
 import Models.YmdDate as YmdDate
 import Msg exposing (Msg(..))
@@ -50,7 +50,7 @@ renderTodayPanel :
     -> Dict.Dict String Int
     -> Bool
     -> Html Msg
-renderTodayPanel ymd rdHabits rdHabitData rdFrequencyStats addHabit editingHabitDataDict openView =
+renderTodayPanel ymd rdHabits rdHabitData rdFrequencyStatsList addHabit editingHabitDataDict openView =
     let
         createHabitData =
             Habit.extractCreateHabit addHabit
@@ -67,10 +67,10 @@ renderTodayPanel ymd rdHabits rdHabitData rdFrequencyStats addHabit editingHabit
                             Habit.splitHabits habits
 
                         ( sortedGoodHabits, sortedBadHabits ) =
-                            case rdFrequencyStats of
-                                RemoteData.Success frequencyStats ->
-                                    ( sortHabitsNicely frequencyStats goodHabits
-                                    , sortHabitsNicely frequencyStats badHabits
+                            case rdFrequencyStatsList of
+                                RemoteData.Success frequencyStatsList ->
+                                    ( sortHabitsByCurrentFragment frequencyStatsList goodHabits
+                                    , sortHabitsByCurrentFragment frequencyStatsList badHabits
                                     )
 
                                 _ ->
@@ -78,11 +78,11 @@ renderTodayPanel ymd rdHabits rdHabitData rdFrequencyStats addHabit editingHabit
 
                         renderHabit habit =
                             renderHabitBox
-                                (case rdFrequencyStats of
-                                    RemoteData.Success frequencyStats ->
+                                (case rdFrequencyStatsList of
+                                    RemoteData.Success frequencyStatsList ->
                                         FrequencyStats.findFrequencyStatsByHabitId
-                                            (.id (getCommonFields habit))
-                                            frequencyStats
+                                            (.id (Habit.getCommonFields habit))
+                                            frequencyStatsList
 
                                     _ ->
                                         Err "Frequency stats not available for any habits"
@@ -319,7 +319,7 @@ renderHistoryViewerPanel :
     -> RemoteData.RemoteData ApiError.ApiError (List FrequencyStats.FrequencyStats)
     -> Dict.Dict String (Dict.Dict String Int)
     -> Html Msg
-renderHistoryViewerPanel openView dateInput selectedDate rdHabits rdHabitData rdFrequencyStats editingHabitDataDictDict =
+renderHistoryViewerPanel openView dateInput selectedDate rdHabits rdHabitData rdFrequencyStatsList editingHabitDataDictDict =
     case ( rdHabits, rdHabitData ) of
         ( RemoteData.Success habits, RemoteData.Success habitData ) ->
             div
@@ -364,11 +364,11 @@ renderHistoryViewerPanel openView dateInput selectedDate rdHabits rdHabitData rd
 
                                 renderHabit habit =
                                     renderHabitBox
-                                        -- (case rdFrequencyStats of
-                                        --     RemoteData.Success frequencyStats ->
+                                        -- (case rdFrequencyStatsList of
+                                        --     RemoteData.Success frequencyStatsList ->
                                         --         FrequencyStats.findFrequencyStatsByHabitId
                                         --             (.id (Habit.getCommonFields habit))
-                                        --             frequencyStats
+                                        --             frequencyStatsList
                                         --
                                         --     _ ->
                                         --         Err "Frequency stats not available for any habits"
@@ -414,10 +414,12 @@ dropdownIcon openView msg =
         ]
 
 
-{-| Returns the habits sorted first by completion, and then by the number of days left in the current time fragment.
+{-| Returns the habits sorted first by whether the current fragment goal has already been achieved
+(unfinished habits come first), and then by the number of days remaining in the current time fragment
+(more urgent habit goals come first).
 -}
-sortHabitsNicely : List FrequencyStats.FrequencyStats -> List Habit.Habit -> List Habit.Habit
-sortHabitsNicely frequencyStats habits =
+sortHabitsByCurrentFragment : List FrequencyStats.FrequencyStats -> List Habit.Habit -> List Habit.Habit
+sortHabitsByCurrentFragment frequencyStatsList habits =
     let
         compareHabits : Habit.Habit -> Habit.Habit -> Order
         compareHabits habitOne habitTwo =
@@ -429,7 +431,7 @@ sortHabitsNicely frequencyStats habits =
                             (.id (Habit.getCommonFields habit))
 
                         habitFrequencyStats =
-                            FrequencyStats.findFrequencyStatsByHabitId habitId frequencyStats
+                            FrequencyStats.findFrequencyStatsByHabitId habitId frequencyStatsList
                     in
                         case habitFrequencyStats of
                             Err err ->
