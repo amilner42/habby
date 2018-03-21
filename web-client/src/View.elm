@@ -82,7 +82,7 @@ renderTodayPanel ymd rdHabits rdHabitData rdFrequencyStatsList addHabit editingH
                                 (case rdFrequencyStatsList of
                                     RemoteData.Success frequencyStatsList ->
                                         HabitUtil.findFrequencyStatsForHabit
-                                            (.id (Habit.getCommonFields habit))
+                                            habit
                                             frequencyStatsList
 
                                     _ ->
@@ -365,15 +365,6 @@ renderHistoryViewerPanel openView dateInput selectedDate rdHabits rdHabitData rd
 
                                 renderHabit habit =
                                     renderHabitBox
-                                        -- (case rdFrequencyStatsList of
-                                        --     RemoteData.Success frequencyStatsList ->
-                                        --         HabitUtil.findFrequencyStatsForHabit
-                                        --             (.id (Habit.getCommonFields habit))
-                                        --             frequencyStatsList
-                                        --
-                                        --     _ ->
-                                        --         Err "Frequency stats not available for any habits"
-                                        -- )
                                         (Err "Ignore frequency stats for historical data")
                                         selectedDate
                                         habitData
