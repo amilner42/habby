@@ -463,7 +463,7 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
                                 LT ->
                                     case habit of
                                         Habit.GoodHabit _ ->
-                                            []
+                                            [ class "current-fragment-failure" ]
 
                                         Habit.BadHabit _ ->
                                             [ class "current-fragment-success" ]
