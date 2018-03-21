@@ -7,6 +7,16 @@ import Models.Habit as Habit
 import Models.FrequencyStats as FrequencyStats
 
 
+isHabitCurrentFragmentSuccessful : Habit.Habit -> FrequencyStats.FrequencyStats -> Bool
+isHabitCurrentFragmentSuccessful habit frequencyStats =
+    case habit of
+        Habit.GoodHabit _ ->
+            frequencyStats.currentFragmentTotal >= frequencyStats.currentFragmentGoal
+
+        Habit.BadHabit _ ->
+            frequencyStats.currentFragmentTotal <= frequencyStats.currentFragmentGoal
+
+
 findFrequencyStatsForHabit : Habit.Habit -> List FrequencyStats.FrequencyStats -> Result String FrequencyStats.FrequencyStats
 findFrequencyStatsForHabit habit frequencyStats =
     let

@@ -456,25 +456,10 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
                                     ++ (toString stats.currentFragmentDaysLeft)
                             ]
                         , div
-                            (case (compare stats.currentFragmentTotal stats.currentFragmentGoal) of
-                                EQ ->
-                                    [ class "current-fragment-success" ]
-
-                                LT ->
-                                    case habit of
-                                        Habit.GoodHabit _ ->
-                                            [ class "current-fragment-failure" ]
-
-                                        Habit.BadHabit _ ->
-                                            [ class "current-fragment-success" ]
-
-                                GT ->
-                                    case habit of
-                                        Habit.GoodHabit _ ->
-                                            [ class "current-fragment-success" ]
-
-                                        Habit.BadHabit _ ->
-                                            [ class "current-fragment-failure" ]
+                            (if HabitUtil.isHabitCurrentFragmentSuccessful habit stats then
+                                [ class "current-fragment-success" ]
+                             else
+                                [ class "current-fragment-failure" ]
                             )
                             [ text <|
                                 "Done: "
