@@ -193,7 +193,11 @@ update msg model =
                             (Maybe.map (Dict.update updatedHabitDatum.habitId (always Nothing)))
                             model.editingHistoryHabitAmount
                   }
-                , Cmd.none
+                , Api.queryHabitsAndHabitDataAndFrequencyStats
+                    model.ymd
+                    model.apiBaseUrl
+                    OnGetHabitsAndHabitDataAndFrequencyStatsFailure
+                    OnGetHabitsAndHabitDataAndFrequencyStatsSuccess
                 )
 
             OnToggleHistoryViewer ->

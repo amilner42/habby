@@ -446,27 +446,46 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
             [ div [ class "habit-name" ] [ text habitRecord.name ]
             , (case habitStats of
                 Err _ ->
-                    div [ class "frequency-stats" ] [ text "Frequency stats not available" ]
+                    div [ class "frequency-stats" ] [ text "N/A" ]
 
                 Ok stats ->
                     div [ class "frequency-stats" ]
-                        [ div []
+                        [ div
+                            [ classList
+                                [ ( "current-fragment-success", HabitUtil.isHabitCurrentFragmentSuccessful habit stats )
+                                , ( "current-fragment-failure", not <| HabitUtil.isHabitCurrentFragmentSuccessful habit stats )
+                                , ( "frequency-statistic", True )
+                                ]
+                            ]
+                            [ text <|
+                                (toString stats.currentFragmentTotal)
+                                    ++ " out of "
+                                    ++ (toString stats.currentFragmentGoal)
+                                    ++ " "
+                                    ++ habitRecord.unitNamePlural
+                            ]
+                        , div [ class "frequency-statistic" ]
                             [ text <|
                                 "Days left: "
                                     ++ (toString stats.currentFragmentDaysLeft)
                             ]
-                        , div
-                            (if HabitUtil.isHabitCurrentFragmentSuccessful habit stats then
-                                [ class "current-fragment-success" ]
-                             else
-                                [ class "current-fragment-failure" ]
-                            )
+                        , div [ class "frequency-statistic" ]
                             [ text <|
-                                "Done: "
-                                    ++ (toString stats.currentFragmentTotal)
-                                    ++ "/"
-                                    ++ (toString stats.currentFragmentGoal)
+                                (toString <|
+                                    round <|
+                                        (toFloat stats.successfulFragments)
+                                            * 100
+                                            / (toFloat stats.totalFragments)
+                                )
+                                    ++ "%"
                             ]
+                        , div
+                            [ class "frequency-statistic" ]
+                            [ text <| "Streak: " ++ (toString stats.currentFragmentStreak) ]
+                        , div [ class "frequency-statistic" ]
+                            [ text <| "Best streak: " ++ (toString stats.bestFragmentStreak) ]
+                        , div [ class "frequency-statistic" ]
+                            [ text <| "Total done: " ++ (toString stats.totalDone) ]
                         ]
               )
             , div
