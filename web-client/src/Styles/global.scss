@@ -253,16 +253,49 @@
         margin-top: -5px;
 
         &.good-habits {
-            .habit {
-                background-color: #45d893;
-                border: 1px solid #42b36e;
+            .habit-success {
+                background-color: rgba(14, 238, 70, 0.59);
+                border: 1px solid rgba(100, 182, 120, 1);
+                .frequency-statistic {
+                    color: rgb(16, 147, 0);
+                }
+                .current-progress {
+                    color: rgb(35, 126, 27);
+                }
+            }
+            .habit-failure {
+                background-color: rgb(132, 132, 231);
+                border: 1px solid rgb(93, 93, 230);
+                .frequency-statistic {
+                    color: rgb(79, 79, 79);
+                }
+                .current-progress {
+                    color: rgb(66, 66, 66);
+                }
             }
         }
 
         &.bad-habits {
-            .habit {
+            .habit-success {
                 background-color: #ffc971;
-                border: 1px solid #ffb627;
+                border: 1px solid #e9b155;
+                .frequency-statistic {
+                    color: rgb(91, 79, 0);
+                }
+                .current-progress {
+                    color: rgb(99, 84, 0);
+                }
+            }
+            .habit-failure {
+                background-color: rgb(203, 68, 68);
+                border: rgb(153, 0, 0);
+                .frequency-statistic {
+                  color: rgb(32, 0, 0);
+                }
+                .current-progress {
+                    color: rgb(56, 0, 0);
+                    font-weight: 700;
+                }
             }
         }
 
@@ -283,32 +316,24 @@
                 float: left;
             }
 
-            .frequency-stats {
+            .frequency-stats-list {
+                float: right;
+            }
+
+            .frequency-statistic {
                 margin-left: 10px;
-                text-overflow: ellipsis;
+                width: 130px;
                 font-weight: 200;
                 font-size: 12px;
-                color: blue;
                 text-align: right;
-                float: right;
-                .frequency-statistic{
-                  width: 130px;
-                  white-space: nowrap;
-                  overflow: hidden;
-                  text-overflow: ellipsis;
-                  font-style: italic;
-                }
-                .frequency-stats-title {
-                  font-weight: 600;
-                  text-decoration: underline;
-                }
-                .current-fragment-success {
-                  color: green;
-                }
-                .current-fragment-failure {
-                  color: #802200;  // dark red text
-                  font-weight: 200;
-                }
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .current-progress {
+                @extend .frequency-statistic;
+                font-weight: 600;
             }
 
             .habit-amount-complete {
@@ -349,6 +374,13 @@
                     }
                 }
             }
+        }
+
+        .habit-success {
+            @extend .habit;
+        }
+        .habit-failure {
+            @extend .habit;
         }
     }
 }
