@@ -440,23 +440,37 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
 
         editingHabitData =
             Dict.get habitRecord.id editingHabitDataDict
+
+        isCurrentFragmentSuccessful =
+            case habitStats of
+                Err _ ->
+                    False
+
+                Ok stats ->
+                    HabitUtil.isHabitCurrentFragmentSuccessful habit stats
+
+        frequencyStatisticDiv str =
+            div
+                [ class "frequency-statistic" ]
+                [ text str ]
     in
         div
-            [ class "habit" ]
+            [ class
+                (if isCurrentFragmentSuccessful then
+                    "habit-success"
+                 else
+                    "habit-failure"
+                )
+            ]
             [ div [ class "habit-name" ] [ text habitRecord.name ]
             , (case habitStats of
                 Err _ ->
-                    div [ class "frequency-stats" ] [ text "N/A" ]
+                    frequencyStatisticDiv "N/A"
 
                 Ok stats ->
-                    div [ class "frequency-stats" ]
+                    div [ class "frequency-stats-list" ]
                         [ div
-                            [ classList
-                                [ ( "current-fragment-success", HabitUtil.isHabitCurrentFragmentSuccessful habit stats )
-                                , ( "current-fragment-failure", not <| HabitUtil.isHabitCurrentFragmentSuccessful habit stats )
-                                , ( "frequency-statistic", True )
-                                ]
-                            ]
+                            [ class "current-progress" ]
                             [ text <|
                                 (toString stats.currentFragmentTotal)
                                     ++ " out of "
@@ -464,28 +478,19 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
                                     ++ " "
                                     ++ habitRecord.unitNamePlural
                             ]
-                        , div [ class "frequency-statistic" ]
-                            [ text <|
-                                "Days left: "
-                                    ++ (toString stats.currentFragmentDaysLeft)
-                            ]
-                        , div [ class "frequency-statistic" ]
-                            [ text <|
-                                (toString <|
-                                    round <|
-                                        (toFloat stats.successfulFragments)
-                                            * 100
-                                            / (toFloat stats.totalFragments)
-                                )
-                                    ++ "%"
-                            ]
-                        , div
-                            [ class "frequency-statistic" ]
-                            [ text <| "Streak: " ++ (toString stats.currentFragmentStreak) ]
-                        , div [ class "frequency-statistic" ]
-                            [ text <| "Best streak: " ++ (toString stats.bestFragmentStreak) ]
-                        , div [ class "frequency-statistic" ]
-                            [ text <| "Total done: " ++ (toString stats.totalDone) ]
+                        , frequencyStatisticDiv ("Days left: " ++ (toString stats.currentFragmentDaysLeft))
+                        , frequencyStatisticDiv
+                            ((toString <|
+                                round <|
+                                    (toFloat stats.successfulFragments)
+                                        * 100
+                                        / (toFloat stats.totalFragments)
+                             )
+                                ++ "%"
+                            )
+                        , frequencyStatisticDiv ("Streak: " ++ (toString stats.currentFragmentStreak))
+                        , frequencyStatisticDiv ("Best streak: " ++ (toString stats.bestFragmentStreak))
+                        , frequencyStatisticDiv ("Total done: " ++ (toString stats.totalDone))
                         ]
               )
             , div
