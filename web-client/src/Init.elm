@@ -30,6 +30,7 @@ init { apiBaseUrl, currentTime } location =
           , openHistoryViewer = False
           , historyViewerDateInput = ""
           , historyViewerSelectedDate = Nothing
+          , historyViewerFrequencyStats = RemoteData.NotAsked
           }
         , Api.queryHabitsAndHabitDataAndFrequencyStats
             ymd

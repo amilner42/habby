@@ -27,7 +27,7 @@ type alias HabitsAndHabitDataAndFrequencyStats =
     }
 
 
-{-| Query for all fields on all habits and habit data.
+{-| Query for all fields on all habits and habit data, plus their frequency stats.
 -}
 queryHabitsAndHabitDataAndFrequencyStats :
     YmdDate.YmdDate
@@ -132,6 +132,52 @@ queryHabitsAndHabitDataAndFrequencyStats ymd url handleError handleSuccess =
             (decode HabitsAndHabitDataAndFrequencyStats
                 |> required "habits" (Decode.list Habit.decodeHabit)
                 |> required "habitData" (Decode.list HabitData.decodeHabitData)
+                |> required "frequencyStatsList" (Decode.list FrequencyStats.decodeFrequencyStats)
+                |> Decode.at [ "data" ]
+            )
+            url
+            handleError
+            handleSuccess
+
+
+type alias QueriedFrequencyStats =
+    { frequencyStatsList : List FrequencyStats.FrequencyStats }
+
+
+{-| Query for all fields on all habits and habit data, plus their frequency stats.
+-}
+queryPastFrequencyStats :
+    YmdDate.YmdDate
+    -> String
+    -> (ApiError -> b)
+    -> (QueriedFrequencyStats -> b)
+    -> Cmd b
+queryPastFrequencyStats ymd url handleError handleSuccess =
+    let
+        queryString =
+            ("""{frequencyStatsList: get_frequency_stats(current_client_date: {year: """
+                ++ (toString ymd.year)
+                ++ ", month: "
+                ++ (toString ymd.month)
+                ++ ", day: "
+                ++ (toString ymd.day)
+                ++ """}) {
+    habit_id
+    total_fragments
+    successful_fragments
+    total_done
+    current_fragment_streak
+    best_fragment_streak
+    current_fragment_total
+    current_fragment_goal
+    current_fragment_days_left
+  }
+}"""
+            )
+    in
+        graphQLRequest
+            queryString
+            (decode QueriedFrequencyStats
                 |> required "frequencyStatsList" (Decode.list FrequencyStats.decodeFrequencyStats)
                 |> Decode.at [ "data" ]
             )

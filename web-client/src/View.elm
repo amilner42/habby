@@ -37,7 +37,7 @@ view model =
             model.historyViewerSelectedDate
             model.allHabits
             model.allHabitData
-            model.allFrequencyStats
+            model.historyViewerFrequencyStats
             model.editingHistoryHabitAmount
         ]
 
@@ -359,13 +359,31 @@ renderHistoryViewerPanel openView dateInput selectedDate rdHabits rdHabitData rd
                                 ( goodHabits, badHabits ) =
                                     Habit.splitHabits habits
 
+                                ( sortedGoodHabits, sortedBadHabits ) =
+                                    case rdFrequencyStatsList of
+                                        RemoteData.Success frequencyStatsList ->
+                                            ( HabitUtil.sortHabitsByCurrentFragment frequencyStatsList goodHabits
+                                            , HabitUtil.sortHabitsByCurrentFragment frequencyStatsList badHabits
+                                            )
+
+                                        _ ->
+                                            ( goodHabits, badHabits )
+
                                 editingHabitDataDict =
                                     Dict.get (YmdDate.toSimpleString selectedDate) editingHabitDataDictDict
                                         ?> Dict.empty
 
                                 renderHabit habit =
                                     renderHabitBox
-                                        (Err "Ignore frequency stats for historical data")
+                                        (case rdFrequencyStatsList of
+                                            RemoteData.Success frequencyStatsList ->
+                                                HabitUtil.findFrequencyStatsForHabit
+                                                    habit
+                                                    frequencyStatsList
+
+                                            _ ->
+                                                Err "Frequency stats not available for any habits"
+                                        )
                                         selectedDate
                                         habitData
                                         editingHabitDataDict
@@ -377,8 +395,8 @@ renderHistoryViewerPanel openView dateInput selectedDate rdHabits rdHabitData rd
                                     []
                                     [ span [ class "selected-date-title" ] [ text <| YmdDate.prettyPrint selectedDate ]
                                     , span [ class "change-date", onClick OnHistoryViewerChangeDate ] [ text "change date" ]
-                                    , div [ class "habit-list good-habits" ] <| List.map renderHabit goodHabits
-                                    , div [ class "habit-list bad-habits" ] <| List.map renderHabit badHabits
+                                    , div [ class "habit-list good-habits" ] <| List.map renderHabit sortedGoodHabits
+                                    , div [ class "habit-list bad-habits" ] <| List.map renderHabit sortedBadHabits
                                     ]
                 ]
 
@@ -465,7 +483,7 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
             [ div [ class "habit-name" ] [ text habitRecord.name ]
             , (case habitStats of
                 Err _ ->
-                    frequencyStatisticDiv "N/A"
+                    frequencyStatisticDiv "Error retriving performance stats"
 
                 Ok stats ->
                     div [ class "frequency-stats-list" ]
