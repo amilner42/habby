@@ -48,7 +48,6 @@ type Msg
     | OnHistoryViewerSelectBeforeYesterday
     | OnHistoryViewerSelectDateInput
     | SetHistoryViewerSelectedDate YmdDate.YmdDate
-    | GetHistoryViewerFrequencyStats
     | OnGetPastFrequencyStatsFailure ApiError
     | OnGetPastFrequencyStatsSuccess Api.QueriedFrequencyStats
     | OnHistoryViewerChangeDate
