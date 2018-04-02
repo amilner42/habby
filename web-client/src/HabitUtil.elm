@@ -72,7 +72,44 @@ sortHabitsByCurrentFragment frequencyStatsList habits =
                                 isHabitCurrentFragmentSuccessful habitTwo statsTwo
                         in
                             if isHabitOneAlreadySuccessful == isHabitTwoAlreadySuccessful then
-                                compare statsOne.currentFragmentDaysLeft statsTwo.currentFragmentDaysLeft
+                                let
+                                    daysLeftComparison =
+                                        compare statsOne.currentFragmentDaysLeft statsTwo.currentFragmentDaysLeft
+                                in
+                                    case daysLeftComparison of
+                                        EQ ->
+                                            -- further sort by current fragment progress
+                                            let
+                                                getCurrentProgress : FrequencyStats.FrequencyStats -> Float
+                                                getCurrentProgress stats =
+                                                    ((toFloat stats.currentFragmentTotal)
+                                                        / (toFloat stats.currentFragmentGoal)
+                                                    )
+
+                                                ( habitOneProgress, habitTwoProgress ) =
+                                                    ( getCurrentProgress statsOne, getCurrentProgress statsTwo )
+                                            in
+                                                case ( habitOne, habitTwo ) of
+                                                    ( Habit.GoodHabit _, Habit.GoodHabit _ ) ->
+                                                        -- The more progress the user has made, the less behind they are on
+                                                        -- the habit, so display it further down
+                                                        compare habitOneProgress habitTwoProgress
+
+                                                    ( Habit.BadHabit _, Habit.BadHabit _ ) ->
+                                                        -- The more poorly the user has done, the more they should see it prominently
+                                                        -- displayed so they can be aware and work on it
+                                                        compare habitTwoProgress habitOneProgress
+
+                                                    ( Habit.GoodHabit _, Habit.BadHabit _ ) ->
+                                                        -- We probably shouldn't be sorting good habits and bad habits together,
+                                                        -- but if we are, we should display good habits first.
+                                                        LT
+
+                                                    _ ->
+                                                        GT
+
+                                        _ ->
+                                            daysLeftComparison
                             else if isHabitOneAlreadySuccessful then
                                 -- We know they are different so if `isHabitOneAlreadySuccessful` is true
                                 -- then `isHabitTwoAlreadySuccessful` must be false
