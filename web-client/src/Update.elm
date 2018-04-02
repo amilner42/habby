@@ -223,26 +223,51 @@ update msg model =
                     yesterday =
                         YmdDate.addDays -1 model.ymd
                 in
-                    ( { model | historyViewerSelectedDate = Just yesterday }, Cmd.none )
+                    update (SetHistoryViewerSelectedDate yesterday) model
 
             OnHistoryViewerSelectBeforeYesterday ->
                 let
                     beforeYesterday =
                         YmdDate.addDays -2 model.ymd
                 in
-                    ( { model | historyViewerSelectedDate = Just beforeYesterday }
-                    , Cmd.none
-                    )
+                    update (SetHistoryViewerSelectedDate beforeYesterday) model
 
             OnHistoryViewerSelectDateInput ->
-                model.historyViewerDateInput
-                    |> YmdDate.fromSimpleString
-                    ||> (\ymd ->
-                            ( { model | historyViewerSelectedDate = Just ymd }
-                            , Cmd.none
-                            )
+                let
+                    ymd =
+                        YmdDate.fromSimpleString model.historyViewerDateInput
+                in
+                    (case ymd of
+                        Just ymd ->
+                            update (SetHistoryViewerSelectedDate ymd) model
+
+                        Nothing ->
+                            ( model, Cmd.none )
+                    )
+
+            SetHistoryViewerSelectedDate ymd ->
+                { model | historyViewerSelectedDate = Just ymd }
+                    |> update GetHistoryViewerFrequencyStats
+
+            GetHistoryViewerFrequencyStats ->
+                case model.historyViewerSelectedDate of
+                    Just ymd ->
+                        ( model
+                        , Api.queryPastFrequencyStats
+                            ymd
+                            model.apiBaseUrl
+                            OnGetPastFrequencyStatsFailure
+                            OnGetPastFrequencyStatsSuccess
                         )
-                    ?> ( model, Cmd.none )
+
+                    Nothing ->
+                        ( { model | historyViewerFrequencyStats = RemoteData.NotAsked }, Cmd.none )
+
+            OnGetPastFrequencyStatsFailure apiError ->
+                ( { model | historyViewerFrequencyStats = RemoteData.Failure apiError }, Cmd.none )
+
+            OnGetPastFrequencyStatsSuccess { frequencyStatsList } ->
+                ( { model | historyViewerFrequencyStats = RemoteData.Success frequencyStatsList }, Cmd.none )
 
             OnHistoryViewerChangeDate ->
                 ( { model | historyViewerSelectedDate = Nothing }, Cmd.none )
