@@ -103,6 +103,11 @@
   [context {:keys [habit_ids current_client_date] :as all} value]
   (map tag-type (db/get-frequency-stats (assoc all :current_client_date (date-from-y-m-d-map current_client_date)))))
 
+(defn resolve-mutation-edit-habit
+  "@refer `db/edit-habit`."
+  [context {:keys [habit_id edit_habit_data] :as all} value]
+  (tag-type (db/edit-habit (assoc all :edit_habit_data (unnest-tagged-unions-on-input-object edit_habit_data)))))
+
 (defn resolver-map
   []
   {:query/get-habits (create-async-resolver resolve-get-habits)
@@ -114,7 +119,8 @@
    :query/date-to-y-m-d-format (create-date-to-y-m-d-resolver :date)
    :query/resolve-mutation-delete-habit (create-async-resolver resolve-mutation-delete-habit)
    :query/resolve-mutation-set-suspend-habit (create-async-resolver resolve-mutation-set-suspend-habit)
-   :query/get-frequency-stats (create-async-resolver resolve-query-get-frequency-stats)})
+   :query/get-frequency-stats (create-async-resolver resolve-query-get-frequency-stats)
+   :query/resolve-mutation-edit-habit (create-async-resolver resolve-mutation-edit-habit)})
 
 (defn load-schema
   []

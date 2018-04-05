@@ -133,7 +133,29 @@
                  :create_habit_data {:description "The data required to create a new habit."
                                      :fields {:type_name {:type (non-null String)}
                                               :good_habit {:type :create_good_habit_data}
-                                              :bad_habit {:type :create_bad_habit_data}}}}
+                                              :bad_habit {:type :create_bad_habit_data}}}
+
+                 :edit_good_habit_data {:description "The data required to edit an existing habit into a good habit."
+                                        :fields {:suspended {:type (non-null Boolean)}
+                                                 :name {:type (non-null String)}
+                                                 :description {:type String}
+                                                 :unit_name_singular {:type (non-null String)}
+                                                 :unit_name_plural {:type (non-null String)}
+                                                 :time_of_day {:type (non-null :habit_time)}
+                                                 :target_frequency {:type (non-null :create_frequency_data)}}}
+
+                 :edit_bad_habit_data {:description "The data required to edit an existing habit into a bad habit."
+                                       :fields {:suspended {:type (non-null Boolean)}
+                                                :name {:type (non-null String)}
+                                                :description {:type String}
+                                                :unit_name_singular {:type (non-null String)}
+                                                :unit_name_plural {:type (non-null String)}
+                                                :threshold_frequency {:type (non-null :create_frequency_data)}}}
+
+                 :edit_habit_data {:description "The data required to edit an existing habit."
+                                   :fields {:type_name {:type (non-null String)}
+                                            :good_habit {:type :edit_good_habit_data}
+                                            :bad_habit {:type :edit_bad_habit_data}}}}
 
  :mutations {:add_habit {:type (non-null :habit)
                          :description "Add a habit to your list of habits, returns the new habit."
@@ -155,4 +177,10 @@
                                  :description "Set the `suspended` for a habit found by ID, returns true if the update was performed."
                                  :args {:habit_id {:type (non-null ID)}
                                         :suspended {:type (non-null Boolean)}}
-                                 :resolve :query/resolve-mutation-set-suspend-habit}}}
+                                 :resolve :query/resolve-mutation-set-suspend-habit}
+
+             :edit_habit {:type (non-null :habit)
+                          :description "Edit properties of a habit found by ID."
+                          :args {:habit_id {:type (non-null ID)}
+                                 :edit_habit_data {:type (non-null :edit_habit_data)}}
+                          :resolve :query/resolve-mutation-edit-habit}}}

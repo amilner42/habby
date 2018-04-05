@@ -150,3 +150,14 @@
                                                    "total_week_frequency" 7
                                                    "every_x_days_frequency" (:days freq)))))))))))))
        (get-habits {:db db :habit_ids habit_ids})))
+
+(defn edit-habit
+  "Edits metadata of the habit with ID `habit_id` from database `db`.
+  Replaces all fields of the habit with those defined by `edit_habit_data`.
+  Removes all other fields from the habit."
+  [{:keys [db habit_id edit_habit_data], :or {db habby_db}}]
+  (mc/find-and-modify db
+                      (:habits collection-names)
+                      {:_id (ObjectId. habit_id)}
+                      edit_habit_data
+                      {:return-new true}))
