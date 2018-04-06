@@ -71,6 +71,7 @@
 
  :queries {:get_habits {:type (non-null (list (non-null :habit)))
                         :description "Get all habits."
+                        :args {:habit_ids {:type (list (non-null ID))}}
                         :resolve :query/get-habits}
 
            :get_habit_data {:type (non-null (list (non-null :habit_day_record)))
