@@ -40,8 +40,10 @@
 
 (defn get-habits
   "Retrieves all habits sync from the database as clojure maps."
-  [{:keys [db] :or {db habby_db}}]
-  (mc/find-maps db (:habits collection-names)))
+  [{:keys [db habit_ids] :or {db habby_db}}]
+  (mc/find-maps db
+                (:habits collection-names)
+                (if (nil? habit_ids) nil {:_id {$in (map #(ObjectId. %) habit_ids)}})))
 
 (defn get-habit-data
   "Gets habit data from the db, optionally after a specific date or for a specific habit."
@@ -147,9 +149,4 @@
                                                    "specific_day_of_week_frequency" 1
                                                    "total_week_frequency" 7
                                                    "every_x_days_frequency" (:days freq)))))))))))))
-       (if (nil? habit_ids)
-         (get-habits {:db db})
-         (map (fn [habit_id] (mc/find-map-by-id db
-                                                (:habits collection-names)
-                                                (ObjectId. habit_id)))
-              habit_ids))))
+       (get-habits {:db db :habit_ids habit_ids})))
