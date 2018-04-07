@@ -331,6 +331,10 @@
                 text-overflow: ellipsis;
             }
 
+            .edit-habit {
+              font-size: 15px;
+            }
+
             .current-progress {
                 @extend .frequency-statistic;
                 font-weight: 600;

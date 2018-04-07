@@ -20,6 +20,7 @@ init { apiBaseUrl, currentTime } location =
     in
         ( { ymd = ymd
           , apiBaseUrl = apiBaseUrl
+          , editHabitDict = Dict.empty
           , editingTodayHabitAmount = Dict.empty
           , editingHistoryHabitAmount = Dict.empty
           , allHabitData = RemoteData.Loading

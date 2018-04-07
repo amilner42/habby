@@ -41,6 +41,9 @@ type Msg
     | SetHabitData YmdDate.YmdDate String (Maybe Int)
     | OnSetHabitDataFailure ApiError
     | OnSetHabitDataSuccess HabitData.HabitData
+    | OnHabitMouseEnter String
+    | OnHabitMouseLeave String
+    | SetEditHabitShowIcon Bool String
     | OnToggleHistoryViewer
     | OnToggleTodayViewer
     | OnHistoryViewerDateInput String

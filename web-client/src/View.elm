@@ -5,8 +5,8 @@ import DefaultServices.Util as Util
 import Dict
 import HabitUtil
 import Html exposing (Html, button, div, hr, i, input, span, text, textarea)
-import Html.Attributes exposing (class, classList, placeholder, value)
-import Html.Events exposing (onClick, onInput)
+import Html.Attributes exposing (class, classList, placeholder, value, hidden)
+import Html.Events exposing (onClick, onInput, onMouseEnter, onMouseLeave)
 import Keyboard.Extra as KK
 import Maybe.Extra as Maybe
 import Model exposing (Model)
@@ -26,6 +26,7 @@ view model =
         [ renderTodayPanel
             model.ymd
             model.allHabits
+            model.editHabitDict
             model.allHabitData
             model.allFrequencyStats
             model.addHabit
@@ -36,6 +37,7 @@ view model =
             model.historyViewerDateInput
             model.historyViewerSelectedDate
             model.allHabits
+            model.editHabitDict
             model.allHabitData
             model.historyViewerFrequencyStats
             model.editingHistoryHabitAmount
@@ -45,13 +47,14 @@ view model =
 renderTodayPanel :
     YmdDate.YmdDate
     -> RemoteData.RemoteData ApiError.ApiError (List Habit.Habit)
+    -> Dict.Dict String Habit.EditHabit
     -> RemoteData.RemoteData ApiError.ApiError (List HabitData.HabitData)
     -> RemoteData.RemoteData ApiError.ApiError (List FrequencyStats.FrequencyStats)
     -> Habit.AddHabitInputData
     -> Dict.Dict String Int
     -> Bool
     -> Html Msg
-renderTodayPanel ymd rdHabits rdHabitData rdFrequencyStatsList addHabit editingHabitDataDict openView =
+renderTodayPanel ymd rdHabits editHabitDict rdHabitData rdFrequencyStatsList addHabit editingHabitDataDict openView =
     let
         createHabitData =
             Habit.extractCreateHabit addHabit
@@ -93,6 +96,7 @@ renderTodayPanel ymd rdHabits rdHabitData rdFrequencyStatsList addHabit editingH
                                 editingHabitDataDict
                                 OnHabitDataInput
                                 SetHabitData
+                                editHabitDict
                                 habit
                     in
                         div [ classList [ ( "display-none", not openView ) ] ]
@@ -316,11 +320,12 @@ renderHistoryViewerPanel :
     -> String
     -> Maybe YmdDate.YmdDate
     -> RemoteData.RemoteData ApiError.ApiError (List Habit.Habit)
+    -> Dict.Dict String Habit.EditHabit
     -> RemoteData.RemoteData ApiError.ApiError (List HabitData.HabitData)
     -> RemoteData.RemoteData ApiError.ApiError (List FrequencyStats.FrequencyStats)
     -> Dict.Dict String (Dict.Dict String Int)
     -> Html Msg
-renderHistoryViewerPanel openView dateInput selectedDate rdHabits rdHabitData rdFrequencyStatsList editingHabitDataDictDict =
+renderHistoryViewerPanel openView dateInput selectedDate rdHabits editHabitDict rdHabitData rdFrequencyStatsList editingHabitDataDictDict =
     case ( rdHabits, rdHabitData ) of
         ( RemoteData.Success habits, RemoteData.Success habitData ) ->
             div
@@ -389,6 +394,7 @@ renderHistoryViewerPanel openView dateInput selectedDate rdHabits rdHabitData rd
                                         editingHabitDataDict
                                         (OnHistoryViewerHabitDataInput selectedDate)
                                         SetHabitData
+                                        editHabitDict
                                         habit
                             in
                                 div
@@ -437,9 +443,10 @@ renderHabitBox :
     -> Dict.Dict String Int
     -> (String -> String -> Msg)
     -> (YmdDate.YmdDate -> String -> Maybe Int -> Msg)
+    -> Dict.Dict String Habit.EditHabit
     -> Habit.Habit
     -> Html Msg
-renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput setHabitData habit =
+renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput setHabitData editHabitDict habit =
     let
         habitRecord =
             Habit.getCommonFields habit
@@ -458,6 +465,17 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
 
         editingHabitData =
             Dict.get habitRecord.id editingHabitDataDict
+
+        editHabit =
+            Dict.get habitRecord.id editHabitDict
+
+        ( showEditHabitIcon, showEditHabitForm ) =
+            case editHabit of
+                Just editHabit ->
+                    ( editHabit.showIcon, editHabit.showForm )
+
+                Nothing ->
+                    ( False, False )
 
         isCurrentFragmentSuccessful =
             case habitStats of
@@ -479,6 +497,8 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
                  else
                     "habit-failure"
                 )
+            , onMouseEnter <| OnHabitMouseEnter habitRecord.id
+            , onMouseLeave <| OnHabitMouseLeave habitRecord.id
             ]
             [ div [ class "habit-name" ] [ text habitRecord.name ]
             , (case habitStats of
@@ -511,6 +531,11 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
                         , frequencyStatisticDiv ("Total done: " ++ (toString stats.totalDone))
                         ]
               )
+            , div
+                [ class "edit-habit-icon"
+                , hidden <| not showEditHabitIcon
+                ]
+                [ text "edit this habit" ]
             , div
                 [ classList
                     [ ( "habit-amount-complete", True )
