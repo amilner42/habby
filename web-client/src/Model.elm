@@ -12,7 +12,7 @@ import RemoteData
 type alias Model =
     { ymd : YmdDate.YmdDate
     , apiBaseUrl : String
-    , editHabitDict : Dict.Dict String Habit.EditHabit
+    , editHabitIconHabitID : Maybe String -- which habit to show the edit habit icon for
     , editingTodayHabitAmount : Dict.Dict String Int
     , editingHistoryHabitAmount : Dict.Dict String (Dict.Dict String Int)
     , allHabits : RemoteData.RemoteData ApiError.ApiError (List Habit.Habit)

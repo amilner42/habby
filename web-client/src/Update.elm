@@ -72,7 +72,6 @@ update msg model =
                     | allHabits = RemoteData.Success habits
                     , allHabitData = RemoteData.Success habitData
                     , allFrequencyStats = RemoteData.Success frequencyStatsList
-                    , editHabitDict = Habit.initEditHabitDict habits
                   }
                 , Cmd.none
                 )
@@ -238,21 +237,10 @@ update msg model =
                           ]
 
             OnHabitMouseEnter habitId ->
-                update (SetEditHabitShowIcon True habitId) model
+                ( { model | editHabitIconHabitID = Just habitId }, Cmd.none )
 
-            OnHabitMouseLeave habitId ->
-                update (SetEditHabitShowIcon False habitId) model
-
-            SetEditHabitShowIcon bool habitId ->
-                ( { model
-                    | editHabitDict =
-                        Dict.update
-                            habitId
-                            (Maybe.map (\editHabit -> { editHabit | showIcon = bool }))
-                            model.editHabitDict
-                  }
-                , Cmd.none
-                )
+            OnHabitMouseLeave ->
+                ( { model | editHabitIconHabitID = Nothing }, Cmd.none )
 
             OnToggleHistoryViewer ->
                 ( { model | openHistoryViewer = not model.openHistoryViewer }

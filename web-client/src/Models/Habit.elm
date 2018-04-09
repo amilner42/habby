@@ -1,6 +1,5 @@
 module Models.Habit exposing (..)
 
-import Dict
 import DefaultServices.Infix exposing (..)
 import DefaultServices.Util as Util
 import Json.Decode as Decode
@@ -86,13 +85,6 @@ type alias CreateBadHabitRecord =
     }
 
 
-type alias EditHabit =
-    { showIcon : Bool
-    , showForm : Bool
-    , name : String
-    }
-
-
 type Frequency
     = EveryXDayFrequency EveryXDayFrequencyRecord
     | TotalWeekFrequency Int
@@ -147,25 +139,6 @@ initAddHabitData =
     , times = Nothing
     , days = Nothing
     }
-
-
-initEditHabitDict : List Habit -> Dict.Dict String EditHabit
-initEditHabitDict habits =
-    let
-        initEditHabitTuple : Habit -> ( String, EditHabit )
-        initEditHabitTuple habit =
-            let
-                habitRecord =
-                    getCommonFields habit
-            in
-                ( habitRecord.id
-                , { name = habitRecord.name
-                  , showIcon = False
-                  , showForm = False
-                  }
-                )
-    in
-        Dict.fromList <| List.map initEditHabitTuple habits
 
 
 {-| Returns the habits split by good/bad: (good habits, bad habits).

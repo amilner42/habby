@@ -42,8 +42,7 @@ type Msg
     | OnSetHabitDataFailure ApiError
     | OnSetHabitDataSuccess HabitData.HabitData
     | OnHabitMouseEnter String
-    | OnHabitMouseLeave String
-    | SetEditHabitShowIcon Bool String
+    | OnHabitMouseLeave
     | OnToggleHistoryViewer
     | OnToggleTodayViewer
     | OnHistoryViewerDateInput String

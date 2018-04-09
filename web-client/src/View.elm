@@ -26,7 +26,7 @@ view model =
         [ renderTodayPanel
             model.ymd
             model.allHabits
-            model.editHabitDict
+            model.editHabitIconHabitID
             model.allHabitData
             model.allFrequencyStats
             model.addHabit
@@ -37,7 +37,7 @@ view model =
             model.historyViewerDateInput
             model.historyViewerSelectedDate
             model.allHabits
-            model.editHabitDict
+            model.editHabitIconHabitID
             model.allHabitData
             model.historyViewerFrequencyStats
             model.editingHistoryHabitAmount
@@ -47,14 +47,14 @@ view model =
 renderTodayPanel :
     YmdDate.YmdDate
     -> RemoteData.RemoteData ApiError.ApiError (List Habit.Habit)
-    -> Dict.Dict String Habit.EditHabit
+    -> Maybe String
     -> RemoteData.RemoteData ApiError.ApiError (List HabitData.HabitData)
     -> RemoteData.RemoteData ApiError.ApiError (List FrequencyStats.FrequencyStats)
     -> Habit.AddHabitInputData
     -> Dict.Dict String Int
     -> Bool
     -> Html Msg
-renderTodayPanel ymd rdHabits editHabitDict rdHabitData rdFrequencyStatsList addHabit editingHabitDataDict openView =
+renderTodayPanel ymd rdHabits editHabitIconHabitID rdHabitData rdFrequencyStatsList addHabit editingHabitDataDict openView =
     let
         createHabitData =
             Habit.extractCreateHabit addHabit
@@ -96,7 +96,7 @@ renderTodayPanel ymd rdHabits editHabitDict rdHabitData rdFrequencyStatsList add
                                 editingHabitDataDict
                                 OnHabitDataInput
                                 SetHabitData
-                                editHabitDict
+                                editHabitIconHabitID
                                 habit
                     in
                         div [ classList [ ( "display-none", not openView ) ] ]
@@ -320,12 +320,12 @@ renderHistoryViewerPanel :
     -> String
     -> Maybe YmdDate.YmdDate
     -> RemoteData.RemoteData ApiError.ApiError (List Habit.Habit)
-    -> Dict.Dict String Habit.EditHabit
+    -> Maybe String
     -> RemoteData.RemoteData ApiError.ApiError (List HabitData.HabitData)
     -> RemoteData.RemoteData ApiError.ApiError (List FrequencyStats.FrequencyStats)
     -> Dict.Dict String (Dict.Dict String Int)
     -> Html Msg
-renderHistoryViewerPanel openView dateInput selectedDate rdHabits editHabitDict rdHabitData rdFrequencyStatsList editingHabitDataDictDict =
+renderHistoryViewerPanel openView dateInput selectedDate rdHabits editHabitIconHabitID rdHabitData rdFrequencyStatsList editingHabitDataDictDict =
     case ( rdHabits, rdHabitData ) of
         ( RemoteData.Success habits, RemoteData.Success habitData ) ->
             div
@@ -394,7 +394,7 @@ renderHistoryViewerPanel openView dateInput selectedDate rdHabits editHabitDict 
                                         editingHabitDataDict
                                         (OnHistoryViewerHabitDataInput selectedDate)
                                         SetHabitData
-                                        editHabitDict
+                                        editHabitIconHabitID
                                         habit
                             in
                                 div
@@ -443,10 +443,10 @@ renderHabitBox :
     -> Dict.Dict String Int
     -> (String -> String -> Msg)
     -> (YmdDate.YmdDate -> String -> Maybe Int -> Msg)
-    -> Dict.Dict String Habit.EditHabit
+    -> Maybe String
     -> Habit.Habit
     -> Html Msg
-renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput setHabitData editHabitDict habit =
+renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput setHabitData editHabitIconHabitID habit =
     let
         habitRecord =
             Habit.getCommonFields habit
@@ -466,16 +466,8 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
         editingHabitData =
             Dict.get habitRecord.id editingHabitDataDict
 
-        editHabit =
-            Dict.get habitRecord.id editHabitDict
-
-        ( showEditHabitIcon, showEditHabitForm ) =
-            case editHabit of
-                Just editHabit ->
-                    ( editHabit.showIcon, editHabit.showForm )
-
-                Nothing ->
-                    ( False, False )
+        showEditHabitIcon =
+            False <? Maybe.map (\i -> i == habitRecord.id) editHabitIconHabitID
 
         isCurrentFragmentSuccessful =
             case habitStats of
@@ -491,81 +483,84 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
                 [ text str ]
     in
         div
-            [ class
-                (if isCurrentFragmentSuccessful then
-                    "habit-success"
-                 else
-                    "habit-failure"
-                )
-            , onMouseEnter <| OnHabitMouseEnter habitRecord.id
-            , onMouseLeave <| OnHabitMouseLeave habitRecord.id
-            ]
-            [ div [ class "habit-name" ] [ text habitRecord.name ]
-            , (case habitStats of
-                Err _ ->
-                    frequencyStatisticDiv "Error retriving performance stats"
+            [ class "habit-box-and-edit-habit-form" ]
+            [ div
+                [ class
+                    (if isCurrentFragmentSuccessful then
+                        "habit-success"
+                     else
+                        "habit-failure"
+                    )
+                , onMouseEnter <| OnHabitMouseEnter habitRecord.id
+                , onMouseLeave <| OnHabitMouseLeave
+                ]
+                [ div [ class "habit-name" ] [ text habitRecord.name ]
+                , (case habitStats of
+                    Err _ ->
+                        frequencyStatisticDiv "Error retriving performance stats"
 
-                Ok stats ->
-                    div [ class "frequency-stats-list" ]
-                        [ div
-                            [ class "current-progress" ]
-                            [ text <|
-                                (toString stats.currentFragmentTotal)
-                                    ++ " out of "
-                                    ++ (toString stats.currentFragmentGoal)
-                                    ++ " "
-                                    ++ habitRecord.unitNamePlural
+                    Ok stats ->
+                        div [ class "frequency-stats-list" ]
+                            [ div
+                                [ class "current-progress" ]
+                                [ text <|
+                                    (toString stats.currentFragmentTotal)
+                                        ++ " out of "
+                                        ++ (toString stats.currentFragmentGoal)
+                                        ++ " "
+                                        ++ habitRecord.unitNamePlural
+                                ]
+                            , frequencyStatisticDiv ("Days left: " ++ (toString stats.currentFragmentDaysLeft))
+                            , frequencyStatisticDiv
+                                ((toString <|
+                                    round <|
+                                        (toFloat stats.successfulFragments)
+                                            * 100
+                                            / (toFloat stats.totalFragments)
+                                 )
+                                    ++ "%"
+                                )
+                            , frequencyStatisticDiv ("Streak: " ++ (toString stats.currentFragmentStreak))
+                            , frequencyStatisticDiv ("Best streak: " ++ (toString stats.bestFragmentStreak))
+                            , frequencyStatisticDiv ("Total done: " ++ (toString stats.totalDone))
                             ]
-                        , frequencyStatisticDiv ("Days left: " ++ (toString stats.currentFragmentDaysLeft))
-                        , frequencyStatisticDiv
-                            ((toString <|
-                                round <|
-                                    (toFloat stats.successfulFragments)
-                                        * 100
-                                        / (toFloat stats.totalFragments)
-                             )
-                                ++ "%"
-                            )
-                        , frequencyStatisticDiv ("Streak: " ++ (toString stats.currentFragmentStreak))
-                        , frequencyStatisticDiv ("Best streak: " ++ (toString stats.bestFragmentStreak))
-                        , frequencyStatisticDiv ("Total done: " ++ (toString stats.totalDone))
+                  )
+                , div
+                    [ class "edit-habit-icon"
+                    , hidden <| not showEditHabitIcon
+                    ]
+                    [ text "edit this habit" ]
+                , div
+                    [ classList
+                        [ ( "habit-amount-complete", True )
+                        , ( "editing", Maybe.isJust <| editingHabitData )
                         ]
-              )
-            , div
-                [ class "edit-habit-icon"
-                , hidden <| not showEditHabitIcon
-                ]
-                [ text "edit this habit" ]
-            , div
-                [ classList
-                    [ ( "habit-amount-complete", True )
-                    , ( "editing", Maybe.isJust <| editingHabitData )
                     ]
-                ]
-                [ input
-                    [ placeholder <|
-                        toString habitDatum
-                            ++ " "
-                            ++ (if habitDatum == 1 then
-                                    habitRecord.unitNameSingular
+                    [ input
+                        [ placeholder <|
+                            toString habitDatum
+                                ++ " "
+                                ++ (if habitDatum == 1 then
+                                        habitRecord.unitNameSingular
+                                    else
+                                        habitRecord.unitNamePlural
+                                   )
+                        , onInput <| onHabitDataInput habitRecord.id
+                        , Util.onKeydown
+                            (\key ->
+                                if key == KK.Enter then
+                                    Just <| setHabitData ymd habitRecord.id editingHabitData
                                 else
-                                    habitRecord.unitNamePlural
-                               )
-                    , onInput <| onHabitDataInput habitRecord.id
-                    , Util.onKeydown
-                        (\key ->
-                            if key == KK.Enter then
-                                Just <| setHabitData ymd habitRecord.id editingHabitData
-                            else
-                                Nothing
-                        )
-                    , value (editingHabitData ||> toString ?> "")
+                                    Nothing
+                            )
+                        , value (editingHabitData ||> toString ?> "")
+                        ]
+                        []
+                    , i
+                        [ classList [ ( "material-icons", True ) ]
+                        , onClick <| setHabitData ymd habitRecord.id editingHabitData
+                        ]
+                        [ text "check_box" ]
                     ]
-                    []
-                , i
-                    [ classList [ ( "material-icons", True ) ]
-                    , onClick <| setHabitData ymd habitRecord.id editingHabitData
-                    ]
-                    [ text "check_box" ]
                 ]
             ]
