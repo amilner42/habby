@@ -43,7 +43,14 @@ update msg model =
                 ( model, Cmd.none )
 
             TickMinute time ->
-                ( { model | ymd = time |> Date.fromTime |> YmdDate.fromDate }, Cmd.none )
+                let
+                    newYmd =
+                        time |> Date.fromTime |> YmdDate.fromDate
+                in
+                    if model.ymd /= newYmd then
+                        ( { model | ymd = newYmd }, getHabitsAndHabitDataAndFrequencyStats )
+                    else
+                        ( model, Cmd.none )
 
             OnGetHabitsAndHabitDataAndFrequencyStatsFailure apiError ->
                 ( { model
