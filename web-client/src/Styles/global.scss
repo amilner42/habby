@@ -1,4 +1,6 @@
 @import './mixins.scss';
+$bootstrap-sass-asset-helper: true;
+@import '~bootstrap-sass/assets/stylesheets/bootstrap';
 
 .view {
     font-family: 'Raleway', sans-serif;
@@ -305,24 +307,29 @@
             position: relative;
             padding: 7px;
             margin: 15px 15px 0 2px;
-            min-width: 200px;
-            min-height: 80px;
+            width: 300px;
+            height: 100px;
             box-sizing: content-box;
             color: white;
 
             .habit-name {
                 font-weight: 600;
+                font-size: 17px;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
                 width: 150px;
                 float: left;
             }
 
             .frequency-stats-list {
                 float: right;
+                height: 100px;
+                width: 150px;
+                overflow: scroll;
             }
 
             .frequency-statistic {
-                margin-left: 10px;
-                width: 130px;
                 font-weight: 200;
                 font-size: 12px;
                 text-align: right;
@@ -336,6 +343,16 @@
                 font-weight: 600;
             }
 
+            .edit-habit-icon {
+                @extend .glyphicon;
+                @extend .glyphicon-edit;
+                font-size: 20px;
+                margin-top: 5px;
+                cursor: pointer;
+                float: left;
+                clear: left;
+            }
+
             .habit-amount-complete {
                 box-sizing: border-box;
                 position: absolute;
@@ -345,6 +362,7 @@
 
                 input  {
                     box-sizing: border-box;
+                    font-size: 13px;
                     border: none;
                     border-radius: 1px;
                     height: 25px;

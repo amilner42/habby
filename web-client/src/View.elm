@@ -534,11 +534,13 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
                             ]
                   )
                 , div
-                    [ class "edit-habit-icon"
-                    , hidden <| not showEditHabitIcon
+                    [ classList
+                        [ ( "edit-habit-icon", True )
+                        , ( "hidden", not showEditHabitIcon )
+                        ]
                     , onClick <| OnEditHabitIconClick habitRecord.id
                     ]
-                    [ text "edit this habit" ]
+                    []
                 , div
                     [ classList
                         [ ( "habit-amount-complete", True )
@@ -581,5 +583,9 @@ editHabitDialogConfig model =
     , containerClass = Nothing
     , header = Just <| h3 [] [ text "Edit Habit Dialog Title" ]
     , body = Just <| div [] [ text "edit habit dialog body" ]
-    , footer = Just <| button [ onClick OnAbortEditHabitDialog ] [ text "submit edit habit" ]
+    , footer =
+        Just <|
+            button
+                [ onClick OnAbortEditHabitDialog ]
+                [ text "submit edit habit" ]
     }
