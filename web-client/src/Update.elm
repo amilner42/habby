@@ -18,6 +18,9 @@ update msg model =
         updateAddHabit updater =
             { model | addHabit = updater model.addHabit }
 
+        updateEditHabit updater =
+            { model | editHabit = updater model.editHabit }
+
         getHabitsAndHabitDataAndFrequencyStats : Cmd Msg
         getHabitsAndHabitDataAndFrequencyStats =
             Api.queryHabitsAndHabitDataAndFrequencyStats
@@ -243,12 +246,12 @@ update msg model =
                 ( { model | editHabitIconHabitID = Nothing }, Cmd.none )
 
             OnEditHabitIconClick habitId ->
-                ( { model | editHabit = (\sd i eh -> { eh | showDialog = sd, habitId = Just i }) True habitId model.editHabit }
+                ( updateEditHabit (\eh -> { eh | showDialog = True, habitId = Just habitId })
                 , Cmd.none
                 )
 
             OnAbortEditHabitDialog ->
-                ( { model | editHabit = (\b eh -> { eh | showDialog = b }) False model.editHabit }
+                ( updateEditHabit (\eh -> { eh | showDialog = False })
                 , Cmd.none
                 )
 
