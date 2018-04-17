@@ -13,8 +13,10 @@ type Msg
     = NoOp
     | OnLocationChange Navigation.Location
     | TickMinute Time.Time
+      -- Query Data related
     | OnGetHabitsAndHabitDataAndFrequencyStatsFailure ApiError
     | OnGetHabitsAndHabitDataAndFrequencyStatsSuccess Api.HabitsAndHabitDataAndFrequencyStats
+      -- Add Habit related
     | OnOpenAddHabit
     | OnCancelAddHabit
     | OnSelectAddHabitKind Habit.HabitKind
@@ -37,14 +39,17 @@ type Msg
     | AddHabit Habit.CreateHabit
     | OnAddHabitFailure ApiError
     | OnAddHabitSuccess Habit.Habit
+      -- Habit Amount related
     | OnHabitDataInput String String
     | SetHabitData YmdDate.YmdDate String (Maybe Int)
     | OnSetHabitDataFailure ApiError
     | OnSetHabitDataSuccess HabitData.HabitData
+      -- Edit Habit related
     | OnHabitMouseEnter String
     | OnHabitMouseLeave
     | OnEditHabitIconClick String
     | OnAbortEditHabitDialog
+      -- History View related
     | OnToggleHistoryViewer
     | OnToggleTodayViewer
     | OnHistoryViewerDateInput String
