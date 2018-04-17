@@ -64,6 +64,24 @@ type alias AddHabitInputData =
 type alias EditHabitInputData =
     { showDialog : Bool
     , habitId : Maybe String
+    , kind : HabitKind
+    , name : String
+    , description : String
+    , goodHabitTime : HabitTime
+    , unitNameSingular : String
+    , unitNamePlural : String
+    , frequencyKind : FrequencyKind
+    , timesPerWeek : Maybe Int
+    , mondayTimes : Maybe Int
+    , tuesdayTimes : Maybe Int
+    , wednesdayTimes : Maybe Int
+    , thursdayTimes : Maybe Int
+    , fridayTimes : Maybe Int
+    , saturdayTimes : Maybe Int
+    , sundayTimes : Maybe Int
+    , times : Maybe Int
+    , days : Maybe Int
+    , suspended : Bool
     }
 
 
@@ -151,6 +169,24 @@ initEditHabitData : EditHabitInputData
 initEditHabitData =
     { showDialog = False
     , habitId = Nothing
+    , kind = GoodHabitKind
+    , name = "Aly!"
+    , description = "i am an aly i am cute and funny and aly-like"
+    , goodHabitTime = Anytime
+    , unitNameSingular = "singular unit"
+    , unitNamePlural = "plural units"
+    , frequencyKind = TotalWeekFrequencyKind
+    , timesPerWeek = Nothing
+    , mondayTimes = Nothing
+    , tuesdayTimes = Nothing
+    , wednesdayTimes = Nothing
+    , thursdayTimes = Nothing
+    , fridayTimes = Nothing
+    , saturdayTimes = Nothing
+    , sundayTimes = Nothing
+    , times = Nothing
+    , days = Nothing
+    , suspended = False
     }
 
 

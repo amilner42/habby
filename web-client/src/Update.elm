@@ -243,7 +243,7 @@ update msg model =
                 ( { model | editHabitIconHabitID = Nothing }, Cmd.none )
 
             OnEditHabitIconClick habitId ->
-                ( { model | editHabit = { showDialog = True, habitId = Just habitId } }
+                ( { model | editHabit = (\sd i eh -> { eh | showDialog = sd, habitId = Just i }) True habitId model.editHabit }
                 , Cmd.none
                 )
 

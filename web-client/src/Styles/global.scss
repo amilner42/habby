@@ -402,6 +402,17 @@ $bootstrap-sass-asset-helper: true;
             @extend .habit;
         }
     }
+    .edit-habit-footer-buttons {
+        text-align: center;
+        .edit-habit-cancel-button {
+          @extend .btn;
+          @extend .btn-default;
+        }
+        .edit-habit-submit-button {
+          @extend .btn;
+          @extend .btn-primary;
+        }
+    }
 }
 
 .display-none {

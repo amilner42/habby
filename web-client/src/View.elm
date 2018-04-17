@@ -581,11 +581,50 @@ editHabitDialogConfig : Model -> Dialog.Config Msg
 editHabitDialogConfig model =
     { closeMessage = Just OnAbortEditHabitDialog
     , containerClass = Nothing
-    , header = Just <| h3 [] [ text "Edit Habit Dialog Title" ]
-    , body = Just <| div [] [ text "edit habit dialog body" ]
+    , header = Just <| h3 [] [ text "Edit Habit Info" ]
+    , body =
+        Just <|
+            div
+                []
+                [ div
+                    []
+                    [ text "Name: "
+                    , input
+                        [ class "form-control"
+                        , placeholder model.editHabit.name
+                        ]
+                        []
+                    ]
+                , div
+                    []
+                    [ text "Description: "
+                    , input
+                        [ class "form-control"
+                        , placeholder model.editHabit.description
+                        ]
+                        []
+                    ]
+                ]
     , footer =
         Just <|
-            button
-                [ onClick OnAbortEditHabitDialog ]
-                [ text "submit edit habit" ]
+            div [ class "edit-habit-footer-buttons" ]
+                [ button
+                    [ classList
+                        [ ( "edit-habit-submit-button", True )
+                        , ( "btn", True )
+                        , ( "btn-success", True )
+                        ]
+                    , onClick OnAbortEditHabitDialog
+                    ]
+                    [ text "OK" ]
+                , button
+                    [ classList
+                        [ ( "edit-habit-cancel-button", True )
+                        , ( "btn", True )
+                        , ( "btn-default", True )
+                        ]
+                    , onClick OnAbortEditHabitDialog
+                    ]
+                    [ text "cancel" ]
+                ]
     }
