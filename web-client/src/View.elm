@@ -4,7 +4,7 @@ import DefaultServices.Infix exposing (..)
 import DefaultServices.Util as Util
 import Dict
 import HabitUtil
-import Html exposing (Html, button, div, hr, i, input, span, text, textarea)
+import Html exposing (Html, button, div, hr, i, input, span, text, textarea, h3)
 import Html.Attributes exposing (class, classList, placeholder, value, hidden)
 import Html.Events exposing (onClick, onInput, onMouseEnter, onMouseLeave)
 import Keyboard.Extra as KK
@@ -17,13 +17,15 @@ import Models.HabitData as HabitData
 import Models.YmdDate as YmdDate
 import Msg exposing (Msg(..))
 import RemoteData
+import Dialog
 
 
 view : Model -> Html Msg
 view model =
     div
         [ class "view" ]
-        [ renderTodayPanel
+        [ Util.bootstrap
+        , renderTodayPanel
             model.ymd
             model.allHabits
             model.editHabitIconHabitID
@@ -41,6 +43,12 @@ view model =
             model.allHabitData
             model.historyViewerFrequencyStats
             model.editingHistoryHabitAmount
+        , Dialog.view
+            (if model.editHabit.showDialog then
+                Just (editHabitDialogConfig model)
+             else
+                Nothing
+            )
         ]
 
 
@@ -528,6 +536,7 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
                 , div
                     [ class "edit-habit-icon"
                     , hidden <| not showEditHabitIcon
+                    , onClick <| OnEditHabitIconClick habitRecord.id
                     ]
                     [ text "edit this habit" ]
                 , div
@@ -564,3 +573,13 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
                     ]
                 ]
             ]
+
+
+editHabitDialogConfig : Model -> Dialog.Config Msg
+editHabitDialogConfig model =
+    { closeMessage = Just OnAbortEditHabitDialog
+    , containerClass = Nothing
+    , header = Just <| h3 [] [ text "Edit Habit Dialog Title" ]
+    , body = Just <| div [] [ text "edit habit dialog body" ]
+    , footer = Just <| button [ onClick OnAbortEditHabitDialog ] [ text "submit edit habit" ]
+    }

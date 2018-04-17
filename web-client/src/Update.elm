@@ -242,6 +242,16 @@ update msg model =
             OnHabitMouseLeave ->
                 ( { model | editHabitIconHabitID = Nothing }, Cmd.none )
 
+            OnEditHabitIconClick habitId ->
+                ( { model | editHabit = { showDialog = True, habitId = Just habitId } }
+                , Cmd.none
+                )
+
+            OnAbortEditHabitDialog ->
+                ( { model | editHabit = (\b eh -> { eh | showDialog = b }) False model.editHabit }
+                , Cmd.none
+                )
+
             OnToggleHistoryViewer ->
                 ( { model | openHistoryViewer = not model.openHistoryViewer }
                 , Cmd.none

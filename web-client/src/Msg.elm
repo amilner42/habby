@@ -43,6 +43,8 @@ type Msg
     | OnSetHabitDataSuccess HabitData.HabitData
     | OnHabitMouseEnter String
     | OnHabitMouseLeave
+    | OnEditHabitIconClick String
+    | OnAbortEditHabitDialog
     | OnToggleHistoryViewer
     | OnToggleTodayViewer
     | OnHistoryViewerDateInput String

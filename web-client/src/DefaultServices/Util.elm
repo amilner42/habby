@@ -2,8 +2,8 @@ module DefaultServices.Util exposing (..)
 
 import DefaultServices.Infix exposing (..)
 import Dict
-import Html exposing (Attribute, Html, div)
-import Html.Attributes exposing (class)
+import Html exposing (Attribute, Html, div, node)
+import Html.Attributes exposing (class, href, rel)
 import Html.Events exposing (Options, defaultOptions, keyCode, onWithOptions)
 import Json.Decode as Decode
 import Keyboard.Extra as KK
@@ -83,10 +83,10 @@ onKeydownWithOptions options keyToMsg =
                 ||> Decode.succeed
                 ?> Decode.fail ""
     in
-    onWithOptions
-        "keydown"
-        options
-        (Decode.andThen decodeMsgFromKeyCode keyCode)
+        onWithOptions
+            "keydown"
+            options
+            (Decode.andThen decodeMsgFromKeyCode keyCode)
 
 
 {-| Default event handler for `keyDown` events.
@@ -107,3 +107,14 @@ onKeydownPreventDefault =
         { preventDefault = True
         , stopPropagation = False
         }
+
+
+{-| Import bootstrap, code taken from <https://github.com/krisajenkins/elm-dialog/blob/master/examples/Utils.elm>
+-}
+bootstrap : Html msg
+bootstrap =
+    node "link"
+        [ href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+        , rel "stylesheet"
+        ]
+        []

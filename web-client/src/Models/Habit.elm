@@ -61,6 +61,12 @@ type alias AddHabitInputData =
     }
 
 
+type alias EditHabitInputData =
+    { showDialog : Bool
+    , habitId : Maybe String
+    }
+
+
 type CreateHabit
     = CreateGoodHabit CreateGoodHabitRecord
     | CreateBadHabit CreateBadHabitRecord
@@ -138,6 +144,13 @@ initAddHabitData =
     , sundayTimes = Nothing
     , times = Nothing
     , days = Nothing
+    }
+
+
+initEditHabitData : EditHabitInputData
+initEditHabitData =
+    { showDialog = False
+    , habitId = Nothing
     }
 
 

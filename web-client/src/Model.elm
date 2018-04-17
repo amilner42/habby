@@ -13,6 +13,7 @@ type alias Model =
     { ymd : YmdDate.YmdDate
     , apiBaseUrl : String
     , editHabitIconHabitID : Maybe String -- which habit to show the edit habit icon for
+    , editHabit : Habit.EditHabitInputData
     , editingTodayHabitAmount : Dict.Dict String Int
     , editingHistoryHabitAmount : Dict.Dict String (Dict.Dict String Int)
     , allHabits : RemoteData.RemoteData ApiError.ApiError (List Habit.Habit)
