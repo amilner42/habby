@@ -1,11 +1,12 @@
 @import './mixins.scss';
+@import './variables.scss';
 $bootstrap-sass-asset-helper: true;
 @import '~bootstrap-sass/assets/stylesheets/bootstrap';
 
 .view {
     font-family: 'Raleway', sans-serif;
     padding: 5px;
-    color: #444;
+    color: $dark-grey;
 
     .today-panel {
         @extend .panel;
@@ -20,7 +21,7 @@ $bootstrap-sass-asset-helper: true;
         }
 
         .today-panel-date {
-            color: #AAA;
+            color: $lighter-grey;
             font-size: 16px;
             display: inline-block;
             font-style: italic;
@@ -45,7 +46,7 @@ $bootstrap-sass-asset-helper: true;
         .add-habit-line-breaker {
             display: block;
             width: 100%;
-            border: 0.5px solid #ddd;
+            border: 0.5px solid $super-light-grey;
         }
 
         .add-habit-input-form {
@@ -190,7 +191,7 @@ $bootstrap-sass-asset-helper: true;
         }
 
         .selected-date-title {
-            color: #AAA;
+            color: $lighter-grey;
             font-size: 16px;
             display: inline-block;
             font-style: italic;
@@ -212,12 +213,12 @@ $bootstrap-sass-asset-helper: true;
 
             .separating-text {
                 margin-left: 5px;
-                color: #444;
+                color: $dark-grey;
             }
 
             .select-yesterday, .before-yesterday {
-                border: 1px solid #777;
-                color: #999;
+                border: 1px solid $grey;
+                color: $light-grey;
                 border-radius: 5px;
                 padding: 5px;
                 margin-right: 10px;
@@ -225,7 +226,7 @@ $bootstrap-sass-asset-helper: true;
                 cursor: pointer;
 
                 &:hover {
-                    background-color: #CCC;
+                    background-color: $very-light-grey;
                     color: #777;
                 }
             }
@@ -233,8 +234,8 @@ $bootstrap-sass-asset-helper: true;
 
         .change-date {
             position: absolute;
-            border: 1px solid #AAA;
-            color: #999;
+            border: 1px solid $lighter-grey;
+            color: $light-grey;
             border-radius: 5px;
             margin-left: 10px;
             cursor: pointer;
@@ -243,8 +244,8 @@ $bootstrap-sass-asset-helper: true;
             top: 48px;
 
             &:hover {
-                background-color: #CCC;
-                color: #777;
+                background-color: $very-light-grey;
+                color: $grey;
             }
         }
     }
@@ -256,46 +257,46 @@ $bootstrap-sass-asset-helper: true;
 
         &.good-habits {
             .habit-success {
-                background-color: rgba(14, 238, 70, 0.59);
-                border: 1px solid rgba(100, 182, 120, 1);
+                background-color: $good-habit-success-color;
+                border: 1px solid $good-habit-success-border-color;
                 .frequency-statistic {
-                    color: rgb(16, 147, 0);
+                    color: $good-habit-success-frequency-statistic-color;
                 }
                 .current-progress {
-                    color: rgb(35, 126, 27);
+                    color: $good-habit-success-frequency-statistic-color;
                 }
             }
             .habit-failure {
-                background-color: rgb(132, 132, 231);
-                border: 1px solid rgb(93, 93, 230);
+                background-color: $good-habit-failure-color;
+                border: 1px solid $good-habit-failure-border-color;
                 .frequency-statistic {
-                    color: rgb(79, 79, 79);
+                    color: $good-habit-failure-frequency-statistic-color;
                 }
                 .current-progress {
-                    color: rgb(66, 66, 66);
+                    color: $good-habit-failure-frequency-statistic-color;
                 }
             }
         }
 
         &.bad-habits {
             .habit-success {
-                background-color: #ffc971;
-                border: 1px solid #e9b155;
+                background-color: $bad-habit-success-color;
+                border: 1px solid $bad-habit-success-border-color;
                 .frequency-statistic {
-                    color: rgb(91, 79, 0);
+                    color: $bad-habit-success-frequency-statistic-color;
                 }
                 .current-progress {
-                    color: rgb(99, 84, 0);
+                    color: $bad-habit-success-frequency-statistic-color;
                 }
             }
             .habit-failure {
-                background-color: rgb(203, 68, 68);
-                border: rgb(153, 0, 0);
+                background-color: $bad-habit-failure-color;
+                border: $bad-habit-failure-border-color;
                 .frequency-statistic {
-                  color: rgb(32, 0, 0);
+                  color: $bad-habit-failure-frequency-statistic-color;
                 }
                 .current-progress {
-                    color: rgb(56, 0, 0);
+                    color: $bad-habit-failure-frequency-statistic-color;
                     font-weight: 700;
                 }
             }
