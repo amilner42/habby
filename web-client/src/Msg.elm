@@ -47,7 +47,13 @@ type Msg
       -- Edit Habit related
     | OnHabitMouseEnter String
     | OnHabitMouseLeave
-    | OnEditHabitIconClick String
+    | OnEditHabitIconClick Habit.Habit
+    | OnEditHabitRevertAllToDefaults
+    | OnSelectEditHabitKind Habit.HabitKind
+    | OnEditHabitNameInput String
+    | OnEditHabitDescriptionInput String
+    | OnEditHabitUnitNameSingularInput String
+    | OnEditHabitUnitNamePluralInput String
     | OnAbortEditHabitDialog
       -- History View related
     | OnToggleHistoryViewer

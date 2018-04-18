@@ -403,6 +403,38 @@ $bootstrap-sass-asset-helper: true;
             @extend .habit;
         }
     }
+    .edit-habit-header {
+        text-align: center;
+        .revert-to-defaults-button {
+            @extend .btn;
+            @extend .btn-default;
+        }
+    }
+    .edit-habit-body {
+        .select-habit-kind {
+            text-align: center;
+            margin-bottom: 10px;
+            .good-habit-button {
+                @extend .button-style-1;
+                width: 100px;
+                height: 28px;
+                float: left;
+                &.selected {
+                    border: 3px solid $good-habit-success-color;
+                }
+            }
+            .bad-habit-button {
+                @extend .button-style-1;
+                width: 100px;
+                height: 28px;
+                position: relative;
+                left: 5px;
+                &.selected {
+                    border: 3px solid $bad-habit-success-color;
+                }
+            }
+        }
+    }
     .edit-habit-footer-buttons {
         text-align: center;
         .edit-habit-cancel-button {

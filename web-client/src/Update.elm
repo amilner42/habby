@@ -245,10 +245,72 @@ update msg model =
             OnHabitMouseLeave ->
                 ( { model | editHabitIconHabitID = Nothing }, Cmd.none )
 
-            OnEditHabitIconClick habitId ->
-                ( updateEditHabit (\eh -> { eh | showDialog = True, habitId = Just habitId })
+            OnEditHabitIconClick habit ->
+                let
+                    { id, name, description, unitNameSingular, unitNamePlural } =
+                        Habit.getCommonFields habit
+
+                    kind =
+                        case habit of
+                            Habit.GoodHabit _ ->
+                                Habit.GoodHabitKind
+
+                            Habit.BadHabit _ ->
+                                Habit.BadHabitKind
+
+                    editHabitOpenDialogUpdater =
+                        (\eh ->
+                            (if eh.habitId == Just id then
+                                -- Use the editHabit fields already stored for this habit
+                                { eh | showDialog = True }
+                             else
+                                { eh
+                                    | showDialog = True
+                                    , habitId = Just id
+                                    , originalKind = kind
+                                    , kind = kind
+                                    , originalName = name
+                                    , name = name
+                                    , originalDescription = description ?> ""
+                                    , description = description ?> ""
+                                    , originalUnitNameSingular = unitNameSingular
+                                    , unitNameSingular = unitNameSingular
+                                    , originalUnitNamePlural = unitNamePlural
+                                    , unitNamePlural = unitNamePlural
+                                }
+                            )
+                        )
+                in
+                    ( updateEditHabit editHabitOpenDialogUpdater, Cmd.none )
+
+            OnEditHabitRevertAllToDefaults ->
+                ( updateEditHabit
+                    (\eh ->
+                        { eh
+                            | kind = eh.originalKind
+                            , name = eh.originalName
+                            , description = eh.originalDescription
+                            , unitNameSingular = eh.originalUnitNameSingular
+                            , unitNamePlural = eh.originalUnitNamePlural
+                        }
+                    )
                 , Cmd.none
                 )
+
+            OnSelectEditHabitKind habitKind ->
+                ( updateEditHabit (\eh -> { eh | kind = habitKind }), Cmd.none )
+
+            OnEditHabitNameInput name ->
+                ( updateEditHabit (\eh -> { eh | name = name }), Cmd.none )
+
+            OnEditHabitDescriptionInput desc ->
+                ( updateEditHabit (\eh -> { eh | description = desc }), Cmd.none )
+
+            OnEditHabitUnitNameSingularInput uns ->
+                ( updateEditHabit (\eh -> { eh | unitNameSingular = uns }), Cmd.none )
+
+            OnEditHabitUnitNamePluralInput unp ->
+                ( updateEditHabit (\eh -> { eh | unitNamePlural = unp }), Cmd.none )
 
             OnAbortEditHabitDialog ->
                 ( updateEditHabit (\eh -> { eh | showDialog = False })

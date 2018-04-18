@@ -538,7 +538,7 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
                         [ ( "edit-habit-icon", True )
                         , ( "hidden", not showEditHabitIcon )
                         ]
-                    , onClick <| OnEditHabitIconClick habitRecord.id
+                    , onClick <| OnEditHabitIconClick habit
                     ]
                     []
                 , div
@@ -581,17 +581,50 @@ editHabitDialogConfig : Model -> Dialog.Config Msg
 editHabitDialogConfig model =
     { closeMessage = Just OnAbortEditHabitDialog
     , containerClass = Nothing
-    , header = Just <| h3 [] [ text "Edit Habit Info" ]
+    , header =
+        Just <|
+            div [ class "edit-habit-header" ]
+                [ h3
+                    [ class "edit-habit-header" ]
+                    [ text <| "Edit Habit: " ++ model.editHabit.originalName
+                    ]
+                , button
+                    [ class "revert-to-defaults-button"
+                    , onClick OnEditHabitRevertAllToDefaults
+                    ]
+                    [ text "Revert all fields to default values" ]
+                ]
     , body =
         Just <|
             div
-                []
+                [ class "edit-habit-body" ]
                 [ div
+                    [ class "select-habit-kind" ]
+                    [ button
+                        [ classList
+                            [ ( "good-habit-button", True )
+                            , ( "selected", model.editHabit.kind == Habit.GoodHabitKind )
+                            ]
+                        , onClick <| OnSelectEditHabitKind Habit.GoodHabitKind
+                        ]
+                        [ text "Good Habit" ]
+                    , button
+                        [ classList
+                            [ ( "bad-habit-button", True )
+                            , ( "selected", model.editHabit.kind == Habit.BadHabitKind )
+                            ]
+                        , onClick <| OnSelectEditHabitKind Habit.BadHabitKind
+                        ]
+                        [ text "Bad Habit" ]
+                    ]
+                , div
                     []
                     [ text "Name: "
                     , input
                         [ class "form-control"
-                        , placeholder model.editHabit.name
+                        , placeholder model.editHabit.originalName
+                        , onInput OnEditHabitNameInput
+                        , value model.editHabit.name
                         ]
                         []
                     ]
@@ -600,7 +633,31 @@ editHabitDialogConfig model =
                     [ text "Description: "
                     , input
                         [ class "form-control"
-                        , placeholder model.editHabit.description
+                        , placeholder model.editHabit.originalDescription
+                        , onInput OnEditHabitDescriptionInput
+                        , value model.editHabit.description
+                        ]
+                        []
+                    ]
+                , div
+                    []
+                    [ text "Unit name (singular): "
+                    , input
+                        [ class "form-control"
+                        , placeholder model.editHabit.originalUnitNameSingular
+                        , onInput OnEditHabitUnitNameSingularInput
+                        , value model.editHabit.unitNameSingular
+                        ]
+                        []
+                    ]
+                , div
+                    []
+                    [ text "Unit name (plural): "
+                    , input
+                        [ class "form-control"
+                        , placeholder model.editHabit.originalUnitNamePlural
+                        , onInput OnEditHabitUnitNamePluralInput
+                        , value model.editHabit.unitNamePlural
                         ]
                         []
                     ]
