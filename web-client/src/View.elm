@@ -754,7 +754,7 @@ editHabitDialogConfig model =
                             titledInputFrequencyDiv title placeholderInt inputMsg valueInt =
                                 div
                                     [ class "titled-input" ]
-                                    [ span [ class "frequency-input-title" ] [ text title ]
+                                    [ text title
                                     , input
                                         [ class "frequency-input"
                                         , placeholder <| "" <? toString <|| placeholderInt

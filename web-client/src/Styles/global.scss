@@ -411,7 +411,7 @@ $bootstrap-sass-asset-helper: true;
         }
     }
     .edit-habit-body {
-        height: 500px;
+        height: 525px;
         overflow: auto;
         .select-habit-kind {
             margin-bottom: 8px;
@@ -468,26 +468,27 @@ $bootstrap-sass-asset-helper: true;
 
         .select-frequency-type {
             text-align: center;
-            margin-bottom: 8px;
-
             .frequency-type-button {
                 @extend .button-style-3;
                 margin-left: 5px;
                 margin-right: 5px;
+                margin-bottom: 8px;
             }
         }
 
         .frequency-forms {
+            display: block;
+            text-align: center;
             .titled-input {
-                align-items: center;
-                .frequency-input-title {
-                  margin-right: 5px;
-                  float: left;
-                }
+                display: inline-block;
+                text-align: center;
+                width: 100px;
+                margin-right: 30px;
+                margin-bottom: 8px;
                 .frequency-input {
                     @extend .form-control;
                     width: 50px;
-                    margin-bottom: 5px;
+                    margin: auto;
                 }
             }
         }
