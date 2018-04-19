@@ -305,12 +305,19 @@ update msg model =
                                 { eh
                                     | frequencyKind = Habit.SpecificDayOfWeekFrequencyKind
                                     , originalFrequencyKind = Habit.SpecificDayOfWeekFrequencyKind
+                                    , originalMondayTimes = Just f.monday
                                     , mondayTimes = Just f.monday
+                                    , originalTuesdayTimes = Just f.monday
                                     , tuesdayTimes = Just f.tuesday
+                                    , originalWednesdayTimes = Just f.monday
                                     , wednesdayTimes = Just f.wednesday
+                                    , originalThursdayTimes = Just f.monday
                                     , thursdayTimes = Just f.thursday
+                                    , originalFridayTimes = Just f.monday
                                     , fridayTimes = Just f.friday
+                                    , originalSaturdayTimes = Just f.monday
                                     , saturdayTimes = Just f.saturday
+                                    , originalSundayTimes = Just f.monday
                                     , sundayTimes = Just f.sunday
                                 }
                 in
