@@ -273,38 +273,42 @@ update msg model =
                         case habit of
                             Habit.GoodHabit h ->
                                 { eh
-                                    | kind = Habit.GoodHabitKind
+                                    | originalKind = Habit.GoodHabitKind
+                                    , kind = Habit.GoodHabitKind
                                     , originalGoodHabitTime = h.timeOfDay
                                     , goodHabitTime = h.timeOfDay
                                 }
 
                             Habit.BadHabit _ ->
-                                { eh | kind = Habit.BadHabitKind }
+                                { eh
+                                    | originalKind = Habit.BadHabitKind
+                                    , kind = Habit.BadHabitKind
+                                }
 
                     updateFrequencyFields eh =
                         case frequency of
                             Habit.EveryXDayFrequency f ->
                                 { eh
-                                    | frequencyKind = Habit.EveryXDayFrequencyKind
-                                    , originalFrequencyKind = Habit.EveryXDayFrequencyKind
-                                    , times = Just f.times
+                                    | originalFrequencyKind = Habit.EveryXDayFrequencyKind
+                                    , frequencyKind = Habit.EveryXDayFrequencyKind
                                     , originalTimes = Just f.times
-                                    , days = Just f.days
+                                    , times = Just f.times
                                     , originalDays = Just f.days
+                                    , days = Just f.days
                                 }
 
                             Habit.TotalWeekFrequency timesPerWeek ->
                                 { eh
-                                    | frequencyKind = Habit.TotalWeekFrequencyKind
-                                    , originalFrequencyKind = Habit.TotalWeekFrequencyKind
-                                    , timesPerWeek = Just timesPerWeek
+                                    | originalFrequencyKind = Habit.TotalWeekFrequencyKind
+                                    , frequencyKind = Habit.TotalWeekFrequencyKind
                                     , originalTimesPerWeek = Just timesPerWeek
+                                    , timesPerWeek = Just timesPerWeek
                                 }
 
                             Habit.SpecificDayOfWeekFrequency f ->
                                 { eh
-                                    | frequencyKind = Habit.SpecificDayOfWeekFrequencyKind
-                                    , originalFrequencyKind = Habit.SpecificDayOfWeekFrequencyKind
+                                    | originalFrequencyKind = Habit.SpecificDayOfWeekFrequencyKind
+                                    , frequencyKind = Habit.SpecificDayOfWeekFrequencyKind
                                     , originalMondayTimes = Just f.monday
                                     , mondayTimes = Just f.monday
                                     , originalTuesdayTimes = Just f.monday
