@@ -412,27 +412,44 @@ $bootstrap-sass-asset-helper: true;
     }
     .edit-habit-body {
         .select-habit-kind {
-            text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
+            .habit-button {
+                @extend .btn;
+                @extend .btn-default;
+                width: 110px;
+                height: 40px;
+                background-color: $crazy-crazy-light-grey;
+                border-color: $super-light-grey;
+            }
             .good-habit-button {
-                @extend .button-style-1;
-                width: 100px;
-                height: 28px;
+                @extend .habit-button;
                 float: left;
+                &:hover {
+                    border: none;
+                    background-color: $good-habit-button-background-color;
+                }
                 &.selected {
-                    border: 3px solid $good-habit-success-color;
+                    border: 1px solid $good-habit-button-border-color;
+                    background-color: $good-habit-button-background-color;
                 }
             }
             .bad-habit-button {
-                @extend .button-style-1;
-                width: 100px;
-                height: 28px;
-                position: relative;
-                left: 5px;
+                @extend .habit-button;
+                margin-left: 10px;
+                &:hover {
+                    border: none;
+                    background-color: $bad-habit-button-background-color;
+                }
                 &.selected {
-                    border: 3px solid $bad-habit-success-color;
+                    border: 1px solid $bad-habit-button-border-color;
+                    background-color: $bad-habit-button-background-color;
                 }
             }
+        }
+
+        .edit-habit-input {
+            @extend .form-control;
+            margin-bottom: 10px;
         }
     }
     .edit-habit-footer-buttons {

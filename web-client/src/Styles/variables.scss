@@ -1,9 +1,13 @@
 $dark-grey: #444;
 $grey: #777;
+$another-grey: #888;
 $light-grey: #999;
 $lighter-grey: #AAA;
 $very-light-grey: #CCC;
 $super-light-grey: #ddd;
+$super-super-light-grey: #e7e7e7;
+$crazy-light-grey: #eee;
+$crazy-crazy-light-grey: #f7f7f7;
 
 $good-habit-success-color: rgba(14, 238, 70, 0.59);
 $good-habit-success-border-color: rgba(100, 182, 120, 1);
@@ -12,9 +16,17 @@ $good-habit-failure-color: rgb(132, 132, 231);
 $good-habit-failure-border-color: rgb(93, 93, 230);
 $good-habit-failure-frequency-statistic-color: rgb(66, 66, 66);
 
+$good-habit-button-background-color: rgba(14, 238, 70, 0.28);
+$good-habit-button-border-color: rgba(5, 182, 49, 0.27);
+
 $bad-habit-success-color: #ffc971;
 $bad-habit-success-border-color: #e9b155;
 $bad-habit-success-frequency-statistic-color: rgb(99, 84, 0);
 $bad-habit-failure-color: rgb(203, 68, 68);
 $bad-habit-failure-border-color: rgb(153, 0, 0);
 $bad-habit-failure-frequency-statistic-color: rgb(32, 0, 0);
+
+$bad-habit-button-background-color: rgba(#ffc971, 0.49);
+$bad-habit-button-border-color: rgba(#f7b243, 0.55);
+
+$light-green: #4caf50;

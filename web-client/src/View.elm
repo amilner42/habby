@@ -621,7 +621,7 @@ editHabitDialogConfig model =
                     []
                     [ text "Name: "
                     , input
-                        [ class "form-control"
+                        [ class "edit-habit-input"
                         , placeholder model.editHabit.originalName
                         , onInput OnEditHabitNameInput
                         , value model.editHabit.name
@@ -632,7 +632,7 @@ editHabitDialogConfig model =
                     []
                     [ text "Description: "
                     , input
-                        [ class "form-control"
+                        [ class "edit-habit-input"
                         , placeholder model.editHabit.originalDescription
                         , onInput OnEditHabitDescriptionInput
                         , value model.editHabit.description
@@ -643,7 +643,7 @@ editHabitDialogConfig model =
                     []
                     [ text "Unit name (singular): "
                     , input
-                        [ class "form-control"
+                        [ class "edit-habit-input"
                         , placeholder model.editHabit.originalUnitNameSingular
                         , onInput OnEditHabitUnitNameSingularInput
                         , value model.editHabit.unitNameSingular
@@ -654,7 +654,7 @@ editHabitDialogConfig model =
                     []
                     [ text "Unit name (plural): "
                     , input
-                        [ class "form-control"
+                        [ class "edit-habit-input"
                         , placeholder model.editHabit.originalUnitNamePlural
                         , onInput OnEditHabitUnitNamePluralInput
                         , value model.editHabit.unitNamePlural
