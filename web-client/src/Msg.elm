@@ -56,6 +56,16 @@ type Msg
     | OnEditHabitUnitNameSingularInput String
     | OnEditHabitUnitNamePluralInput String
     | OnEditHabitSelectFrequencyKind Habit.FrequencyKind
+    | OnEditHabitTimesPerWeekInput String
+    | OnEditHabitSpecificDayMondayInput String
+    | OnEditHabitSpecificDayTuesdayInput String
+    | OnEditHabitSpecificDayWednesdayInput String
+    | OnEditHabitSpecificDayThursdayInput String
+    | OnEditHabitSpecificDayFridayInput String
+    | OnEditHabitSpecificDaySaturdayInput String
+    | OnEditHabitSpecificDaySundayInput String
+    | OnEditHabitTimesInput String
+    | OnEditHabitDaysInput String
     | OnAbortEditHabitDialog
       -- History View related
     | OnToggleHistoryViewer

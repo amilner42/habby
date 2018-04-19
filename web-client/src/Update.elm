@@ -287,10 +287,10 @@ update msg model =
 
                     updateFrequencyFields eh =
                         case frequency of
-                            Habit.EveryXDayFrequency f ->
+                            Habit.EveryXDaysFrequency f ->
                                 { eh
-                                    | originalFrequencyKind = Habit.EveryXDayFrequencyKind
-                                    , frequencyKind = Habit.EveryXDayFrequencyKind
+                                    | originalFrequencyKind = Habit.EveryXDaysFrequencyKind
+                                    , frequencyKind = Habit.EveryXDaysFrequencyKind
                                     , originalTimes = Just f.times
                                     , times = Just f.times
                                     , originalDays = Just f.days
@@ -382,6 +382,36 @@ update msg model =
 
             OnEditHabitSelectFrequencyKind fk ->
                 ( updateEditHabit (\eh -> { eh | frequencyKind = fk }), Cmd.none )
+
+            OnEditHabitTimesPerWeekInput timesPerWeek ->
+                ( updateEditHabit (\eh -> { eh | timesPerWeek = extractInt timesPerWeek eh.timesPerWeek }), Cmd.none )
+
+            OnEditHabitSpecificDayMondayInput mondayTimes ->
+                ( updateEditHabit (\eh -> { eh | mondayTimes = extractInt mondayTimes eh.mondayTimes }), Cmd.none )
+
+            OnEditHabitSpecificDayTuesdayInput tuesdayTimes ->
+                ( updateEditHabit (\eh -> { eh | tuesdayTimes = extractInt tuesdayTimes eh.tuesdayTimes }), Cmd.none )
+
+            OnEditHabitSpecificDayWednesdayInput wednesdayTimes ->
+                ( updateEditHabit (\eh -> { eh | wednesdayTimes = extractInt wednesdayTimes eh.wednesdayTimes }), Cmd.none )
+
+            OnEditHabitSpecificDayThursdayInput thursdayTimes ->
+                ( updateEditHabit (\eh -> { eh | thursdayTimes = extractInt thursdayTimes eh.thursdayTimes }), Cmd.none )
+
+            OnEditHabitSpecificDayFridayInput fridayTimes ->
+                ( updateEditHabit (\eh -> { eh | fridayTimes = extractInt fridayTimes eh.fridayTimes }), Cmd.none )
+
+            OnEditHabitSpecificDaySaturdayInput saturdayTimes ->
+                ( updateEditHabit (\eh -> { eh | saturdayTimes = extractInt saturdayTimes eh.saturdayTimes }), Cmd.none )
+
+            OnEditHabitSpecificDaySundayInput sundayTimes ->
+                ( updateEditHabit (\eh -> { eh | sundayTimes = extractInt sundayTimes eh.sundayTimes }), Cmd.none )
+
+            OnEditHabitTimesInput times ->
+                ( updateEditHabit (\eh -> { eh | times = extractInt times eh.times }), Cmd.none )
+
+            OnEditHabitDaysInput days ->
+                ( updateEditHabit (\eh -> { eh | days = extractInt days eh.days }), Cmd.none )
 
             OnAbortEditHabitDialog ->
                 ( updateEditHabit (\eh -> { eh | showDialog = False }), Cmd.none )

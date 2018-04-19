@@ -224,8 +224,8 @@ renderTodayPanel ymd rdHabits editHabitIconHabitID rdHabitData rdFrequencyStatsL
                         ]
                         [ text "Specific Days of Week" ]
                     , button
-                        [ classList [ ( "selected", addHabit.frequencyKind == Habit.EveryXDayFrequencyKind ) ]
-                        , onClick <| OnAddHabitSelectFrequencyKind Habit.EveryXDayFrequencyKind
+                        [ classList [ ( "selected", addHabit.frequencyKind == Habit.EveryXDaysFrequencyKind ) ]
+                        , onClick <| OnAddHabitSelectFrequencyKind Habit.EveryXDaysFrequencyKind
                         ]
                         [ text "Y Per X Days" ]
                     ]
@@ -294,7 +294,7 @@ renderTodayPanel ymd rdHabits editHabitIconHabitID rdHabitData rdFrequencyStatsL
                 , div
                     [ classList
                         [ ( "add-habit-input-form-x-times-per-y-days", True )
-                        , ( "display-none", addHabit.frequencyKind /= Habit.EveryXDayFrequencyKind )
+                        , ( "display-none", addHabit.frequencyKind /= Habit.EveryXDaysFrequencyKind )
                         ]
                     ]
                     [ input
@@ -727,9 +727,9 @@ editHabitDialogConfig model =
                         , button
                             [ classList
                                 [ ( "frequency-type-button", True )
-                                , ( "selected", eh.frequencyKind == Habit.EveryXDayFrequencyKind )
+                                , ( "selected", eh.frequencyKind == Habit.EveryXDaysFrequencyKind )
                                 ]
-                            , onClick <| OnEditHabitSelectFrequencyKind Habit.EveryXDayFrequencyKind
+                            , onClick <| OnEditHabitSelectFrequencyKind Habit.EveryXDaysFrequencyKind
                             ]
                             [ text <|
                                 ("Y" <? toString <|| eh.times)
@@ -747,10 +747,100 @@ editHabitDialogConfig model =
                                        )
                             ]
                         ]
+                    , div
+                        [ class "frequency-forms" ]
+                        (let
+                            titledInputFrequencyDiv : String -> Maybe Int -> (String -> Msg) -> Maybe Int -> Html Msg
+                            titledInputFrequencyDiv title placeholderInt inputMsg valueInt =
+                                div
+                                    [ class "titled-input" ]
+                                    [ span [ class "frequency-input-title" ] [ text title ]
+                                    , input
+                                        [ class "frequency-input"
+                                        , placeholder <| "" <? toString <|| placeholderInt
+                                        , onInput inputMsg
+                                        , value <| "" <? toString <|| valueInt
+                                        ]
+                                        []
+                                    ]
+                         in
+                            [ div
+                                [ classList
+                                    [ ( "total-week-frequency-form", True )
+                                    , ( "display-none", eh.frequencyKind /= Habit.TotalWeekFrequencyKind )
+                                    ]
+                                ]
+                                [ titledInputFrequencyDiv
+                                    ((String.Extra.toTitleCase eh.unitNamePlural) ++ " per week: ")
+                                    eh.originalTimesPerWeek
+                                    OnEditHabitTimesPerWeekInput
+                                    eh.timesPerWeek
+                                ]
+                            , div
+                                [ classList
+                                    [ ( "specific-days-of-week-frequency-form", True )
+                                    , ( "display-none", eh.frequencyKind /= Habit.SpecificDayOfWeekFrequencyKind )
+                                    ]
+                                ]
+                                [ titledInputFrequencyDiv
+                                    "Monday: "
+                                    eh.originalMondayTimes
+                                    OnEditHabitSpecificDayMondayInput
+                                    eh.mondayTimes
+                                , titledInputFrequencyDiv
+                                    "Tuesday: "
+                                    eh.originalTuesdayTimes
+                                    OnEditHabitSpecificDayTuesdayInput
+                                    eh.tuesdayTimes
+                                , titledInputFrequencyDiv
+                                    "Wednesday: "
+                                    eh.originalWednesdayTimes
+                                    OnEditHabitSpecificDayWednesdayInput
+                                    eh.wednesdayTimes
+                                , titledInputFrequencyDiv
+                                    "Thursday: "
+                                    eh.originalThursdayTimes
+                                    OnEditHabitSpecificDayThursdayInput
+                                    eh.thursdayTimes
+                                , titledInputFrequencyDiv
+                                    "Friday: "
+                                    eh.originalFridayTimes
+                                    OnEditHabitSpecificDayFridayInput
+                                    eh.fridayTimes
+                                , titledInputFrequencyDiv
+                                    "Saturday: "
+                                    eh.originalSaturdayTimes
+                                    OnEditHabitSpecificDaySaturdayInput
+                                    eh.saturdayTimes
+                                , titledInputFrequencyDiv
+                                    "Sunday: "
+                                    eh.originalSundayTimes
+                                    OnEditHabitSpecificDaySundayInput
+                                    eh.sundayTimes
+                                ]
+                            , div
+                                [ classList
+                                    [ ( "every-x-days-frequency-form", True )
+                                    , ( "display-none", eh.frequencyKind /= Habit.EveryXDaysFrequencyKind )
+                                    ]
+                                ]
+                                [ titledInputFrequencyDiv
+                                    (String.Extra.toTitleCase <| eh.unitNamePlural ++ ": ")
+                                    eh.originalTimes
+                                    OnEditHabitTimesInput
+                                    eh.times
+                                , titledInputFrequencyDiv
+                                    "Days: "
+                                    eh.originalDays
+                                    OnEditHabitDaysInput
+                                    eh.days
+                                ]
+                            ]
+                        )
                     ]
         , footer =
             Just <|
-                div [ class "edit-habit-footer-buttons" ]
+                div [ class "edit-habit-footer" ]
                     [ button
                         [ classList
                             [ ( "edit-habit-submit-button", True )

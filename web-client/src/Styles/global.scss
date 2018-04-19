@@ -411,6 +411,8 @@ $bootstrap-sass-asset-helper: true;
         }
     }
     .edit-habit-body {
+        height: 500px;
+        overflow: auto;
         .select-habit-kind {
             margin-bottom: 8px;
             text-align: center;
@@ -474,8 +476,23 @@ $bootstrap-sass-asset-helper: true;
                 margin-right: 5px;
             }
         }
+
+        .frequency-forms {
+            .titled-input {
+                align-items: center;
+                .frequency-input-title {
+                  margin-right: 5px;
+                  float: left;
+                }
+                .frequency-input {
+                    @extend .form-control;
+                    width: 50px;
+                    margin-bottom: 5px;
+                }
+            }
+        }
     }
-    .edit-habit-footer-buttons {
+    .edit-habit-footer {
         text-align: center;
         .edit-habit-cancel-button {
           @extend .btn;

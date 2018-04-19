@@ -220,7 +220,7 @@ mutationAddHabit createHabit =
                   )
                 , ( "frequency_value"
                   , case commonFields.frequency of
-                        Habit.EveryXDayFrequency { days, times } ->
+                        Habit.EveryXDaysFrequency { days, times } ->
                             Util.templater
                                 (Dict.fromList [ ( "days", toString days ), ( "times", toString times ) ])
                                 """{

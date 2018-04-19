@@ -126,18 +126,18 @@ type alias CreateBadHabitRecord =
 
 
 type Frequency
-    = EveryXDayFrequency EveryXDayFrequencyRecord
+    = EveryXDaysFrequency EveryXDaysFrequencyRecord
     | TotalWeekFrequency Int
     | SpecificDayOfWeekFrequency SpecificDayOfWeekFrequencyRecord
 
 
 type FrequencyKind
-    = EveryXDayFrequencyKind
+    = EveryXDaysFrequencyKind
     | TotalWeekFrequencyKind
     | SpecificDayOfWeekFrequencyKind
 
 
-type alias EveryXDayFrequencyRecord =
+type alias EveryXDaysFrequencyRecord =
     { days : Int, times : Int }
 
 
@@ -335,10 +335,10 @@ extractCreateHabit addHabitInputData =
 
         frequency =
             case addHabitInputData.frequencyKind of
-                EveryXDayFrequencyKind ->
+                EveryXDaysFrequencyKind ->
                     case ( addHabitInputData.days, addHabitInputData.times ) of
                         ( Just days, Just times ) ->
-                            Just <| EveryXDayFrequency { times = times, days = days }
+                            Just <| EveryXDaysFrequency { times = times, days = days }
 
                         _ ->
                             Nothing
@@ -432,8 +432,8 @@ decodeHabit =
 decodeFrequency : Decode.Decoder Frequency
 decodeFrequency =
     let
-        decodeEveryXDayFrequencyRecord =
-            decode EveryXDayFrequencyRecord
+        decodeEveryXDaysFrequencyRecord =
+            decode EveryXDaysFrequencyRecord
                 |> required "days" Decode.int
                 |> required "times" Decode.int
 
@@ -461,7 +461,7 @@ decodeFrequency =
                             decodeTotalWeekFrequencyRecord |> Decode.map TotalWeekFrequency
 
                         "every_x_days_frequency" ->
-                            decodeEveryXDayFrequencyRecord |> Decode.map EveryXDayFrequency
+                            decodeEveryXDaysFrequencyRecord |> Decode.map EveryXDaysFrequency
 
                         _ ->
                             Decode.fail <| "Unable to decode frequency, invalid __typename: " ++ typeName
