@@ -411,7 +411,7 @@ $bootstrap-sass-asset-helper: true;
         }
     }
     .edit-habit-body {
-        height: 525px;
+        max-height: 525px;
         overflow: auto;
         .select-habit-kind {
             margin-bottom: 8px;
