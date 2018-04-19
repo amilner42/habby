@@ -52,8 +52,10 @@ type Msg
     | OnSelectEditHabitKind Habit.HabitKind
     | OnEditHabitNameInput String
     | OnEditHabitDescriptionInput String
+    | OnSelectEditHabitGoodHabitTime Habit.HabitTime
     | OnEditHabitUnitNameSingularInput String
     | OnEditHabitUnitNamePluralInput String
+    | OnEditHabitSelectFrequencyKind Habit.FrequencyKind
     | OnAbortEditHabitDialog
       -- History View related
     | OnToggleHistoryViewer

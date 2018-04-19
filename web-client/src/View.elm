@@ -2,6 +2,7 @@ module View exposing (..)
 
 import DefaultServices.Infix exposing (..)
 import DefaultServices.Util as Util
+import Dialog
 import Dict
 import HabitUtil
 import Html exposing (Html, button, div, hr, i, input, span, text, textarea, h3)
@@ -17,7 +18,7 @@ import Models.HabitData as HabitData
 import Models.YmdDate as YmdDate
 import Msg exposing (Msg(..))
 import RemoteData
-import Dialog
+import String.Extra
 
 
 view : Model -> Html Msg
@@ -579,109 +580,180 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
 
 editHabitDialogConfig : Model -> Dialog.Config Msg
 editHabitDialogConfig model =
-    { closeMessage = Just OnAbortEditHabitDialog
-    , containerClass = Nothing
-    , header =
-        Just <|
-            div [ class "edit-habit-header" ]
-                [ h3
-                    [ class "edit-habit-header" ]
-                    [ text <| "Edit Habit: " ++ model.editHabit.originalName
+    let
+        { showDialog, habitId, originalKind, kind, originalName, name, originalDescription, description, originalGoodHabitTime, goodHabitTime, originalUnitNameSingular, unitNameSingular, originalUnitNamePlural, unitNamePlural, frequencyKind, timesPerWeek, mondayTimes, tuesdayTimes, wednesdayTimes, thursdayTimes, fridayTimes, saturdayTimes, sundayTimes, times, days, suspended } =
+            model.editHabit
+    in
+        { closeMessage = Just OnAbortEditHabitDialog
+        , containerClass = Nothing
+        , header =
+            Just <|
+                div [ class "edit-habit-header" ]
+                    [ h3
+                        [ class "edit-habit-header" ]
+                        [ text <| "Edit Habit: " ++ originalName
+                        ]
+                    , button
+                        [ class "revert-to-defaults-button"
+                        , onClick OnEditHabitRevertAllToDefaults
+                        ]
+                        [ text "Revert all fields to default values" ]
                     ]
-                , button
-                    [ class "revert-to-defaults-button"
-                    , onClick OnEditHabitRevertAllToDefaults
+        , body =
+            Just <|
+                div
+                    [ class "edit-habit-body" ]
+                    [ div
+                        [ class "select-habit-kind" ]
+                        [ button
+                            [ classList
+                                [ ( "good-habit-button", True )
+                                , ( "selected", kind == Habit.GoodHabitKind )
+                                ]
+                            , onClick <| OnSelectEditHabitKind Habit.GoodHabitKind
+                            ]
+                            [ text "Good Habit" ]
+                        , button
+                            [ classList
+                                [ ( "bad-habit-button", True )
+                                , ( "selected", kind == Habit.BadHabitKind )
+                                ]
+                            , onClick <| OnSelectEditHabitKind Habit.BadHabitKind
+                            ]
+                            [ text "Bad Habit" ]
+                        ]
+                    , div
+                        []
+                        [ text "Name: "
+                        , input
+                            [ class "edit-habit-text-input"
+                            , placeholder originalName
+                            , onInput OnEditHabitNameInput
+                            , value name
+                            ]
+                            []
+                        ]
+                    , div
+                        []
+                        [ text "Description: "
+                        , input
+                            [ class "edit-habit-text-input"
+                            , placeholder originalDescription
+                            , onInput OnEditHabitDescriptionInput
+                            , value description
+                            ]
+                            []
+                        ]
+                    , div
+                        [ classList
+                            [ ( "select-habit-time", True )
+                            , ( "display-none", kind /= Habit.GoodHabitKind )
+                            ]
+                        ]
+                        [ button
+                            [ classList
+                                [ ( "habit-time-button", True )
+                                , ( "selected", goodHabitTime == Habit.Anytime )
+                                ]
+                            , onClick <| OnSelectEditHabitGoodHabitTime Habit.Anytime
+                            ]
+                            [ text "Anytime" ]
+                        , button
+                            [ classList
+                                [ ( "habit-time-button", True )
+                                , ( "selected", goodHabitTime == Habit.Morning )
+                                ]
+                            , onClick <| OnSelectEditHabitGoodHabitTime Habit.Morning
+                            ]
+                            [ text "Morning" ]
+                        , button
+                            [ classList
+                                [ ( "habit-time-button", True )
+                                , ( "selected", goodHabitTime == Habit.Evening )
+                                ]
+                            , onClick <| OnSelectEditHabitGoodHabitTime Habit.Evening
+                            ]
+                            [ text "Evening" ]
+                        ]
+                    , div
+                        []
+                        [ text "Unit name (singular): "
+                        , input
+                            [ class "edit-habit-text-input"
+                            , placeholder originalUnitNameSingular
+                            , onInput OnEditHabitUnitNameSingularInput
+                            , value unitNameSingular
+                            ]
+                            []
+                        ]
+                    , div
+                        []
+                        [ text "Unit name (plural): "
+                        , input
+                            [ class "edit-habit-text-input"
+                            , placeholder originalUnitNamePlural
+                            , onInput OnEditHabitUnitNamePluralInput
+                            , value unitNamePlural
+                            ]
+                            []
+                        ]
+                    , div
+                        [ class "select-frequency-type" ]
+                        [ button
+                            [ classList
+                                [ ( "frequency-type-button", True )
+                                , ( "selected", frequencyKind == Habit.TotalWeekFrequencyKind )
+                                ]
+                            , onClick <| OnEditHabitSelectFrequencyKind Habit.TotalWeekFrequencyKind
+                            ]
+                            [ text <|
+                                ("X" <? toString <|| timesPerWeek)
+                                    ++ " "
+                                    ++ (if (timesPerWeek ?> 0) == 1 then
+                                            String.Extra.toTitleCase unitNameSingular
+                                        else
+                                            String.Extra.toTitleCase unitNamePlural
+                                       )
+                                    ++ " Per Week"
+                            ]
+                        , button
+                            [ classList
+                                [ ( "frequency-type-button", True )
+                                , ( "selected", frequencyKind == Habit.SpecificDayOfWeekFrequencyKind )
+                                ]
+                            , onClick <| OnEditHabitSelectFrequencyKind Habit.SpecificDayOfWeekFrequencyKind
+                            ]
+                            [ text "Specific Days of Week" ]
+                        , button
+                            [ classList
+                                [ ( "frequency-type-button", True )
+                                , ( "selected", frequencyKind == Habit.EveryXDayFrequencyKind )
+                                ]
+                            , onClick <| OnEditHabitSelectFrequencyKind Habit.EveryXDayFrequencyKind
+                            ]
+                            [ text "Y Per X Days" ]
+                        ]
                     ]
-                    [ text "Revert all fields to default values" ]
-                ]
-    , body =
-        Just <|
-            div
-                [ class "edit-habit-body" ]
-                [ div
-                    [ class "select-habit-kind" ]
+        , footer =
+            Just <|
+                div [ class "edit-habit-footer-buttons" ]
                     [ button
                         [ classList
-                            [ ( "good-habit-button", True )
-                            , ( "selected", model.editHabit.kind == Habit.GoodHabitKind )
+                            [ ( "edit-habit-submit-button", True )
+                            , ( "btn", True )
+                            , ( "btn-success", True )
                             ]
-                        , onClick <| OnSelectEditHabitKind Habit.GoodHabitKind
+                        , onClick OnAbortEditHabitDialog
                         ]
-                        [ text "Good Habit" ]
+                        [ text "OK" ]
                     , button
                         [ classList
-                            [ ( "bad-habit-button", True )
-                            , ( "selected", model.editHabit.kind == Habit.BadHabitKind )
+                            [ ( "edit-habit-cancel-button", True )
+                            , ( "btn", True )
+                            , ( "btn-default", True )
                             ]
-                        , onClick <| OnSelectEditHabitKind Habit.BadHabitKind
+                        , onClick OnAbortEditHabitDialog
                         ]
-                        [ text "Bad Habit" ]
+                        [ text "cancel" ]
                     ]
-                , div
-                    []
-                    [ text "Name: "
-                    , input
-                        [ class "edit-habit-input"
-                        , placeholder model.editHabit.originalName
-                        , onInput OnEditHabitNameInput
-                        , value model.editHabit.name
-                        ]
-                        []
-                    ]
-                , div
-                    []
-                    [ text "Description: "
-                    , input
-                        [ class "edit-habit-input"
-                        , placeholder model.editHabit.originalDescription
-                        , onInput OnEditHabitDescriptionInput
-                        , value model.editHabit.description
-                        ]
-                        []
-                    ]
-                , div
-                    []
-                    [ text "Unit name (singular): "
-                    , input
-                        [ class "edit-habit-input"
-                        , placeholder model.editHabit.originalUnitNameSingular
-                        , onInput OnEditHabitUnitNameSingularInput
-                        , value model.editHabit.unitNameSingular
-                        ]
-                        []
-                    ]
-                , div
-                    []
-                    [ text "Unit name (plural): "
-                    , input
-                        [ class "edit-habit-input"
-                        , placeholder model.editHabit.originalUnitNamePlural
-                        , onInput OnEditHabitUnitNamePluralInput
-                        , value model.editHabit.unitNamePlural
-                        ]
-                        []
-                    ]
-                ]
-    , footer =
-        Just <|
-            div [ class "edit-habit-footer-buttons" ]
-                [ button
-                    [ classList
-                        [ ( "edit-habit-submit-button", True )
-                        , ( "btn", True )
-                        , ( "btn-success", True )
-                        ]
-                    , onClick OnAbortEditHabitDialog
-                    ]
-                    [ text "OK" ]
-                , button
-                    [ classList
-                        [ ( "edit-habit-cancel-button", True )
-                        , ( "btn", True )
-                        , ( "btn-default", True )
-                        ]
-                    , onClick OnAbortEditHabitDialog
-                    ]
-                    [ text "cancel" ]
-                ]
-    }
+        }

@@ -1,7 +1,7 @@
-@import './mixins.scss';
-@import './variables.scss';
 $bootstrap-sass-asset-helper: true;
 @import '~bootstrap-sass/assets/stylesheets/bootstrap';
+@import './mixins.scss';
+@import './variables.scss';
 
 .view {
     font-family: 'Raleway', sans-serif;
@@ -412,18 +412,19 @@ $bootstrap-sass-asset-helper: true;
     }
     .edit-habit-body {
         .select-habit-kind {
-            margin-bottom: 20px;
+            margin-bottom: 8px;
+            text-align: center;
+            width: 50%;
+            margin-left: 25%;
+            margin-right: 40%;
             .habit-button {
-                @extend .btn;
-                @extend .btn-default;
+                @extend .button-style-3;
                 width: 110px;
                 height: 40px;
-                background-color: $crazy-crazy-light-grey;
-                border-color: $super-light-grey;
             }
             .good-habit-button {
                 @extend .habit-button;
-                float: left;
+                margin-right: 10px;
                 &:hover {
                     border: none;
                     background-color: $good-habit-button-background-color;
@@ -435,7 +436,6 @@ $bootstrap-sass-asset-helper: true;
             }
             .bad-habit-button {
                 @extend .habit-button;
-                margin-left: 10px;
                 &:hover {
                     border: none;
                     background-color: $bad-habit-button-background-color;
@@ -447,9 +447,32 @@ $bootstrap-sass-asset-helper: true;
             }
         }
 
-        .edit-habit-input {
+        .edit-habit-text-input {
             @extend .form-control;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+        }
+
+        .select-habit-time {
+            text-align: center;
+            margin-bottom: 8px;
+            margin-top: 10px;
+
+            .habit-time-button {
+                @extend .button-style-3;
+                margin-left: 5px;
+                margin-right: 5px;
+            }
+        }
+
+        .select-frequency-type {
+            text-align: center;
+            margin-bottom: 8px;
+
+            .frequency-type-button {
+                @extend .button-style-3;
+                margin-left: 5px;
+                margin-right: 5px;
+            }
         }
     }
     .edit-habit-footer-buttons {

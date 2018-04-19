@@ -70,11 +70,13 @@ type alias EditHabitInputData =
     , name : String
     , originalDescription : String
     , description : String
+    , originalGoodHabitTime : HabitTime
     , goodHabitTime : HabitTime
     , originalUnitNameSingular : String
     , unitNameSingular : String
     , originalUnitNamePlural : String
     , unitNamePlural : String
+    , originalFrequencyKind : FrequencyKind
     , frequencyKind : FrequencyKind
     , timesPerWeek : Maybe Int
     , mondayTimes : Maybe Int
@@ -180,11 +182,13 @@ initEditHabitData =
     , name = ""
     , originalDescription = ""
     , description = ""
+    , originalGoodHabitTime = Anytime
     , goodHabitTime = Anytime
     , originalUnitNameSingular = ""
     , unitNameSingular = ""
     , originalUnitNamePlural = ""
     , unitNamePlural = ""
+    , originalFrequencyKind = TotalWeekFrequencyKind
     , frequencyKind = TotalWeekFrequencyKind
     , timesPerWeek = Nothing
     , mondayTimes = Nothing

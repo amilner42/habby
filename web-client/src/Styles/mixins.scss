@@ -1,4 +1,6 @@
 @import './variables.scss';
+$bootstrap-sass-asset-helper: true;
+@import '~bootstrap-sass/assets/stylesheets/bootstrap';
 
 // @refer http://cssdeck.com/labs/16-box-shadows-to-save-your-time/
 .box-shadow-5 {
@@ -44,6 +46,22 @@
 
   &:hover {
     background-color: green;
+  }
+}
+
+.button-style-3 {
+  // Bootstrap button with grey colouring
+  @extend .btn;
+  background-color: $crazy-crazy-light-grey;
+  border: 1px solid $super-light-grey;
+  &:hover {
+      border: 1px solid $super-light-grey;
+      background-color: $super-light-grey;
+  }
+  &.selected {
+      font-weight: 500;
+      border-color: $light-grey;
+      background-color: $super-light-grey;
   }
 }
 

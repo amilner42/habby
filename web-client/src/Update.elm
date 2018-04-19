@@ -247,16 +247,31 @@ update msg model =
 
             OnEditHabitIconClick habit ->
                 let
-                    { id, name, description, unitNameSingular, unitNamePlural } =
+                    { id, name, description, frequency, unitNameSingular, unitNamePlural } =
                         Habit.getCommonFields habit
 
-                    kind =
+                    { kind, timeOfDay } =
                         case habit of
-                            Habit.GoodHabit _ ->
-                                Habit.GoodHabitKind
+                            Habit.GoodHabit h ->
+                                { kind = Habit.GoodHabitKind
+                                , timeOfDay = h.timeOfDay
+                                }
 
                             Habit.BadHabit _ ->
-                                Habit.BadHabitKind
+                                { kind = Habit.BadHabitKind
+                                , timeOfDay = Habit.Anytime
+                                }
+
+                    frequencyKind =
+                        case frequency of
+                            Habit.EveryXDayFrequency _ ->
+                                Habit.EveryXDayFrequencyKind
+
+                            Habit.TotalWeekFrequency _ ->
+                                Habit.TotalWeekFrequencyKind
+
+                            Habit.SpecificDayOfWeekFrequency _ ->
+                                Habit.SpecificDayOfWeekFrequencyKind
 
                     editHabitOpenDialogUpdater =
                         (\eh ->
@@ -273,10 +288,14 @@ update msg model =
                                     , name = name
                                     , originalDescription = description ?> ""
                                     , description = description ?> ""
+                                    , originalGoodHabitTime = timeOfDay
+                                    , goodHabitTime = timeOfDay
                                     , originalUnitNameSingular = unitNameSingular
                                     , unitNameSingular = unitNameSingular
                                     , originalUnitNamePlural = unitNamePlural
                                     , unitNamePlural = unitNamePlural
+                                    , originalFrequencyKind = frequencyKind
+                                    , frequencyKind = frequencyKind
                                 }
                             )
                         )
@@ -290,8 +309,10 @@ update msg model =
                             | kind = eh.originalKind
                             , name = eh.originalName
                             , description = eh.originalDescription
+                            , goodHabitTime = eh.originalGoodHabitTime
                             , unitNameSingular = eh.originalUnitNameSingular
                             , unitNamePlural = eh.originalUnitNamePlural
+                            , frequencyKind = eh.originalFrequencyKind
                         }
                     )
                 , Cmd.none
@@ -306,11 +327,17 @@ update msg model =
             OnEditHabitDescriptionInput desc ->
                 ( updateEditHabit (\eh -> { eh | description = desc }), Cmd.none )
 
+            OnSelectEditHabitGoodHabitTime habitTime ->
+                ( updateEditHabit (\eh -> { eh | goodHabitTime = habitTime }), Cmd.none )
+
             OnEditHabitUnitNameSingularInput uns ->
                 ( updateEditHabit (\eh -> { eh | unitNameSingular = uns }), Cmd.none )
 
             OnEditHabitUnitNamePluralInput unp ->
                 ( updateEditHabit (\eh -> { eh | unitNamePlural = unp }), Cmd.none )
+
+            OnEditHabitSelectFrequencyKind fk ->
+                ( updateEditHabit (\eh -> { eh | frequencyKind = fk }), Cmd.none )
 
             OnAbortEditHabitDialog ->
                 ( updateEditHabit (\eh -> { eh | showDialog = False })
