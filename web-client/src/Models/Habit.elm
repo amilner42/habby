@@ -78,17 +78,26 @@ type alias EditHabitInputData =
     , unitNamePlural : String
     , originalFrequencyKind : FrequencyKind
     , frequencyKind : FrequencyKind
+    , originalTimesPerWeek : Maybe Int
     , timesPerWeek : Maybe Int
+    , originalMondayTimes : Maybe Int
     , mondayTimes : Maybe Int
+    , originalTuesdayTimes : Maybe Int
     , tuesdayTimes : Maybe Int
+    , originalWednesdayTimes : Maybe Int
     , wednesdayTimes : Maybe Int
+    , originalThursdayTimes : Maybe Int
     , thursdayTimes : Maybe Int
+    , originalFridayTimes : Maybe Int
     , fridayTimes : Maybe Int
+    , originalSaturdayTimes : Maybe Int
     , saturdayTimes : Maybe Int
+    , originalSundayTimes : Maybe Int
     , sundayTimes : Maybe Int
+    , originalTimes : Maybe Int
     , times : Maybe Int
+    , originalDays : Maybe Int
     , days : Maybe Int
-    , suspended : Bool
     }
 
 
@@ -190,17 +199,26 @@ initEditHabitData =
     , unitNamePlural = ""
     , originalFrequencyKind = TotalWeekFrequencyKind
     , frequencyKind = TotalWeekFrequencyKind
+    , originalTimesPerWeek = Nothing
     , timesPerWeek = Nothing
+    , originalMondayTimes = Nothing
     , mondayTimes = Nothing
+    , originalTuesdayTimes = Nothing
     , tuesdayTimes = Nothing
+    , originalWednesdayTimes = Nothing
     , wednesdayTimes = Nothing
+    , originalThursdayTimes = Nothing
     , thursdayTimes = Nothing
+    , originalFridayTimes = Nothing
     , fridayTimes = Nothing
+    , originalSaturdayTimes = Nothing
     , saturdayTimes = Nothing
+    , originalSundayTimes = Nothing
     , sundayTimes = Nothing
+    , originalTimes = Nothing
     , times = Nothing
+    , originalDays = Nothing
     , days = Nothing
-    , suspended = False
     }
 
 

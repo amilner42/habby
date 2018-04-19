@@ -581,7 +581,7 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
 editHabitDialogConfig : Model -> Dialog.Config Msg
 editHabitDialogConfig model =
     let
-        { showDialog, habitId, originalKind, kind, originalName, name, originalDescription, description, originalGoodHabitTime, goodHabitTime, originalUnitNameSingular, unitNameSingular, originalUnitNamePlural, unitNamePlural, frequencyKind, timesPerWeek, mondayTimes, tuesdayTimes, wednesdayTimes, thursdayTimes, fridayTimes, saturdayTimes, sundayTimes, times, days, suspended } =
+        eh =
             model.editHabit
     in
         { closeMessage = Just OnAbortEditHabitDialog
@@ -591,7 +591,7 @@ editHabitDialogConfig model =
                 div [ class "edit-habit-header" ]
                     [ h3
                         [ class "edit-habit-header" ]
-                        [ text <| "Edit Habit: " ++ originalName
+                        [ text <| "Edit Habit: " ++ eh.originalName
                         ]
                     , button
                         [ class "revert-to-defaults-button"
@@ -608,7 +608,7 @@ editHabitDialogConfig model =
                         [ button
                             [ classList
                                 [ ( "good-habit-button", True )
-                                , ( "selected", kind == Habit.GoodHabitKind )
+                                , ( "selected", eh.kind == Habit.GoodHabitKind )
                                 ]
                             , onClick <| OnSelectEditHabitKind Habit.GoodHabitKind
                             ]
@@ -616,7 +616,7 @@ editHabitDialogConfig model =
                         , button
                             [ classList
                                 [ ( "bad-habit-button", True )
-                                , ( "selected", kind == Habit.BadHabitKind )
+                                , ( "selected", eh.kind == Habit.BadHabitKind )
                                 ]
                             , onClick <| OnSelectEditHabitKind Habit.BadHabitKind
                             ]
@@ -627,9 +627,9 @@ editHabitDialogConfig model =
                         [ text "Name: "
                         , input
                             [ class "edit-habit-text-input"
-                            , placeholder originalName
+                            , placeholder eh.originalName
                             , onInput OnEditHabitNameInput
-                            , value name
+                            , value eh.name
                             ]
                             []
                         ]
@@ -638,22 +638,22 @@ editHabitDialogConfig model =
                         [ text "Description: "
                         , input
                             [ class "edit-habit-text-input"
-                            , placeholder originalDescription
+                            , placeholder eh.originalDescription
                             , onInput OnEditHabitDescriptionInput
-                            , value description
+                            , value eh.description
                             ]
                             []
                         ]
                     , div
                         [ classList
                             [ ( "select-habit-time", True )
-                            , ( "display-none", kind /= Habit.GoodHabitKind )
+                            , ( "display-none", eh.kind /= Habit.GoodHabitKind )
                             ]
                         ]
                         [ button
                             [ classList
                                 [ ( "habit-time-button", True )
-                                , ( "selected", goodHabitTime == Habit.Anytime )
+                                , ( "selected", eh.goodHabitTime == Habit.Anytime )
                                 ]
                             , onClick <| OnSelectEditHabitGoodHabitTime Habit.Anytime
                             ]
@@ -661,7 +661,7 @@ editHabitDialogConfig model =
                         , button
                             [ classList
                                 [ ( "habit-time-button", True )
-                                , ( "selected", goodHabitTime == Habit.Morning )
+                                , ( "selected", eh.goodHabitTime == Habit.Morning )
                                 ]
                             , onClick <| OnSelectEditHabitGoodHabitTime Habit.Morning
                             ]
@@ -669,7 +669,7 @@ editHabitDialogConfig model =
                         , button
                             [ classList
                                 [ ( "habit-time-button", True )
-                                , ( "selected", goodHabitTime == Habit.Evening )
+                                , ( "selected", eh.goodHabitTime == Habit.Evening )
                                 ]
                             , onClick <| OnSelectEditHabitGoodHabitTime Habit.Evening
                             ]
@@ -680,9 +680,9 @@ editHabitDialogConfig model =
                         [ text "Unit name (singular): "
                         , input
                             [ class "edit-habit-text-input"
-                            , placeholder originalUnitNameSingular
+                            , placeholder eh.originalUnitNameSingular
                             , onInput OnEditHabitUnitNameSingularInput
-                            , value unitNameSingular
+                            , value eh.unitNameSingular
                             ]
                             []
                         ]
@@ -691,9 +691,9 @@ editHabitDialogConfig model =
                         [ text "Unit name (plural): "
                         , input
                             [ class "edit-habit-text-input"
-                            , placeholder originalUnitNamePlural
+                            , placeholder eh.originalUnitNamePlural
                             , onInput OnEditHabitUnitNamePluralInput
-                            , value unitNamePlural
+                            , value eh.unitNamePlural
                             ]
                             []
                         ]
@@ -702,24 +702,24 @@ editHabitDialogConfig model =
                         [ button
                             [ classList
                                 [ ( "frequency-type-button", True )
-                                , ( "selected", frequencyKind == Habit.TotalWeekFrequencyKind )
+                                , ( "selected", eh.frequencyKind == Habit.TotalWeekFrequencyKind )
                                 ]
                             , onClick <| OnEditHabitSelectFrequencyKind Habit.TotalWeekFrequencyKind
                             ]
                             [ text <|
-                                ("X" <? toString <|| timesPerWeek)
+                                ("X" <? toString <|| eh.timesPerWeek)
                                     ++ " "
-                                    ++ (if (timesPerWeek ?> 0) == 1 then
-                                            String.Extra.toTitleCase unitNameSingular
+                                    ++ (if (eh.timesPerWeek ?> 0) == 1 then
+                                            String.Extra.toTitleCase eh.unitNameSingular
                                         else
-                                            String.Extra.toTitleCase unitNamePlural
+                                            String.Extra.toTitleCase eh.unitNamePlural
                                        )
                                     ++ " Per Week"
                             ]
                         , button
                             [ classList
                                 [ ( "frequency-type-button", True )
-                                , ( "selected", frequencyKind == Habit.SpecificDayOfWeekFrequencyKind )
+                                , ( "selected", eh.frequencyKind == Habit.SpecificDayOfWeekFrequencyKind )
                                 ]
                             , onClick <| OnEditHabitSelectFrequencyKind Habit.SpecificDayOfWeekFrequencyKind
                             ]
@@ -727,11 +727,25 @@ editHabitDialogConfig model =
                         , button
                             [ classList
                                 [ ( "frequency-type-button", True )
-                                , ( "selected", frequencyKind == Habit.EveryXDayFrequencyKind )
+                                , ( "selected", eh.frequencyKind == Habit.EveryXDayFrequencyKind )
                                 ]
                             , onClick <| OnEditHabitSelectFrequencyKind Habit.EveryXDayFrequencyKind
                             ]
-                            [ text "Y Per X Days" ]
+                            [ text <|
+                                ("Y" <? toString <|| eh.times)
+                                    ++ " "
+                                    ++ (if (eh.times ?> 0) == 1 then
+                                            String.Extra.toTitleCase eh.unitNameSingular
+                                        else
+                                            String.Extra.toTitleCase eh.unitNamePlural
+                                       )
+                                    ++ " Per "
+                                    ++ (if (eh.days ?> 0) == 1 then
+                                            "Day"
+                                        else
+                                            ("X" <? toString <|| eh.days) ++ " Days"
+                                       )
+                            ]
                         ]
                     ]
         , footer =

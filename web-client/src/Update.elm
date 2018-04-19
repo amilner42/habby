@@ -247,60 +247,83 @@ update msg model =
 
             OnEditHabitIconClick habit ->
                 let
+                    updateShowDialog eh =
+                        { eh | showDialog = True }
+
                     { id, name, description, frequency, unitNameSingular, unitNamePlural } =
                         Habit.getCommonFields habit
 
-                    { kind, timeOfDay } =
+                    updateCommonFields eh =
+                        if eh.habitId /= Just id then
+                            { eh
+                                | habitId = Just id
+                                , originalName = name
+                                , name = name
+                                , originalDescription = description ?> ""
+                                , description = description ?> ""
+                                , originalUnitNameSingular = unitNameSingular
+                                , unitNameSingular = unitNameSingular
+                                , originalUnitNamePlural = unitNamePlural
+                                , unitNamePlural = unitNamePlural
+                            }
+                        else
+                            eh
+
+                    updateKindAndTimeOfDay eh =
                         case habit of
                             Habit.GoodHabit h ->
-                                { kind = Habit.GoodHabitKind
-                                , timeOfDay = h.timeOfDay
+                                { eh
+                                    | kind = Habit.GoodHabitKind
+                                    , originalGoodHabitTime = h.timeOfDay
+                                    , goodHabitTime = h.timeOfDay
                                 }
 
                             Habit.BadHabit _ ->
-                                { kind = Habit.BadHabitKind
-                                , timeOfDay = Habit.Anytime
-                                }
+                                { eh | kind = Habit.BadHabitKind }
 
-                    frequencyKind =
+                    updateFrequencyFields eh =
                         case frequency of
-                            Habit.EveryXDayFrequency _ ->
-                                Habit.EveryXDayFrequencyKind
-
-                            Habit.TotalWeekFrequency _ ->
-                                Habit.TotalWeekFrequencyKind
-
-                            Habit.SpecificDayOfWeekFrequency _ ->
-                                Habit.SpecificDayOfWeekFrequencyKind
-
-                    editHabitOpenDialogUpdater =
-                        (\eh ->
-                            (if eh.habitId == Just id then
-                                -- Use the editHabit fields already stored for this habit
-                                { eh | showDialog = True }
-                             else
+                            Habit.EveryXDayFrequency f ->
                                 { eh
-                                    | showDialog = True
-                                    , habitId = Just id
-                                    , originalKind = kind
-                                    , kind = kind
-                                    , originalName = name
-                                    , name = name
-                                    , originalDescription = description ?> ""
-                                    , description = description ?> ""
-                                    , originalGoodHabitTime = timeOfDay
-                                    , goodHabitTime = timeOfDay
-                                    , originalUnitNameSingular = unitNameSingular
-                                    , unitNameSingular = unitNameSingular
-                                    , originalUnitNamePlural = unitNamePlural
-                                    , unitNamePlural = unitNamePlural
-                                    , originalFrequencyKind = frequencyKind
-                                    , frequencyKind = frequencyKind
+                                    | frequencyKind = Habit.EveryXDayFrequencyKind
+                                    , originalFrequencyKind = Habit.EveryXDayFrequencyKind
+                                    , times = Just f.times
+                                    , originalTimes = Just f.times
+                                    , days = Just f.days
+                                    , originalDays = Just f.days
                                 }
-                            )
-                        )
+
+                            Habit.TotalWeekFrequency timesPerWeek ->
+                                { eh
+                                    | frequencyKind = Habit.TotalWeekFrequencyKind
+                                    , originalFrequencyKind = Habit.TotalWeekFrequencyKind
+                                    , timesPerWeek = Just timesPerWeek
+                                    , originalTimesPerWeek = Just timesPerWeek
+                                }
+
+                            Habit.SpecificDayOfWeekFrequency f ->
+                                { eh
+                                    | frequencyKind = Habit.SpecificDayOfWeekFrequencyKind
+                                    , originalFrequencyKind = Habit.SpecificDayOfWeekFrequencyKind
+                                    , mondayTimes = Just f.monday
+                                    , tuesdayTimes = Just f.tuesday
+                                    , wednesdayTimes = Just f.wednesday
+                                    , thursdayTimes = Just f.thursday
+                                    , fridayTimes = Just f.friday
+                                    , saturdayTimes = Just f.saturday
+                                    , sundayTimes = Just f.sunday
+                                }
                 in
-                    ( updateEditHabit editHabitOpenDialogUpdater, Cmd.none )
+                    ( { model
+                        | editHabit =
+                            model.editHabit
+                                |> updateShowDialog
+                                |> updateCommonFields
+                                |> updateKindAndTimeOfDay
+                                |> updateFrequencyFields
+                      }
+                    , Cmd.none
+                    )
 
             OnEditHabitRevertAllToDefaults ->
                 ( updateEditHabit
@@ -313,6 +336,16 @@ update msg model =
                             , unitNameSingular = eh.originalUnitNameSingular
                             , unitNamePlural = eh.originalUnitNamePlural
                             , frequencyKind = eh.originalFrequencyKind
+                            , timesPerWeek = eh.originalTimesPerWeek
+                            , mondayTimes = eh.originalMondayTimes
+                            , tuesdayTimes = eh.originalTuesdayTimes
+                            , wednesdayTimes = eh.originalWednesdayTimes
+                            , thursdayTimes = eh.originalThursdayTimes
+                            , fridayTimes = eh.originalFridayTimes
+                            , saturdayTimes = eh.originalSaturdayTimes
+                            , sundayTimes = eh.originalSundayTimes
+                            , times = eh.originalTimes
+                            , days = eh.originalDays
                         }
                     )
                 , Cmd.none
@@ -340,9 +373,7 @@ update msg model =
                 ( updateEditHabit (\eh -> { eh | frequencyKind = fk }), Cmd.none )
 
             OnAbortEditHabitDialog ->
-                ( updateEditHabit (\eh -> { eh | showDialog = False })
-                , Cmd.none
-                )
+                ( updateEditHabit (\eh -> { eh | showDialog = False }), Cmd.none )
 
             OnToggleHistoryViewer ->
                 ( { model | openHistoryViewer = not model.openHistoryViewer }
