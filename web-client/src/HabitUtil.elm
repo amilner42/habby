@@ -3,8 +3,8 @@ module HabitUtil exposing (..)
 {-| Module for useful Habit operations
 -}
 
-import Models.Habit as Habit
 import Models.FrequencyStats as FrequencyStats
+import Models.Habit as Habit
 
 
 isHabitCurrentFragmentSuccessful : Habit.Habit -> FrequencyStats.FrequencyStats -> Bool
@@ -21,20 +21,20 @@ findFrequencyStatsForHabit : Habit.Habit -> List FrequencyStats.FrequencyStats -
 findFrequencyStatsForHabit habit frequencyStats =
     let
         habitId =
-            (.id (Habit.getCommonFields habit))
+            .id (Habit.getCommonFields habit)
 
         filteredFrequencyStatsByHabitId =
             List.filter (\stats -> stats.habitId == habitId) frequencyStats
     in
-        case filteredFrequencyStatsByHabitId of
-            [] ->
-                Err ("No frequency stats found for habit " ++ habitId)
+    case filteredFrequencyStatsByHabitId of
+        [] ->
+            Err ("No frequency stats found for habit " ++ habitId)
 
-            [ s ] ->
-                Ok s
+        [ s ] ->
+            Ok s
 
-            s1 :: s2 :: _ ->
-                Err ("More than one frequency stats found for habit " ++ habitId ++ ", something fishy is going on")
+        s1 :: s2 :: _ ->
+            Err ("More than one frequency stats found for habit " ++ habitId ++ ", something fishy is going on")
 
 
 {-| Returns the habits sorted by completion, urgency, and current goal progress.
@@ -57,14 +57,14 @@ sortHabitsByCurrentFragment frequencyStatsList habits =
                 isHabitTwoGoalCompleted =
                     isHabitCurrentFragmentSuccessful habitTwo statsTwo
             in
-                if isHabitOneGoalCompleted == isHabitTwoGoalCompleted then
-                    EQ
-                else if isHabitOneGoalCompleted then
-                    -- habit one is already complete, habit two is not
-                    GT
-                else
-                    -- habit two is already complete, habit one is not
-                    LT
+            if isHabitOneGoalCompleted == isHabitTwoGoalCompleted then
+                EQ
+            else if isHabitOneGoalCompleted then
+                -- habit one is already complete, habit two is not
+                GT
+            else
+                -- habit two is already complete, habit one is not
+                LT
 
         --Compare habits by urgency: show urgent habits first
         compareHabitsByDaysLeft : FrequencyStats.FrequencyStats -> FrequencyStats.FrequencyStats -> Order
@@ -83,31 +83,30 @@ sortHabitsByCurrentFragment frequencyStatsList habits =
                 -- Progress relative to goal, e.g. 0.3 if the user has done 30% of the goal
                 getCurrentGoalProgressFraction : FrequencyStats.FrequencyStats -> Float
                 getCurrentGoalProgressFraction stats =
-                    ((toFloat stats.currentFragmentTotal)
-                        / (toFloat stats.currentFragmentGoal)
-                    )
+                    toFloat stats.currentFragmentTotal
+                        / toFloat stats.currentFragmentGoal
 
                 ( habitOneGoalProgressFraction, habitTwoGoalProgressFraction ) =
                     ( getCurrentGoalProgressFraction statsOne, getCurrentGoalProgressFraction statsTwo )
             in
-                case ( habitOne, habitTwo ) of
-                    ( Habit.GoodHabit _, Habit.GoodHabit _ ) ->
-                        -- The more progress the user has made, the less behind they are on
-                        -- the habit, so display it further down
-                        compare habitOneGoalProgressFraction habitTwoGoalProgressFraction
+            case ( habitOne, habitTwo ) of
+                ( Habit.GoodHabit _, Habit.GoodHabit _ ) ->
+                    -- The more progress the user has made, the less behind they are on
+                    -- the habit, so display it further down
+                    compare habitOneGoalProgressFraction habitTwoGoalProgressFraction
 
-                    ( Habit.BadHabit _, Habit.BadHabit _ ) ->
-                        -- The more poorly the user has done, the more they should see it prominently
-                        -- displayed so they can be aware and work on it
-                        compare habitTwoGoalProgressFraction habitOneGoalProgressFraction
+                ( Habit.BadHabit _, Habit.BadHabit _ ) ->
+                    -- The more poorly the user has done, the more they should see it prominently
+                    -- displayed so they can be aware and work on it
+                    compare habitTwoGoalProgressFraction habitOneGoalProgressFraction
 
-                    ( Habit.GoodHabit _, _ ) ->
-                        -- We probably shouldn't be sorting good habits and bad habits together,
-                        -- but if we are, we should display good habits first.
-                        LT
+                ( Habit.GoodHabit _, _ ) ->
+                    -- We probably shouldn't be sorting good habits and bad habits together,
+                    -- but if we are, we should display good habits first.
+                    LT
 
-                    _ ->
-                        GT
+                _ ->
+                    GT
 
         -- Compare habits by current goal remaining: Show habits that the user has more to do of first
         compareHabitsByCurrentGoalRemaining :
@@ -124,23 +123,23 @@ sortHabitsByCurrentFragment frequencyStatsList habits =
                 ( habitOneGoalRemaining, habitTwoGoalRemaining ) =
                     ( getCurrentGoalRemaining statsOne, getCurrentGoalRemaining statsTwo )
             in
-                case ( habitOne, habitTwo ) of
-                    ( Habit.GoodHabit _, Habit.GoodHabit _ ) ->
-                        -- The more there is left to do for habit one, the worse it is doing
-                        compare habitTwoGoalRemaining habitOneGoalRemaining
+            case ( habitOne, habitTwo ) of
+                ( Habit.GoodHabit _, Habit.GoodHabit _ ) ->
+                    -- The more there is left to do for habit one, the worse it is doing
+                    compare habitTwoGoalRemaining habitOneGoalRemaining
 
-                    ( Habit.BadHabit _, Habit.BadHabit _ ) ->
-                        -- The bigger the difference between the goal and the total, the better
-                        -- the user is doing, the further down the list we should display the habit
-                        compare habitOneGoalRemaining habitTwoGoalRemaining
+                ( Habit.BadHabit _, Habit.BadHabit _ ) ->
+                    -- The bigger the difference between the goal and the total, the better
+                    -- the user is doing, the further down the list we should display the habit
+                    compare habitOneGoalRemaining habitTwoGoalRemaining
 
-                    ( Habit.GoodHabit _, _ ) ->
-                        -- We probably shouldn't be sorting good habits and bad habits together,
-                        -- but if we are, we should display good habits first.
-                        LT
+                ( Habit.GoodHabit _, _ ) ->
+                    -- We probably shouldn't be sorting good habits and bad habits together,
+                    -- but if we are, we should display good habits first.
+                    LT
 
-                    _ ->
-                        GT
+                _ ->
+                    GT
 
         compareHabits : Habit.Habit -> Habit.Habit -> Order
         compareHabits habitOne habitTwo =
@@ -151,38 +150,38 @@ sortHabitsByCurrentFragment frequencyStatsList habits =
                 habitTwoFrequencyStats =
                     findFrequencyStatsForHabit habitTwo frequencyStatsList
             in
-                case ( habitOneFrequencyStats, habitTwoFrequencyStats ) of
-                    ( Err _, Err _ ) ->
-                        EQ
+            case ( habitOneFrequencyStats, habitTwoFrequencyStats ) of
+                ( Err _, Err _ ) ->
+                    EQ
 
-                    ( Err _, Ok _ ) ->
-                        GT
+                ( Err _, Ok _ ) ->
+                    GT
 
-                    ( Ok _, Err _ ) ->
-                        LT
+                ( Ok _, Err _ ) ->
+                    LT
 
-                    ( Ok statsOne, Ok statsTwo ) ->
+                ( Ok statsOne, Ok statsTwo ) ->
+                    let
+                        completionComparison =
+                            compareHabitsByCompletion habitOne habitTwo statsOne statsTwo
+                    in
+                    if completionComparison == EQ then
                         let
-                            completionComparison =
-                                compareHabitsByCompletion habitOne habitTwo statsOne statsTwo
+                            daysLeftComparison =
+                                compareHabitsByDaysLeft statsOne statsTwo
                         in
-                            if completionComparison == EQ then
-                                let
-                                    daysLeftComparison =
-                                        compareHabitsByDaysLeft statsOne statsTwo
-                                in
-                                    if daysLeftComparison == EQ then
-                                        let
-                                            currentGoalProgressComparison =
-                                                compareHabitsByCurrentGoalProgress habitOne habitTwo statsOne statsTwo
-                                        in
-                                            if currentGoalProgressComparison == EQ then
-                                                compareHabitsByCurrentGoalRemaining habitOne habitTwo statsOne statsTwo
-                                            else
-                                                currentGoalProgressComparison
-                                    else
-                                        daysLeftComparison
+                        if daysLeftComparison == EQ then
+                            let
+                                currentGoalProgressComparison =
+                                    compareHabitsByCurrentGoalProgress habitOne habitTwo statsOne statsTwo
+                            in
+                            if currentGoalProgressComparison == EQ then
+                                compareHabitsByCurrentGoalRemaining habitOne habitTwo statsOne statsTwo
                             else
-                                completionComparison
+                                currentGoalProgressComparison
+                        else
+                            daysLeftComparison
+                    else
+                        completionComparison
     in
-        List.sortWith compareHabits habits
+    List.sortWith compareHabits habits
