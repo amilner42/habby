@@ -18,23 +18,23 @@ init { apiBaseUrl, currentTime } location =
         ymd =
             currentTime |> Date.fromTime |> YmdDate.fromDate
     in
-        ( { ymd = ymd
-          , apiBaseUrl = apiBaseUrl
-          , editingTodayHabitAmount = Dict.empty
-          , editingHistoryHabitAmount = Dict.empty
-          , allHabitData = RemoteData.Loading
-          , allHabits = RemoteData.Loading
-          , allFrequencyStats = RemoteData.Loading
-          , addHabit = Habit.initAddHabitData
-          , openTodayViewer = True
-          , openHistoryViewer = False
-          , historyViewerDateInput = ""
-          , historyViewerSelectedDate = Nothing
-          , historyViewerFrequencyStats = RemoteData.NotAsked
-          }
-        , Api.queryHabitsAndHabitDataAndFrequencyStats
-            ymd
-            apiBaseUrl
-            OnGetHabitsAndHabitDataAndFrequencyStatsFailure
-            OnGetHabitsAndHabitDataAndFrequencyStatsSuccess
-        )
+    ( { ymd = ymd
+      , apiBaseUrl = apiBaseUrl
+      , editingTodayHabitAmount = Dict.empty
+      , editingHistoryHabitAmount = Dict.empty
+      , allHabitData = RemoteData.Loading
+      , allHabits = RemoteData.Loading
+      , allFrequencyStats = RemoteData.Loading
+      , addHabit = Habit.initAddHabitData
+      , openTodayViewer = True
+      , openHistoryViewer = False
+      , historyViewerDateInput = ""
+      , historyViewerSelectedDate = Nothing
+      , historyViewerFrequencyStats = RemoteData.NotAsked
+      }
+    , Api.queryHabitsAndHabitDataAndFrequencyStats
+        ymd
+        apiBaseUrl
+        OnGetHabitsAndHabitDataAndFrequencyStatsFailure
+        OnGetHabitsAndHabitDataAndFrequencyStatsSuccess
+    )

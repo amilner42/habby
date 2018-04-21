@@ -7,9 +7,9 @@ import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (decode, hardcoded, optional, required)
 import Json.Encode as Encode
 import Models.ApiError exposing (ApiError)
+import Models.FrequencyStats as FrequencyStats
 import Models.Habit as Habit
 import Models.HabitData as HabitData
-import Models.FrequencyStats as FrequencyStats
 import Models.YmdDate as YmdDate
 
 
@@ -38,7 +38,7 @@ queryHabitsAndHabitDataAndFrequencyStats :
 queryHabitsAndHabitDataAndFrequencyStats ymd url handleError handleSuccess =
     let
         queryString =
-            ("""{
+            """{
   habits: get_habits {
     __typename
     ... on good_habit {
@@ -108,11 +108,11 @@ queryHabitsAndHabitDataAndFrequencyStats ymd url handleError handleSuccess =
     habit_id
   }
   frequencyStatsList: get_frequency_stats(current_client_date: {year: """
-                ++ (toString ymd.year)
+                ++ toString ymd.year
                 ++ ", month: "
-                ++ (toString ymd.month)
+                ++ toString ymd.month
                 ++ ", day: "
-                ++ (toString ymd.day)
+                ++ toString ymd.day
                 ++ """}) {
     habit_id
     total_fragments
@@ -125,19 +125,18 @@ queryHabitsAndHabitDataAndFrequencyStats ymd url handleError handleSuccess =
     current_fragment_days_left
   }
 }"""
-            )
     in
-        graphQLRequest
-            queryString
-            (decode HabitsAndHabitDataAndFrequencyStats
-                |> required "habits" (Decode.list Habit.decodeHabit)
-                |> required "habitData" (Decode.list HabitData.decodeHabitData)
-                |> required "frequencyStatsList" (Decode.list FrequencyStats.decodeFrequencyStats)
-                |> Decode.at [ "data" ]
-            )
-            url
-            handleError
-            handleSuccess
+    graphQLRequest
+        queryString
+        (decode HabitsAndHabitDataAndFrequencyStats
+            |> required "habits" (Decode.list Habit.decodeHabit)
+            |> required "habitData" (Decode.list HabitData.decodeHabitData)
+            |> required "frequencyStatsList" (Decode.list FrequencyStats.decodeFrequencyStats)
+            |> Decode.at [ "data" ]
+        )
+        url
+        handleError
+        handleSuccess
 
 
 type alias QueriedFrequencyStats =
@@ -155,12 +154,12 @@ queryPastFrequencyStats :
 queryPastFrequencyStats ymd url handleError handleSuccess =
     let
         queryString =
-            ("""{frequencyStatsList: get_frequency_stats(current_client_date: {year: """
-                ++ (toString ymd.year)
+            """{frequencyStatsList: get_frequency_stats(current_client_date: {year: """
+                ++ toString ymd.year
                 ++ ", month: "
-                ++ (toString ymd.month)
+                ++ toString ymd.month
                 ++ ", day: "
-                ++ (toString ymd.day)
+                ++ toString ymd.day
                 ++ """}) {
     habit_id
     total_fragments
@@ -173,17 +172,16 @@ queryPastFrequencyStats ymd url handleError handleSuccess =
     current_fragment_days_left
   }
 }"""
-            )
     in
-        graphQLRequest
-            queryString
-            (decode QueriedFrequencyStats
-                |> required "frequencyStatsList" (Decode.list FrequencyStats.decodeFrequencyStats)
-                |> Decode.at [ "data" ]
-            )
-            url
-            handleError
-            handleSuccess
+    graphQLRequest
+        queryString
+        (decode QueriedFrequencyStats
+            |> required "frequencyStatsList" (Decode.list FrequencyStats.decodeFrequencyStats)
+            |> Decode.at [ "data" ]
+        )
+        url
+        handleError
+        handleSuccess
 
 
 mutationAddHabit : Habit.CreateHabit -> String -> (ApiError -> b) -> (Habit.Habit -> b) -> Cmd b
@@ -349,7 +347,7 @@ mutationAddHabit createHabit =
         }"""
                 |> Util.templater templateDict
     in
-        graphQLRequest queryString <| Decode.at [ "data", "add_habit" ] Habit.decodeHabit
+    graphQLRequest queryString <| Decode.at [ "data", "add_habit" ] Habit.decodeHabit
 
 
 mutationSetHabitData : YmdDate.YmdDate -> String -> Int -> String -> (ApiError -> b) -> (HabitData.HabitData -> b) -> Cmd b
@@ -379,4 +377,4 @@ mutationSetHabitData { day, month, year } habitId amount =
 }"""
                 |> Util.templater templateDict
     in
-        graphQLRequest query (Decode.at [ "data", "set_habit_data" ] HabitData.decodeHabitData)
+    graphQLRequest query (Decode.at [ "data", "set_habit_data" ] HabitData.decodeHabitData)

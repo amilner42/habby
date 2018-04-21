@@ -170,7 +170,7 @@ splitHabits habits =
                 )
                 habits
     in
-        ( goodHabits, badHabits )
+    ( goodHabits, badHabits )
 
 
 {-| Retrieve fields that exist on both good and bad habits.
@@ -291,22 +291,22 @@ extractCreateHabit addHabitInputData =
                         _ ->
                             Nothing
     in
-        case addHabitInputData.kind of
-            GoodHabitKind ->
-                case ( name, description, unitNameSingular, unitNamePlural, frequency ) of
-                    ( Just name, Just description, Just unitNameSingular, Just unitNamePlural, Just frequency ) ->
-                        Just <| CreateGoodHabit <| CreateGoodHabitRecord name description goodHabitTime unitNameSingular unitNamePlural frequency
+    case addHabitInputData.kind of
+        GoodHabitKind ->
+            case ( name, description, unitNameSingular, unitNamePlural, frequency ) of
+                ( Just name, Just description, Just unitNameSingular, Just unitNamePlural, Just frequency ) ->
+                    Just <| CreateGoodHabit <| CreateGoodHabitRecord name description goodHabitTime unitNameSingular unitNamePlural frequency
 
-                    _ ->
-                        Nothing
+                _ ->
+                    Nothing
 
-            BadHabitKind ->
-                case ( name, description, unitNameSingular, unitNamePlural, frequency ) of
-                    ( Just name, Just description, Just unitNameSingular, Just unitNamePlural, Just frequency ) ->
-                        Just <| CreateBadHabit <| CreateBadHabitRecord name description unitNameSingular unitNamePlural frequency
+        BadHabitKind ->
+            case ( name, description, unitNameSingular, unitNamePlural, frequency ) of
+                ( Just name, Just description, Just unitNameSingular, Just unitNamePlural, Just frequency ) ->
+                    Just <| CreateBadHabit <| CreateBadHabitRecord name description unitNameSingular unitNamePlural frequency
 
-                    _ ->
-                        Nothing
+                _ ->
+                    Nothing
 
 
 decodeHabit : Decode.Decoder Habit
@@ -333,19 +333,19 @@ decodeHabit =
                 |> required "unit_name_plural" Decode.string
                 |> required "threshold_frequency" decodeFrequency
     in
-        Decode.at [ "__typename" ] Decode.string
-            |> Decode.andThen
-                (\typeName ->
-                    case typeName of
-                        "good_habit" ->
-                            decodeGoodHabitRecord |> Decode.map GoodHabit
+    Decode.at [ "__typename" ] Decode.string
+        |> Decode.andThen
+            (\typeName ->
+                case typeName of
+                    "good_habit" ->
+                        decodeGoodHabitRecord |> Decode.map GoodHabit
 
-                        "bad_habit" ->
-                            decodeBadHabitRecord |> Decode.map BadHabit
+                    "bad_habit" ->
+                        decodeBadHabitRecord |> Decode.map BadHabit
 
-                        _ ->
-                            Decode.fail <| "Unable to decode habit, invalid __typename: " ++ typeName
-                )
+                    _ ->
+                        Decode.fail <| "Unable to decode habit, invalid __typename: " ++ typeName
+            )
 
 
 decodeFrequency : Decode.Decoder Frequency
@@ -369,22 +369,22 @@ decodeFrequency =
                 |> optional "saturday" Decode.int 0
                 |> optional "sunday" Decode.int 0
     in
-        Decode.at [ "__typename" ] Decode.string
-            |> Decode.andThen
-                (\typeName ->
-                    case typeName of
-                        "specific_day_of_week_frequency" ->
-                            decodeSpecificDayOfWeekFrequencyRecord |> Decode.map SpecificDayOfWeekFrequency
+    Decode.at [ "__typename" ] Decode.string
+        |> Decode.andThen
+            (\typeName ->
+                case typeName of
+                    "specific_day_of_week_frequency" ->
+                        decodeSpecificDayOfWeekFrequencyRecord |> Decode.map SpecificDayOfWeekFrequency
 
-                        "total_week_frequency" ->
-                            decodeTotalWeekFrequencyRecord |> Decode.map TotalWeekFrequency
+                    "total_week_frequency" ->
+                        decodeTotalWeekFrequencyRecord |> Decode.map TotalWeekFrequency
 
-                        "every_x_days_frequency" ->
-                            decodeEveryXDayFrequencyRecord |> Decode.map EveryXDayFrequency
+                    "every_x_days_frequency" ->
+                        decodeEveryXDayFrequencyRecord |> Decode.map EveryXDayFrequency
 
-                        _ ->
-                            Decode.fail <| "Unable to decode frequency, invalid __typename: " ++ typeName
-                )
+                    _ ->
+                        Decode.fail <| "Unable to decode frequency, invalid __typename: " ++ typeName
+            )
 
 
 decodeHabitTime : Decode.Decoder HabitTime
@@ -404,4 +404,4 @@ decodeHabitTime =
                 _ ->
                     Decode.fail <| str ++ " is not a valid habit time."
     in
-        Decode.string |> Decode.andThen fromStringDecoder
+    Decode.string |> Decode.andThen fromStringDecoder

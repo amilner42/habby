@@ -2,9 +2,9 @@ module Model exposing (..)
 
 import Dict
 import Models.ApiError as ApiError
+import Models.FrequencyStats as FrequencyStats
 import Models.Habit as Habit
 import Models.HabitData as HabitData
-import Models.FrequencyStats as FrequencyStats
 import Models.YmdDate as YmdDate
 import RemoteData
 
