@@ -60,14 +60,14 @@
 
            :habit_frequency_stats {:description "Statistics for how the user has performed with this habit."
                                    :fields {:habit_id {:type (non-null ID)}
-                                            :total_fragments {:type Int}
-                                            :successful_fragments {:type Int}
-                                            :total_done {:type Int}
-                                            :current_fragment_streak {:type Int}
-                                            :best_fragment_streak {:type Int}
-                                            :current_fragment_total {:type Int}
-                                            :current_fragment_goal {:type Int}
-                                            :current_fragment_days_left {:type Int}}}}
+                                            :total_fragments {:type (non-null Int)}
+                                            :successful_fragments {:type (non-null Int)}
+                                            :total_done {:type (non-null Int)}
+                                            :current_fragment_streak {:type (non-null Int)}
+                                            :best_fragment_streak {:type (non-null Int)}
+                                            :current_fragment_total {:type (non-null Int)}
+                                            :current_fragment_goal {:type (non-null Int)}
+                                            :current_fragment_days_left {:type (non-null Int)}}}}
 
  :queries {:get_habits {:type (non-null (list (non-null :habit)))
                         :description "Get all habits."
