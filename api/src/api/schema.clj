@@ -80,27 +80,27 @@
 
 (defn resolve-mutation-set-habit-data
   "@refer `db/set-habit-data`."
-  [context {:keys [habit_id amount date] :as all} value]
+  [context {:keys [date] :as all} value]
   (db/set-habit-data (assoc (dissoc all :date) :date-time (date-from-y-m-d-map date))))
 
 (defn resolve-get-habit-data
   "@refer `db/get-habit-data`."
-  [context {:keys [after_date for_habit] :as all} value]
-  (db/get-habit-data all))
+  [context args value]
+  (db/get-habit-data args))
 
 (defn resolve-mutation-delete-habit
   "@refer `db/delete-habit`."
-  [context {:keys [habit_id] :as all} value]
-  (db/delete-habit all))
+  [context args value]
+  (db/delete-habit args))
 
 (defn resolve-mutation-set-suspend-habit
   "@refer `db/set-suspend-habit`."
-  [context {:keys [habit_id suspended] :as all} value]
-  (db/set-suspend-habit all))
+  [context args value]
+  (db/set-suspend-habit args))
 
 (defn resolve-query-get-frequency-stats
   "@refer `db/get-frequency-stats`."
-  [context {:keys [habit_ids current_client_date] :as all} value]
+  [context {:keys [current_client_date] :as all} value]
   (map tag-type (db/get-frequency-stats (assoc all :current_client_date (date-from-y-m-d-map current_client_date)))))
 
 (defn resolver-map
