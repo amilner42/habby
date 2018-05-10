@@ -5,6 +5,7 @@
             [monger.operators :refer :all]
             [monger.joda-time]
             [api.util :refer :all]
+            [api.freq-stats-util :refer [get-freq-stats-for-habit]]
             [clj-time.core :as t])
   (:import org.bson.types.ObjectId org.joda.time.DateTimeZone))
 
@@ -46,11 +47,16 @@
                 (if (nil? habit_ids) nil {:_id {$in (map #(ObjectId. %) habit_ids)}})))
 
 (defn get-habit-data
-  "Gets habit data from the db, optionally after a specific date or for a specific habit."
-  [{:keys [db after_date for_habit] :or {db habby_db}}]
+  "Gets habit data from the db, optionally after/before a specific date or for specific habits."
+  [{:keys [db after_date before_date habit_ids] :or {db habby_db}}]
   (as-> {} find-query-filter
-        (if (nil? for_habit) find-query-filter (assoc find-query-filter :habit_id (ObjectId. for_habit)))
+        (if (nil? habit_ids) find-query-filter (assoc find-query-filter :habit_id {$in (map #(ObjectId. %) habit_ids)}))
         (if (nil? after_date) find-query-filter (assoc find-query-filter :date {$gte (date-from-y-m-d-map after_date)}))
+        (if (nil? before_date)
+          find-query-filter
+          (assoc find-query-filter
+                 ; Require dates be earlier than midnight the day after `before_date`, so that times don't interfere
+                 :date {$lt (t/plus (date-from-y-m-d-map before_date) (t/days 1))}))
         (mc/find-maps db (:habit_data collection-names) find-query-filter)))
 
 (defn set-habit-data
@@ -64,89 +70,14 @@
                       {:upsert true, :return-new true}))
 
 (defn get-frequency-stats
-  "Input: a list of habit IDs
-  Output: A list of habit_frequency_stats (one for each habit ID provided)"
+  "Returns performance statistics for the requested habits.
+  Retrieves habits and habit data from database `db`.
+  Analyzes user performance based on habit data from `current_client_date` or earlier.
+  Generates a list of `habit_frequency_stats` maps, one for each ID in `habit_ids`."
   [{:keys [db habit_ids current_client_date] :or {db habby_db, current_client_date (t/today-at 0 0)}}]
-  (map (fn [habit]
-         (let [sorted_habit_data (sort-by :date (get-habit-data {:db db :for_habit (str (:_id habit))}))]
-           (if (empty? sorted_habit_data)
-             ; User has not started habit yet
-             {:habit_id (str (:_id habit))
-              :total_fragments 0
-              :successful_fragments 0
-              :total_done 0
-              :current_fragment_streak 0
-              :best_fragment_streak 0
-              :current_fragment_total 0
-              :current_fragment_goal 0
-              :current_fragment_days_left 0}
-             (let [habit_type (:type_name habit)
-                   freq (if (= habit_type "good_habit") (:target_frequency habit) (:threshold_frequency habit))
-                   freq_type (:type_name freq)
-                   compare_fn (if (= habit_type "good_habit") >= <=)]
-                  (loop
-                    [total_fragments 0
-                     successful_fragments 0
-                     total_done 0
-                     current_fragment_streak 0
-                     best_fragment_streak 0
-                     remaining_habit_data sorted_habit_data
-                     fragment_start_date (if (= freq_type "total_week_frequency")
-                                           ; Start calendar week fragment on the Monday before the first habit record
-                                           (t/minus (:date (first sorted_habit_data))
-                                                    (t/days (- (t/day-of-week (:date (first sorted_habit_data)))
-                                                               1)))
-                                           ; Start fragment at the date of the first habit record
-                                           (:date (first sorted_habit_data)))]
-                    (let
-                      [fragment_end_date (condp = freq_type
-                                           "specific_day_of_week_frequency" fragment_start_date
-                                           "total_week_frequency" (t/plus fragment_start_date
-                                                                          (t/days 6))
-                                           "every_x_days_frequency" (t/plus fragment_start_date
-                                                                            (t/days (dec (:days freq)))))
-                       fragment_goal (condp = freq_type
-                                       "specific_day_of_week_frequency" ((condp = (t/day-of-week fragment_start_date)
-                                                                           1 :monday 2 :tuesday 3 :wednesday 4 :thursday
-                                                                           5 :friday 6 :saturday 7 :sunday)
-                                                                         freq)
-                                       "total_week_frequency" (:week freq)
-                                       "every_x_days_frequency" (:times freq))
-                       habit_data_partition (group-by #(if (or (are-datetimes-same-date (:date %) fragment_start_date)
-                                                               (are-datetimes-same-date (:date %) fragment_end_date)
-                                                               (and (t/after? (:date %) fragment_start_date)
-                                                                    (t/before? (:date %) fragment_end_date)))
-                                                         :fragment_data
-                                                         :other_data)
-                                                      remaining_habit_data)
-                       total_done_during_fragment (reduce #(+ %1 (:amount %2)) 0 (:fragment_data habit_data_partition))]
-                      (if (or (t/after? fragment_end_date current_client_date)
-                              (t/equal? fragment_end_date current_client_date))
-                        ; We've reached the current fragment the user is on, return now.
-                        ; We don't include the current fragment in success stats but we do increase total_done.
-                        {:habit_id (str (:_id habit))
-                         :total_fragments total_fragments
-                         :successful_fragments successful_fragments
-                         :total_done (+ total_done total_done_during_fragment)
-                         :current_fragment_streak current_fragment_streak
-                         :best_fragment_streak best_fragment_streak
-                         :current_fragment_total total_done_during_fragment
-                         :current_fragment_goal fragment_goal
-                         :current_fragment_days_left (inc (t/in-days (t/interval current_client_date fragment_end_date)))}
-                        ; Track the current fragment
-                        (let [fragment_is_successful (compare_fn total_done_during_fragment fragment_goal)
-                              new_current_fragment_streak (if fragment_is_successful (inc current_fragment_streak) 0)]
-                          (recur (inc total_fragments)
-                                 (if fragment_is_successful (inc successful_fragments) successful_fragments)
-                                 (+ total_done total_done_during_fragment)
-                                 new_current_fragment_streak
-                                 (if (> new_current_fragment_streak best_fragment_streak)
-                                   new_current_fragment_streak
-                                   best_fragment_streak)
-                                 (:other_data habit_data_partition)
-                                 (t/plus fragment_start_date
-                                         (t/days (condp = freq_type
-                                                   "specific_day_of_week_frequency" 1
-                                                   "total_week_frequency" 7
-                                                   "every_x_days_frequency" (:days freq)))))))))))))
-       (get-habits {:db db :habit_ids habit_ids})))
+  (let [all-habits (get-habits {:db db,
+                                :habit_ids habit_ids}),
+        all-habit-data (get-habit-data {:db db,
+                                        :before_date (date-to-y-m-d-map current_client_date),
+                                        :habit_ids habit_ids})]
+    (map #(get-freq-stats-for-habit db % all-habit-data current_client_date) all-habits)))

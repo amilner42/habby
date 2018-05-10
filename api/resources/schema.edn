@@ -76,7 +76,9 @@
 
            :get_habit_data {:type (non-null (list (non-null :habit_day_record)))
                             :description "Get all the habit data that matches the request specifications."
-                            :args {:after_date {:type :date_data}, :for_habit {:type ID}}
+                            :args {:after_date {:type :date_data},
+                                   :before_date {:type :date_data},
+                                   :habit_ids {:type (list (non-null ID))}}
                             :resolve :query/get-habit-data}
 
            :get_frequency_stats {:type (non-null (list (non-null :habit_frequency_stats)))
