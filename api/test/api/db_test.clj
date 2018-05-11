@@ -105,8 +105,8 @@
             (let [_ (set-habit-data {:db test_db :habit_id habit_id_str :amount 3 :date-time (t/plus today (t/hours 23))})
                   stats (get-frequency-stats {:db test_db :habit_ids [habit_id_str]})]
               (is (= stats [{:habit_id habit_id
-                             :total_fragments 2 :successful_fragments 1 :total_done 8
-                             :current_fragment_streak 1 :best_fragment_streak 1
+                             :total_fragments 3 :successful_fragments 2 :total_done 8
+                             :current_fragment_streak 2 :best_fragment_streak 2
                              :current_fragment_total 3 :current_fragment_goal 2 :current_fragment_days_left 0}]))))))))
   (testing "Good habit, total week frequency"
     (let [habit (assoc default_habit
@@ -138,8 +138,8 @@
             (let [_ (set-habit-data {:db test_db :habit_id habit_id_str :amount 6 :date-time today})
                   stats (get-frequency-stats {:db test_db :habit_ids [habit_id_str]})]
               (is (supermap? stats [{:habit_id habit_id
-                                     :total_fragments 2 :successful_fragments 1 :total_done 14
-                                     :current_fragment_streak 0 :best_fragment_streak 1
+                                     :total_fragments 3 :successful_fragments 2 :total_done 14
+                                     :current_fragment_streak 1 :best_fragment_streak 1
                                      :current_fragment_total 6 :current_fragment_goal 5}]))))))))
   (testing "Good habit, every x days frequency"
     (let [habit (assoc default_habit
