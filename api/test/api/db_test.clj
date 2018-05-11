@@ -92,7 +92,7 @@
           (is (= stats [{:habit_id habit_id
                          :total_fragments 1 :successful_fragments 1 :total_done 4
                          :current_fragment_streak 1 :best_fragment_streak 1
-                         :current_fragment_total 0 :current_fragment_goal 2 :current_fragment_days_left 1}])))
+                         :current_fragment_total 0 :current_fragment_goal 2 :current_fragment_days_left 0}])))
         (testing "and a failure habit record the day before"
           (let [_ (set-habit-data {:db test_db :habit_id habit_id_str :amount 1
                                    :date-time (t/minus today (t/days 2))})
@@ -100,14 +100,14 @@
             (is (= stats [{:habit_id habit_id
                            :total_fragments 2 :successful_fragments 1 :total_done 5
                            :current_fragment_streak 1 :best_fragment_streak 1
-                           :current_fragment_total 0 :current_fragment_goal 2 :current_fragment_days_left 1}])))
+                           :current_fragment_total 0 :current_fragment_goal 2 :current_fragment_days_left 0}])))
           (testing "and at 11pm today the user did 3 units"
             (let [_ (set-habit-data {:db test_db :habit_id habit_id_str :amount 3 :date-time (t/plus today (t/hours 23))})
                   stats (get-frequency-stats {:db test_db :habit_ids [habit_id_str]})]
               (is (= stats [{:habit_id habit_id
                              :total_fragments 2 :successful_fragments 1 :total_done 8
                              :current_fragment_streak 1 :best_fragment_streak 1
-                             :current_fragment_total 3 :current_fragment_goal 2 :current_fragment_days_left 1}]))))))))
+                             :current_fragment_total 3 :current_fragment_goal 2 :current_fragment_days_left 0}]))))))))
   (testing "Good habit, total week frequency"
     (let [habit (assoc default_habit
                        :type_name "good_habit"
