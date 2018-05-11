@@ -30,11 +30,15 @@
                t/days)))
 
 (defn get-consecutive-datetimes
-  "Returns a list of consecutive datetimes from `from-dt` to `until-dt`, inclusive."
+  "Returns a list of consecutive datetimes from `from-dt` to `until-dt`, inclusive.
+  All datetimes are generated at the start of the day so that times are ignored.
+  `from-dt` should be an earlier or equal date to `until-dt`."
   [from-dt until-dt]
-  (periodic-seq from-dt
-                (t/plus until-dt (t/days 1))
-                (t/days 1)))
+  (let [from-dt (t/with-time-at-start-of-day from-dt)
+        until-dt (t/with-time-at-start-of-day until-dt)]
+    (periodic-seq from-dt
+                  (t/plus until-dt (t/days 1))
+                  (t/days 1))))
 
 (defn day-of-week-keyword
   "Returns the day of week of a `DateTime`, in keyword form."
