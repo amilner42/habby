@@ -44,9 +44,11 @@
 
 (defn days-spanned-between-datetimes
   "Returns the number of days spanned from `from-dt` to `until-dt`, inclusive.
-  For instance, today until tomorrow would be 2 days spanned."
+  For instance, today until tomorrow would be 2 days spanned.
+  `from-dt` should be an earlier or equal date to `until-dt`."
   [from-dt until-dt]
   (-> from-dt
       t/with-time-at-start-of-day  ; Bring `from-dt` to start of day so that times don't interfere
       (t/interval until-dt)
-      t/in-days))
+      t/in-days
+      inc))
