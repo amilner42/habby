@@ -121,14 +121,24 @@
 (defn update-freq-stats-with-current-fragment
   "Updates fields of a `habit_frequency_stats` based on the current habit goal fragment and its goal `freq`.
   Computes `:current_fragment_days_left` based on the fragment length defined by `freq` minus the span
-  of `current-fragment`, whose `:end-date` field was cut short at the current date during construction."
-  [freq-stats current-fragment freq]
-  (-> freq-stats
-      (update :total_done + (:total-done current-fragment))
-      (assoc :current_fragment_total (:total-done current-fragment))
-      (assoc :current_fragment_goal (get-habit-goal-amount-for-datetime (:start-date current-fragment) freq))
-      (assoc :current_fragment_days_left (- (get-habit-goal-fragment-length freq)
-                                            (span-of-habit-goal-fragment current-fragment)))))
+  of `current-fragment`, whose `:end-date` field was cut short at the current date during construction.
+  Only ever treats the current fragment as successful for good habits, and only ever treats it as failed for bad
+  habits; we don't punish unfinished good habits or reward unfinished bad habits."
+  [freq-stats current-fragment freq habit]
+  (let [treat-as-successful (and (= (:type_name habit) "good_habit") (:successful current-fragment))
+        treat-as-failed (and (= (:type_name habit) "bad_habit") (not (:successful current-fragment)))]
+    (as-> freq-stats $
+          (update $ :total_fragments (if (or treat-as-successful treat-as-failed) inc identity))
+          (update $ :successful_fragments (if treat-as-successful inc identity))
+          (update $ :total_done + (:total-done current-fragment))
+          (update $ :current_fragment_streak (if treat-as-successful
+                                               inc
+                                               (if treat-as-failed (constantly 0) identity)))
+          (assoc $ :best_fragment_streak (max (:current_fragment_streak $) (:best_fragment_streak $)))
+          (assoc $ :current_fragment_total (:total-done current-fragment))
+          (assoc $ :current_fragment_goal (get-habit-goal-amount-for-datetime (:start-date current-fragment) freq))
+          (assoc $ :current_fragment_days_left (- (get-habit-goal-fragment-length freq)
+                                                  (span-of-habit-goal-fragment current-fragment))))))
 
 (defn compute-freq-stats-from-habit-goal-fragments
   "Computes a `habit_frequency_stats` based on a list of habit goal fragments with goal `freq`."
@@ -139,7 +149,7 @@
           (reduce update-freq-stats-with-past-fragment
                   freq-stats
                   past-fragments)
-          (update-freq-stats-with-current-fragment freq-stats current-fragment freq))))
+          (update-freq-stats-with-current-fragment freq-stats current-fragment freq habit))))
 
 (defn get-freq-stats-for-habit
   "Computes a `habit_frequency_stats` for a habit based on habit data from `current-date` or earlier."
