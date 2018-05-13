@@ -5,9 +5,9 @@
             [clj-time.core :as t]
             [api.dt-util :refer [days-spanned-between-datetimes]]
             [api.freq-stats-util :refer [get-habit-goal-fragment-length, get-habit-goal-amount-for-datetime,
-                                         get-habit-start-date, partition-datetimes-based-on-habit-goal]]
+                                         get-habit-start-date, partition-datetimes-based-on-habit-goal, create-habit-goal-fragment]]
             [api.dt-util-test :refer [generate-random-datetime, generate-random-hour, generate-random-minute, get-later-datetime,
-                                      generate-random-monday-datetime]])
+                                      generate-random-monday-datetime, generate-two-random-sorted-datetimes]])
   (:import org.bson.types.ObjectId))
 
 (def generate-random-specific-day-of-week-frequency
@@ -117,3 +117,12 @@
                           vector)
                      (range (inc days-to-add)))
                 (partition-datetimes-based-on-habit-goal specific-day-of-week-frequency from-date until-date)))))
+
+(defspec create-habit-goal-fragment-test
+         20
+         (prop/for-all [[start-date end-date :as datetimes] generate-two-random-sorted-datetimes
+                        single-date generate-random-datetime]
+           (and (= {:start-date start-date, :end-date end-date, :total-done 0, :successful false}
+                   (create-habit-goal-fragment datetimes))
+                (= {:start-date single-date, :end-date single-date, :total-done 0, :successful false}
+                   (create-habit-goal-fragment [single-date])))))
