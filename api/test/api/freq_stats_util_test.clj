@@ -3,7 +3,6 @@
             [clojure.test.check.properties :as prop]
             [clojure.test.check.clojure-test :refer [defspec]]
             [clj-time.core :as t]
-            [api.dt-util :refer [days-spanned-between-datetimes]]
             [api.freq-stats-util :refer [get-habit-goal-fragment-length, get-habit-goal-amount-for-datetime,
                                          get-habit-start-date, partition-datetimes-based-on-habit-goal, create-habit-goal-fragment,
                                          span-of-habit-goal-fragment, during-habit-goal-fragment?, get-habit-data-during-fragment]]
@@ -108,8 +107,8 @@
          (prop/for-all [specific-day-of-week-frequency generate-random-specific-day-of-week-frequency,
                         total-week-frequency generate-random-total-week-frequency,
                         every-x-days-frequency generate-random-every-x-days-frequency,
-                        [from-date until-date] generate-two-random-sorted-datetimes]
-           (let [total-span (days-spanned-between-datetimes from-date until-date)]
+                        {:keys [from-date until-date days-apart]} generate-two-random-datetimes-with-days-apart]
+           (let [total-span (inc days-apart)]
              (and (= total-span (count (partition-datetimes-based-on-habit-goal specific-day-of-week-frequency from-date until-date)))
                   (== (Math/ceil (/ total-span 7))
                       (count (partition-datetimes-based-on-habit-goal total-week-frequency from-date until-date)))
