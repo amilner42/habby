@@ -157,6 +157,20 @@
              (= [first-week-datetimes, remaining-datetimes]
                 (freq-stats-util/partition-datetimes-based-on-habit-goal total-week-frequency from-date until-date)))))
 
+(defspec partition-datetimes-based-on-habit-goal-every-x-days-frequency-test
+         number-of-test-check-iterations
+         (prop/for-all [times gen/nat,
+                        from-date dt-util-test/generate-random-datetime]
+           (let [every-x-days-frequency {:type_name "every_x_days_frequency",
+                                         :times times,
+                                         :days 12}
+                 until-date (dt-util-test/random-datetime-on-given-date (t/plus from-date (t/days 18))),
+                 from-date-at-start-of-day (t/with-time-at-start-of-day from-date),
+                 first-datetimes (map #(t/plus from-date-at-start-of-day (t/days %)) (range 12)),
+                 remaining-datetimes (map #(t/plus from-date-at-start-of-day (t/days %)) (range 12 19))]
+             (= [first-datetimes, remaining-datetimes]
+                (freq-stats-util/partition-datetimes-based-on-habit-goal every-x-days-frequency from-date until-date)))))
+
 (defspec create-habit-goal-fragment-test
          number-of-test-check-iterations
          (prop/for-all [[start-date end-date :as datetimes] dt-util-test/generate-two-random-sorted-datetimes
