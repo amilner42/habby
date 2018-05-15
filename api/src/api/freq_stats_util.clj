@@ -49,7 +49,7 @@
 
 (defn create-habit-goal-fragment
   "Constructs a habit goal fragment from a list of consecutive DateTimes.
-  `datetimes` should be nonempty and correspond to a habit goal fragment.
+  `datetimes` should be nonempty, be sorted increasingly by date, and correspond to a habit goal fragment.
   Initializes `:total-done` to 0 and `:successful` to false."
   [datetimes]
   {:start-date (first datetimes),
