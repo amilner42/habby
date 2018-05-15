@@ -5,7 +5,8 @@
             [clj-time.core :as t]
             [api.dt-util :refer [days-spanned-between-datetimes]]
             [api.freq-stats-util :refer [get-habit-goal-fragment-length, get-habit-goal-amount-for-datetime,
-                                         get-habit-start-date, partition-datetimes-based-on-habit-goal, create-habit-goal-fragment]]
+                                         get-habit-start-date, partition-datetimes-based-on-habit-goal, create-habit-goal-fragment,
+                                         span-of-habit-goal-fragment]]
             [api.dt-util-test :refer [generate-random-datetime, generate-random-hour, generate-random-minute, get-later-datetime,
                                       generate-random-monday-datetime, generate-two-random-sorted-datetimes]])
   (:import org.bson.types.ObjectId))
@@ -126,3 +127,16 @@
                    (create-habit-goal-fragment datetimes))
                 (= {:start-date single-date, :end-date single-date, :total-done 0, :successful false}
                    (create-habit-goal-fragment [single-date])))))
+
+(defspec span-of-habit-goal-fragment-test
+         20
+         (prop/for-all [start-date generate-random-datetime,
+                        days-to-add gen/nat,
+                        end-date-hour generate-random-hour,
+                        end-date-minute generate-random-minute,
+                        total-done gen/nat,
+                        successful gen/boolean]
+           (let [end-date (get-later-datetime start-date days-to-add end-date-hour end-date-minute),
+                 habit-goal-fragment {:start-date start-date, :end-date end-date, :total-done total-done, :successful successful}]
+             (= (inc days-to-add)
+                (span-of-habit-goal-fragment habit-goal-fragment)))))
