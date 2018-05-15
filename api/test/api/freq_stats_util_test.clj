@@ -106,18 +106,27 @@
                         dt dt-util-test/generate-random-datetime]
            (= (:times freq) (freq-stats-util/get-habit-goal-amount-for-datetime dt freq))))
 
-(defspec get-habit-start-date-test
+(defspec get-habit-start-date-total-week-frequency-test
+         number-of-test-check-iterations
+         (prop/for-all [total-week-frequency generate-random-total-week-frequency,
+                        monday-dt dt-util-test/generate-random-monday-datetime]
+           (let [same-week-sorted-datetimes (sort (gen/generate (gen/not-empty (gen/vector (gen/fmap #(t/plus monday-dt (t/days %))
+                                                                                                     (gen/choose 0 6))))))
+                 same-week-sorted-habit-data (map #(random-habit-day-record {:gen-date (gen/return %)}) same-week-sorted-datetimes)]
+             (= monday-dt
+                (freq-stats-util/get-habit-start-date same-week-sorted-habit-data total-week-frequency)))))
+
+(defspec get-habit-start-date-other-frequencies-test
          number-of-test-check-iterations
          (prop/for-all [specific-day-of-week-frequency generate-random-specific-day-of-week-frequency,
-                        total-week-frequency generate-random-total-week-frequency,
                         every-x-days-frequency generate-random-every-x-days-frequency,
-                        monday-dt dt-util-test/generate-random-monday-datetime,
-                        days-to-add (gen/choose 0 6)]
-           (let [later-in-week-dt (t/plus monday-dt (t/days days-to-add)),
-                 sorted-habit-data [(random-habit-day-record {:gen-date (gen/return later-in-week-dt)})]]
-             (and (= monday-dt (freq-stats-util/get-habit-start-date sorted-habit-data total-week-frequency))
-                  (= later-in-week-dt (freq-stats-util/get-habit-start-date sorted-habit-data specific-day-of-week-frequency)
-                                      (freq-stats-util/get-habit-start-date sorted-habit-data every-x-days-frequency))))))
+                        monday-dt dt-util-test/generate-random-monday-datetime]
+           (let [same-week-sorted-datetimes (sort (gen/generate (gen/not-empty (gen/vector (gen/fmap #(t/plus monday-dt (t/days %))
+                                                                                                     (gen/choose 0 6))))))
+                 same-week-sorted-habit-data (map #(random-habit-day-record {:gen-date (gen/return %)}) same-week-sorted-datetimes)]
+             (= (first same-week-sorted-datetimes)
+                (freq-stats-util/get-habit-start-date same-week-sorted-habit-data specific-day-of-week-frequency)
+                (freq-stats-util/get-habit-start-date same-week-sorted-habit-data every-x-days-frequency)))))
 
 (defspec partition-datetimes-based-on-habit-goal-count-test
          number-of-test-check-iterations
