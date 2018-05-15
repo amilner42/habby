@@ -75,16 +75,10 @@
 
 (defspec get-consecutive-datetimes-test
          number-of-test-check-iterations
-         (let [today-at-start-of-day (t/today-at 0 0),
-               tomorrow-at-start-of-day (t/plus today-at-start-of-day (t/days 1))]
-           (prop/for-all [random-today-dt-a (generate-random-datetime-on-given-date today-at-start-of-day)
-                          random-today-dt-b (generate-random-datetime-on-given-date today-at-start-of-day)
-                          random-today-dt-c (generate-random-datetime-on-given-date today-at-start-of-day)]
-             (let [random-tomorrow-dt (t/plus random-today-dt-c (t/days 1))]
-               (and (= [today-at-start-of-day]
-                       (get-consecutive-datetimes random-today-dt-a random-today-dt-b))  ; get datetimes from today until today
-                    (= [today-at-start-of-day, tomorrow-at-start-of-day]
-                       (get-consecutive-datetimes random-today-dt-a random-tomorrow-dt)))))))  ; get datetimes from today until tomorrow
+         (prop/for-all [{:keys [from-date until-date days-apart]} generate-two-random-datetimes-with-days-apart]
+             (let [from-date-at-start-of-day (t/with-time-at-start-of-day from-date)]
+               (= (map #(t/plus from-date-at-start-of-day (t/days %)) (range (inc days-apart)))
+                  (get-consecutive-datetimes from-date until-date)))))
 
 (defspec get-consecutive-datetimes-count-test
          number-of-test-check-iterations
