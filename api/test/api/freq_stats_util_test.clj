@@ -7,8 +7,7 @@
             [api.freq-stats-util :refer [get-habit-goal-fragment-length, get-habit-goal-amount-for-datetime,
                                          get-habit-start-date, partition-datetimes-based-on-habit-goal, create-habit-goal-fragment,
                                          span-of-habit-goal-fragment]]
-            [api.dt-util-test :refer [generate-random-datetime, generate-random-hour, generate-random-minute, get-later-datetime,
-                                      generate-random-monday-datetime, generate-two-random-sorted-datetimes,
+            [api.dt-util-test :refer [generate-random-datetime, generate-random-monday-datetime, generate-two-random-sorted-datetimes,
                                       generate-two-random-datetimes-with-days-apart]])
   (:import org.bson.types.ObjectId))
 
