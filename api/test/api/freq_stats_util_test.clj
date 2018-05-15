@@ -117,7 +117,7 @@
                  sorted-habit-data [(random-habit-day-record {:gen-date (gen/return later-in-week-dt)})]]
              (and (= monday-dt (freq-stats-util/get-habit-start-date sorted-habit-data total-week-frequency))
                   (= later-in-week-dt (freq-stats-util/get-habit-start-date sorted-habit-data specific-day-of-week-frequency)
-                        (freq-stats-util/get-habit-start-date sorted-habit-data every-x-days-frequency))))))
+                                      (freq-stats-util/get-habit-start-date sorted-habit-data every-x-days-frequency))))))
 
 (defspec partition-datetimes-based-on-habit-goal-count-test
          number-of-test-check-iterations
