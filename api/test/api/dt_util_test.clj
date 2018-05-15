@@ -31,6 +31,11 @@
         t/with-time-at-start-of-day
         (t/plus (t/hours hour) (t/minutes minute)))))
 
+(defn random-datetime-on-given-date
+  "Like `generate-random-datetime-on-given-date`, but returns a `DateTime` instead of a generator for one."
+  [dt]
+  (gen/generate (generate-random-datetime-on-given-date dt)))
+
 ; Generates a sorted two-element vector of DateTimes
 (def generate-two-random-sorted-datetimes
   (gen/let [dt-a generate-random-datetime
@@ -41,7 +46,7 @@
 (def generate-two-random-datetimes-with-days-apart
   (gen/let [from-date generate-random-datetime,
             days-apart gen/nat]
-    (let [until-date (t/plus (gen/generate (generate-random-datetime-on-given-date from-date))
+    (let [until-date (t/plus (random-datetime-on-given-date from-date)
                              (t/days days-apart))]
       {:from-date from-date, :until-date until-date, :days-apart days-apart})))
 
