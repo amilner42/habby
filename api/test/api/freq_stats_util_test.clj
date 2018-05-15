@@ -84,15 +84,14 @@
 
 (defspec get-habit-goal-amount-for-datetime-specific-day-of-week-frequency-test
          number-of-test-check-iterations
-         (prop/for-all [freq generate-random-specific-day-of-week-frequency,
-                        dt dt-util-test/generate-random-monday-datetime]
-           (and (= (:monday freq) (freq-stats-util/get-habit-goal-amount-for-datetime dt freq))
-                (= (:tuesday freq) (freq-stats-util/get-habit-goal-amount-for-datetime (t/plus dt (t/days 1)) freq))
-                (= (:wednesday freq) (freq-stats-util/get-habit-goal-amount-for-datetime (t/plus dt (t/days 2)) freq))
-                (= (:thursday freq) (freq-stats-util/get-habit-goal-amount-for-datetime (t/plus dt (t/days 3)) freq))
-                (= (:friday freq) (freq-stats-util/get-habit-goal-amount-for-datetime (t/plus dt (t/days 4)) freq))
-                (= (:saturday freq) (freq-stats-util/get-habit-goal-amount-for-datetime (t/plus dt (t/days 5)) freq))
-                (= (:sunday freq) (freq-stats-util/get-habit-goal-amount-for-datetime (t/plus dt (t/days 6)) freq)))))
+         (prop/for-all [week-amount-vector (gen/vector gen/nat 7),
+                        monday-dt dt-util-test/generate-random-monday-datetime,
+                        days-to-add (gen/choose 0 6)]
+           (let [later-in-week-dt (t/plus monday-dt (t/days days-to-add)),
+                 freq (assoc (zipmap [:monday :tuesday :wednesday :thursday :friday :saturday :sunday] week-amount-vector)
+                             :type_name "specific_day_of_week_frequency")]
+             (= (nth week-amount-vector days-to-add)
+                (freq-stats-util/get-habit-goal-amount-for-datetime later-in-week-dt freq)))))
 
 (defspec get-habit-goal-amount-for-datetime-total-week-frequency-test
          number-of-test-check-iterations
