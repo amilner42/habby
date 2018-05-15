@@ -118,13 +118,11 @@
 
 (defspec get-habit-start-date-other-frequencies-test
          number-of-test-check-iterations
-         (prop/for-all [specific-day-of-week-frequency generate-random-specific-day-of-week-frequency,
-                        every-x-days-frequency generate-random-every-x-days-frequency]
+         (prop/for-all [freq (gen/one-of [generate-random-specific-day-of-week-frequency, generate-random-every-x-days-frequency])]
            (let [sorted-datetimes (sort (gen/generate (gen/not-empty (gen/vector dt-util-test/generate-random-datetime))))
                  sorted-habit-data (map #(random-habit-day-record {:gen-date (gen/return %)}) sorted-datetimes)]
              (= (first sorted-datetimes)
-                (freq-stats-util/get-habit-start-date sorted-habit-data specific-day-of-week-frequency)
-                (freq-stats-util/get-habit-start-date sorted-habit-data every-x-days-frequency)))))
+                (freq-stats-util/get-habit-start-date sorted-habit-data freq)))))
 
 (defspec partition-datetimes-based-on-habit-goal-count-test
          number-of-test-check-iterations
