@@ -36,6 +36,15 @@
             dt-b generate-random-datetime]
     (sort [dt-a dt-b])))
 
+; Generates two random `DateTime`s, with `until-date` being `days-apart` days later than `from-date`. Returns a map of the values.
+(def generate-two-random-datetimes-with-days-apart
+  (gen/let [from-date generate-random-datetime,
+            days-apart gen/nat,
+            until-date-hour generate-random-hour,
+            until-date-minute generate-random-minute]
+    (let [until-date (get-later-datetime from-date days-apart until-date-hour until-date-minute)]
+      {:from-date from-date, :until-date until-date, :days-apart days-apart})))
+
 (defspec date-geq?-and-date-leq?-equal-dates-test
          10
          (prop/for-all [dt generate-random-datetime]
@@ -72,18 +81,12 @@
 
 (defspec get-consecutive-datetimes-count-test
          10
-         (prop/for-all [dt-a generate-random-datetime
-                        days-to-add gen/nat
-                        hour-b (gen/choose 0 23)
-                        minute-b (gen/choose 0 59)]
-           (let [dt-b (get-later-datetime dt-a days-to-add hour-b minute-b)]
-             (= (inc days-to-add) (count (get-consecutive-datetimes dt-a dt-b))))))
+         (prop/for-all [{:keys [from-date until-date days-apart]} generate-two-random-datetimes-with-days-apart]
+           (= (inc days-apart)
+              (count (get-consecutive-datetimes from-date until-date)))))
 
 (defspec days-spanned-between-datetimes-test
          50
-         (prop/for-all [dt-a generate-random-datetime
-                        days-to-add gen/nat
-                        hour-b (gen/choose 0 23)
-                        minute-b (gen/choose 0 59)]
-           (let [dt-b (get-later-datetime dt-a days-to-add hour-b minute-b)]
-             (= (inc days-to-add) (days-spanned-between-datetimes dt-a dt-b)))))
+         (prop/for-all [{:keys [from-date until-date days-apart]} generate-two-random-datetimes-with-days-apart]
+           (= (inc days-apart)
+              (days-spanned-between-datetimes from-date until-date))))
