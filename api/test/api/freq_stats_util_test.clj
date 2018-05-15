@@ -28,10 +28,12 @@
 (def generate-random-ID
   (gen/fmap (fn [_] (ObjectId.)) gen/int))
 
-(def generate-random-habit-day-record
+(defn generate-random-habit-day-record-with-given-date
+  "Returns a generator for a random `habit_day_record` with specified `date` field, and random other fields."
+  [date]
   (gen/hash-map :_id generate-random-ID,
                 :habit_id generate-random-ID,
-                :date generate-random-datetime,
+                :date (gen/return date),
                 :amount gen/nat))
 
 (defn random-habit-goal-fragment-with-given-dates
@@ -84,11 +86,10 @@
          (prop/for-all [specific-day-of-week-frequency generate-random-specific-day-of-week-frequency,
                         total-week-frequency generate-random-total-week-frequency,
                         every-x-days-frequency generate-random-every-x-days-frequency,
-                        habit-day-record generate-random-habit-day-record,
                         monday-dt generate-random-monday-datetime,
                         days-to-add (gen/choose 0 6)]
            (let [later-in-week-dt (t/plus monday-dt (t/days days-to-add)),
-                 sorted-habit-data [(assoc habit-day-record :date later-in-week-dt)]]
+                 sorted-habit-data [(gen/generate (generate-random-habit-day-record-with-given-date later-in-week-dt))]]
              (and (= monday-dt (get-habit-start-date sorted-habit-data total-week-frequency))
                   (= later-in-week-dt (get-habit-start-date sorted-habit-data specific-day-of-week-frequency)
                         (get-habit-start-date sorted-habit-data every-x-days-frequency))))))
