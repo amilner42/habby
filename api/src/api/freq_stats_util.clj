@@ -91,21 +91,21 @@
 
 (defn evaluate-habit-goal-fragment
   "Evaluates `:total-done` and `:successful` fields of a habit goal fragment."
-  [habit-goal-fragment habit-data habit freq]
+  [habit-goal-fragment habit-data habit-type freq]
   (let [habit-data-during-fragment (get-habit-data-during-fragment habit-data habit-goal-fragment)]
     (-> habit-goal-fragment
         (evaluate-habit-goal-fragment-total-done habit-data-during-fragment)
-        (evaluate-habit-goal-fragment-successful (:type_name habit) freq))))
+        (evaluate-habit-goal-fragment-successful habit-type freq))))
 
 (defn get-habit-goal-fragments
   "Creates and evaluates habit goal fragments for a habit based on data from `current-date` or earlier.
   Returns `nil` if `sorted-habit-data` is empty, i.e. the habit has no relevant data."
-  [sorted-habit-data current-date habit freq]
+  [sorted-habit-data current-date habit-type freq]
   (if-not (empty? sorted-habit-data)
     (let [habit-start-date (get-habit-start-date sorted-habit-data freq)
           partitioned-datetimes (partition-datetimes-based-on-habit-goal freq habit-start-date current-date)
           habit-goal-fragments (map #(create-habit-goal-fragment %) partitioned-datetimes)]
-      (map #(evaluate-habit-goal-fragment % sorted-habit-data habit freq) habit-goal-fragments))))
+      (map #(evaluate-habit-goal-fragment % sorted-habit-data habit-type freq) habit-goal-fragments))))
 
 (defn update-freq-stats-with-past-fragment
   "Updates fields of a `habit_frequency_stats` based on a past habit goal fragment."
@@ -158,7 +158,7 @@
                                (filter #(= (:habit_id %) (:_id habit)))
                                (sort-by :date)),
         freq (get-frequency habit),
-        habit-goal-fragments (get-habit-goal-fragments sorted-habit-data current-date habit freq)]
+        habit-goal-fragments (get-habit-goal-fragments sorted-habit-data current-date (:type_name habit) freq)]
     (if (nil? habit-goal-fragments)
       (assoc default-frequency-stats :habit_id (:_id habit))
       (compute-freq-stats-from-habit-goal-fragments habit-goal-fragments habit freq))))
