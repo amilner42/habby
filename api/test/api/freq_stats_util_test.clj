@@ -128,17 +128,14 @@
 
 (defspec partition-datetimes-based-on-habit-goal-count-test
          number-of-test-check-iterations
-         (prop/for-all [specific-day-of-week-frequency generate-random-specific-day-of-week-frequency,
-                        total-week-frequency generate-random-total-week-frequency,
-                        every-x-days-frequency generate-random-every-x-days-frequency,
+         (prop/for-all [freq (gen/one-of [generate-random-specific-day-of-week-frequency,
+                                          generate-random-total-week-frequency,
+                                          generate-random-every-x-days-frequency])
                         {:keys [from-date until-date days-apart]} dt-util-test/generate-two-random-datetimes-with-days-apart]
-           (let [total-span (inc days-apart)]
-             (and (= total-span
-                     (count (freq-stats-util/partition-datetimes-based-on-habit-goal specific-day-of-week-frequency from-date until-date)))
-                  (== (Math/ceil (/ total-span 7))
-                      (count (freq-stats-util/partition-datetimes-based-on-habit-goal total-week-frequency from-date until-date)))
-                  (== (Math/ceil (/ total-span (:days every-x-days-frequency)))
-                      (count (freq-stats-util/partition-datetimes-based-on-habit-goal every-x-days-frequency from-date until-date)))))))
+           (let [total-span (inc days-apart),
+                 fragment-length (freq-stats-util/get-habit-goal-fragment-length freq)]
+             (== (Math/ceil (/ total-span fragment-length))
+                 (count (freq-stats-util/partition-datetimes-based-on-habit-goal freq from-date until-date))))))
 
 (defspec partition-datetimes-based-on-habit-goal-specific-day-of-week-frequency-test
          number-of-test-check-iterations
