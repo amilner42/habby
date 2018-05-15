@@ -200,3 +200,11 @@
                                                  amounts)]
              (= (update habit-goal-fragment :total-done + (apply + amounts))
                 (freq-stats-util/evaluate-habit-goal-fragment-total-done habit-goal-fragment habit-data-during-fragment)))))
+
+(defspec evaluate-habit-goal-fragment-successful-test
+         number-of-test-check-iterations
+         (prop/for-all [habit-goal-fragment (generate-random-habit-goal-fragment {}),
+                        total-week-frequency generate-random-total-week-frequency]
+           (let [habit-type "bad_habit"]
+             (= (assoc habit-goal-fragment :successful (<= (:total-done habit-goal-fragment) (:week total-week-frequency)))
+                (freq-stats-util/evaluate-habit-goal-fragment-successful habit-goal-fragment habit-type total-week-frequency)))))
