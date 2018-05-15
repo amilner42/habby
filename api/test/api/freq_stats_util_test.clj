@@ -35,6 +35,12 @@
                 :date generate-random-datetime,
                 :amount gen/nat))
 
+(defn random-habit-goal-fragment-with-given-dates
+  "Creates a habit goal fragment with specified `start-date` and `end-date`, and random `total-done` and `successful` fields."
+  [start-date end-date]
+  (gen/generate (gen/let [total-done gen/nat, successful gen/boolean]
+                  {:start-date start-date, :end-date end-date, :total-done total-done, :successful successful})))
+
 (defspec get-habit-goal-fragment-length-specific-day-of-week-frequency-test
          10
          (prop/for-all [freq generate-random-specific-day-of-week-frequency]
@@ -123,10 +129,8 @@
 
 (defspec span-of-habit-goal-fragment-test
          20
-         (prop/for-all [{:keys [from-date until-date days-apart]} generate-two-random-datetimes-with-days-apart,
-                        total-done gen/nat,
-                        successful gen/boolean]
-           (let [habit-goal-fragment {:start-date from-date, :end-date until-date, :total-done total-done, :successful successful}]
+         (prop/for-all [{:keys [from-date until-date days-apart]} generate-two-random-datetimes-with-days-apart]
+           (let [habit-goal-fragment (random-habit-goal-fragment-with-given-dates from-date until-date)]
              (= (inc days-apart)
                 (span-of-habit-goal-fragment habit-goal-fragment)))))
 
@@ -135,10 +139,8 @@
          (prop/for-all [{:keys [from-date until-date days-apart]} generate-two-random-datetimes-with-days-apart,
                         days-to-add gen/int,
                         datetime-hour generate-random-hour,
-                        datetime-minute generate-random-minute,
-                        total-done gen/nat,
-                        successful gen/boolean]
-           (let [habit-goal-fragment {:start-date from-date, :end-date until-date, :total-done total-done, :successful successful},
+                        datetime-minute generate-random-minute]
+           (let [habit-goal-fragment (random-habit-goal-fragment-with-given-dates from-date until-date),
                  datetime (get-later-datetime from-date days-to-add datetime-hour datetime-minute)]
              (= (<= 0 days-to-add days-apart)
                 (during-habit-goal-fragment? datetime habit-goal-fragment)))))
