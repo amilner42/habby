@@ -8,7 +8,8 @@
                                          get-habit-start-date, partition-datetimes-based-on-habit-goal, create-habit-goal-fragment,
                                          span-of-habit-goal-fragment]]
             [api.dt-util-test :refer [generate-random-datetime, generate-random-hour, generate-random-minute, get-later-datetime,
-                                      generate-random-monday-datetime, generate-two-random-sorted-datetimes]])
+                                      generate-random-monday-datetime, generate-two-random-sorted-datetimes,
+                                      generate-two-random-datetimes-with-days-apart]])
   (:import org.bson.types.ObjectId))
 
 (def generate-random-specific-day-of-week-frequency
@@ -107,16 +108,12 @@
 (defspec partition-datetimes-based-on-habit-goal-specific-day-of-week-frequency-test
          20
          (prop/for-all [specific-day-of-week-frequency generate-random-specific-day-of-week-frequency,
-                        from-date generate-random-datetime,
-                        days-to-add gen/nat,
-                        until-date-hour generate-random-hour,
-                        until-date-minute generate-random-minute]
-           (let [from-date-at-start-of-day (t/with-time-at-start-of-day from-date),
-                 until-date (get-later-datetime from-date days-to-add until-date-hour until-date-minute)]
+                        {:keys [from-date until-date days-apart]} generate-two-random-datetimes-with-days-apart]
+           (let [from-date-at-start-of-day (t/with-time-at-start-of-day from-date)]
              (= (map #(-> from-date-at-start-of-day
                           (t/plus (t/days %))
                           vector)
-                     (range (inc days-to-add)))
+                     (range (inc days-apart)))
                 (partition-datetimes-based-on-habit-goal specific-day-of-week-frequency from-date until-date)))))
 
 (defspec create-habit-goal-fragment-test
@@ -130,13 +127,9 @@
 
 (defspec span-of-habit-goal-fragment-test
          20
-         (prop/for-all [start-date generate-random-datetime,
-                        days-to-add gen/nat,
-                        end-date-hour generate-random-hour,
-                        end-date-minute generate-random-minute,
+         (prop/for-all [{:keys [from-date until-date days-apart]} generate-two-random-datetimes-with-days-apart,
                         total-done gen/nat,
                         successful gen/boolean]
-           (let [end-date (get-later-datetime start-date days-to-add end-date-hour end-date-minute),
-                 habit-goal-fragment {:start-date start-date, :end-date end-date, :total-done total-done, :successful successful}]
-             (= (inc days-to-add)
+           (let [habit-goal-fragment {:start-date from-date, :end-date until-date, :total-done total-done, :successful successful}]
+             (= (inc days-apart)
                 (span-of-habit-goal-fragment habit-goal-fragment)))))
