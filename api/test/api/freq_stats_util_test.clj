@@ -93,12 +93,8 @@
          (prop/for-all [specific-day-of-week-frequency generate-random-specific-day-of-week-frequency,
                         total-week-frequency generate-random-total-week-frequency,
                         every-x-days-frequency generate-random-every-x-days-frequency,
-                        from-date generate-random-datetime,
-                        days-to-add gen/nat,
-                        until-date-hour generate-random-hour,
-                        until-date-minute generate-random-minute]
-           (let [until-date (get-later-datetime from-date days-to-add until-date-hour until-date-minute)
-                 total-span (days-spanned-between-datetimes from-date until-date)]
+                        [from-date until-date] generate-two-random-sorted-datetimes]
+           (let [total-span (days-spanned-between-datetimes from-date until-date)]
              (and (= total-span (count (partition-datetimes-based-on-habit-goal specific-day-of-week-frequency from-date until-date)))
                   (== (Math/ceil (/ total-span 7))
                       (count (partition-datetimes-based-on-habit-goal total-week-frequency from-date until-date)))
