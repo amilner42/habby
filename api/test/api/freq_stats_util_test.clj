@@ -110,9 +110,9 @@
                         days-to-add gen/nat,
                         until-date-hour generate-random-hour,
                         until-date-minute generate-random-minute]
-           (let [until-date (get-later-datetime from-date days-to-add until-date-hour until-date-minute)]
-             (= (map #(-> from-date
-                          t/with-time-at-start-of-day
+           (let [from-date-at-start-of-day (t/with-time-at-start-of-day from-date),
+                 until-date (get-later-datetime from-date days-to-add until-date-hour until-date-minute)]
+             (= (map #(-> from-date-at-start-of-day
                           (t/plus (t/days %))
                           vector)
                      (range (inc days-to-add)))
