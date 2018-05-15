@@ -44,8 +44,8 @@
   Boundaries are inclusive, with respect to `from-date` and `until-date`."
   [freq from-date until-date]
   (let [datetimes (get-consecutive-datetimes from-date until-date),
-        n (get-habit-goal-fragment-length freq)]
-    (partition-all n datetimes)))
+        fragment-length (get-habit-goal-fragment-length freq)]
+    (partition-all fragment-length datetimes)))
 
 (defn create-habit-goal-fragment
   "Constructs a habit goal fragment from a list of consecutive DateTimes.
