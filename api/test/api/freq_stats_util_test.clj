@@ -191,3 +191,12 @@
                              outside-range-record-b]]
              (= [within-range-record-a, within-range-record-b]
                 (freq-stats-util/get-habit-data-during-fragment habit-data habit-goal-fragment)))))
+
+(defspec evaluate-habit-goal-fragment-total-done-test
+         number-of-test-check-iterations
+         (prop/for-all [habit-goal-fragment (generate-random-habit-goal-fragment {}),
+                        amounts (gen/vector gen/nat)]
+           (let [habit-data-during-fragment (map #(random-habit-day-record {:gen-amount (gen/return %)})
+                                                 amounts)]
+             (= (update habit-goal-fragment :total-done + (apply + amounts))
+                (freq-stats-util/evaluate-habit-goal-fragment-total-done habit-goal-fragment habit-data-during-fragment)))))
