@@ -169,7 +169,7 @@
                         days-to-add gen/int]
            (let [habit-goal-fragment (random-habit-goal-fragment {:gen-start-date (gen/return from-date)
                                                                   :gen-end-date (gen/return until-date)}),
-                 datetime (t/plus (gen/generate (dt-util-test/generate-random-datetime-on-given-date from-date))
+                 datetime (t/plus (dt-util-test/random-datetime-on-given-date from-date)
                                   (t/days days-to-add))]
              (= (<= 0 days-to-add days-apart)
                 (freq-stats-util/during-habit-goal-fragment? datetime habit-goal-fragment)))))
