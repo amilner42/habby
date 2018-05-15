@@ -37,9 +37,12 @@
                               :amount gen/nat)))
 
 (defn random-habit-goal-fragment-with-given-dates
-  "Creates a habit goal fragment with specified `start-date` and `end-date`, and random `total-done` and `successful` fields."
+  "Creates a habit goal fragment with specified `start-date` and `end-date` but at random times, and random other fields."
   [start-date end-date]
-  (gen/generate (gen/let [total-done gen/nat, successful gen/boolean]
+  (gen/generate (gen/let [start-date (generate-random-datetime-on-given-date start-date),
+                          end-date (generate-random-datetime-on-given-date end-date),
+                          total-done gen/nat,
+                          successful gen/boolean]
                   {:start-date start-date, :end-date end-date, :total-done total-done, :successful successful})))
 
 (defspec get-habit-goal-fragment-length-specific-day-of-week-frequency-test
