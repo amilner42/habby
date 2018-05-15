@@ -6,6 +6,8 @@
                                  days-spanned-between-datetimes, get-consecutive-datetimes]]
             [clj-time.core :as t]))
 
+(def number-of-test-check-iterations 30)
+
 (def generate-random-hour (gen/choose 0 23))
 (def generate-random-minute (gen/choose 0 59))
 (def generate-random-datetime
@@ -44,30 +46,30 @@
       {:from-date from-date, :until-date until-date, :days-apart days-apart})))
 
 (defspec date-geq?-and-date-leq?-equal-dates-test
-         10
+         number-of-test-check-iterations
          (prop/for-all [dt generate-random-datetime]
            (and (date-geq? dt dt)
                 (date-leq? dt dt))))
 
 (defspec date-geq?-test
-         50
+         number-of-test-check-iterations
          (prop/for-all [[dt-a dt-b] generate-two-random-sorted-datetimes]
            (date-geq? dt-b dt-a)))
 
 (defspec date-leq?-test
-         50
+         number-of-test-check-iterations
          (prop/for-all [[dt-a dt-b] generate-two-random-sorted-datetimes]
            (date-leq? dt-a dt-b)))
 
 (defspec first-monday-before-datetime-test
-         50
+         number-of-test-check-iterations
          (prop/for-all [monday-dt generate-random-monday-datetime
                         days-to-add (gen/choose 0 6)]
            (let [later-in-week-dt (t/plus monday-dt (t/days days-to-add))]
              (= monday-dt (first-monday-before-datetime later-in-week-dt)))))
 
 (defspec get-consecutive-datetimes-test
-         20
+         number-of-test-check-iterations
          (let [today-at-start-of-day (t/today-at 0 0),
                tomorrow-at-start-of-day (t/plus today-at-start-of-day (t/days 1))]
            (prop/for-all [random-today-dt-a (generate-random-datetime-on-given-date today-at-start-of-day)
@@ -80,13 +82,13 @@
                        (get-consecutive-datetimes random-today-dt-a random-tomorrow-dt)))))))  ; get datetimes from today until tomorrow
 
 (defspec get-consecutive-datetimes-count-test
-         10
+         number-of-test-check-iterations
          (prop/for-all [{:keys [from-date until-date days-apart]} generate-two-random-datetimes-with-days-apart]
            (= (inc days-apart)
               (count (get-consecutive-datetimes from-date until-date)))))
 
 (defspec days-spanned-between-datetimes-test
-         50
+         number-of-test-check-iterations
          (prop/for-all [{:keys [from-date until-date days-apart]} generate-two-random-datetimes-with-days-apart]
            (= (inc days-apart)
               (days-spanned-between-datetimes from-date until-date))))
