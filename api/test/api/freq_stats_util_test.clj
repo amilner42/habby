@@ -6,9 +6,10 @@
             [api.dt-util :refer [days-spanned-between-datetimes]]
             [api.freq-stats-util :refer [get-habit-goal-fragment-length, get-habit-goal-amount-for-datetime,
                                          get-habit-start-date, partition-datetimes-based-on-habit-goal, create-habit-goal-fragment,
-                                         span-of-habit-goal-fragment]]
+                                         span-of-habit-goal-fragment, during-habit-goal-fragment?]]
             [api.dt-util-test :refer [generate-random-datetime, generate-random-monday-datetime, generate-two-random-sorted-datetimes,
-                                      generate-two-random-datetimes-with-days-apart]])
+                                      generate-two-random-datetimes-with-days-apart, generate-random-hour, generate-random-minute,
+                                      get-later-datetime]])
   (:import org.bson.types.ObjectId))
 
 (def generate-random-specific-day-of-week-frequency
@@ -128,3 +129,16 @@
            (let [habit-goal-fragment {:start-date from-date, :end-date until-date, :total-done total-done, :successful successful}]
              (= (inc days-apart)
                 (span-of-habit-goal-fragment habit-goal-fragment)))))
+
+(defspec during-habit-goal-fragment?-test
+         20
+         (prop/for-all [{:keys [from-date until-date days-apart]} generate-two-random-datetimes-with-days-apart,
+                        days-to-add gen/int,
+                        datetime-hour generate-random-hour,
+                        datetime-minute generate-random-minute,
+                        total-done gen/nat,
+                        successful gen/boolean]
+           (let [habit-goal-fragment {:start-date from-date, :end-date until-date, :total-done total-done, :successful successful},
+                 datetime (get-later-datetime from-date days-to-add datetime-hour datetime-minute)]
+             (= (<= 0 days-to-add days-apart)
+                (during-habit-goal-fragment? datetime habit-goal-fragment)))))
