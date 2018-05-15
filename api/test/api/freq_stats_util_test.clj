@@ -106,7 +106,8 @@
                         every-x-days-frequency generate-random-every-x-days-frequency,
                         {:keys [from-date until-date days-apart]} dt-util-test/generate-two-random-datetimes-with-days-apart]
            (let [total-span (inc days-apart)]
-             (and (= total-span (count (freq-stats-util/partition-datetimes-based-on-habit-goal specific-day-of-week-frequency from-date until-date)))
+             (and (= total-span
+                     (count (freq-stats-util/partition-datetimes-based-on-habit-goal specific-day-of-week-frequency from-date until-date)))
                   (== (Math/ceil (/ total-span 7))
                       (count (freq-stats-util/partition-datetimes-based-on-habit-goal total-week-frequency from-date until-date)))
                   (== (Math/ceil (/ total-span (:days every-x-days-frequency)))
