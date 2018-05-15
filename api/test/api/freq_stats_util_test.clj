@@ -38,6 +38,12 @@
                 :date gen-date,
                 :amount gen-amount))
 
+(defn random-habit-day-record
+  "Like `generate-random-habit-day-record`, but returns a `habit_day_record` instead of a generator for one.
+  Args should still be generators, as in `generate-random-habit-day-record`."
+  [args]
+  (gen/generate (generate-random-habit-day-record args)))
+
 (defn generate-random-habit-goal-fragment
   "Generates a habit goal fragment, with each field created by its supplied generator, or randomly generated if not supplied.
   If either `gen-start-date` or `gen-end-date` is not supplied, generates both dates and makes sure `start-date` comes before `end-date`."
@@ -108,7 +114,7 @@
                         monday-dt dt-util-test/generate-random-monday-datetime,
                         days-to-add (gen/choose 0 6)]
            (let [later-in-week-dt (t/plus monday-dt (t/days days-to-add)),
-                 sorted-habit-data [(gen/generate (generate-random-habit-day-record {:gen-date (gen/return later-in-week-dt)}))]]
+                 sorted-habit-data [(random-habit-day-record {:gen-date (gen/return later-in-week-dt)})]]
              (and (= monday-dt (freq-stats-util/get-habit-start-date sorted-habit-data total-week-frequency))
                   (= later-in-week-dt (freq-stats-util/get-habit-start-date sorted-habit-data specific-day-of-week-frequency)
                         (freq-stats-util/get-habit-start-date sorted-habit-data every-x-days-frequency))))))
@@ -174,11 +180,11 @@
                  start-date (:start-date habit-goal-fragment),
                  end-date (:end-date habit-goal-fragment),
                  too-early-dt (t/minus start-date (t/days days-to-subtract)),
-                 outside-range-record-a (gen/generate (generate-random-habit-day-record {:gen-date (gen/return too-early-dt)})),
-                 within-range-record-a (gen/generate (generate-random-habit-day-record {:gen-date (gen/return start-date)})),
-                 within-range-record-b (gen/generate (generate-random-habit-day-record {:gen-date (gen/return end-date)})),
+                 outside-range-record-a (random-habit-day-record {:gen-date (gen/return too-early-dt)}),
+                 within-range-record-a (random-habit-day-record {:gen-date (gen/return start-date)}),
+                 within-range-record-b (random-habit-day-record {:gen-date (gen/return end-date)}),
                  too-late-dt (t/plus end-date (t/days days-to-add)),
-                 outside-range-record-b (gen/generate (generate-random-habit-day-record {:gen-date (gen/return too-late-dt)})),
+                 outside-range-record-b (random-habit-day-record {:gen-date (gen/return too-late-dt)}),
                  habit-data [outside-range-record-a,
                              within-range-record-a,
                              within-range-record-b,
