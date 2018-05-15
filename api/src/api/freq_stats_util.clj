@@ -81,11 +81,11 @@
           habit-data-during-fragment))
 
 (defn evaluate-habit-goal-fragment-successful
-  "Evaluates the `:successful` field of `habit-goal-fragment` based on its `:total-done` field and the habit's goal."
-  [habit-goal-fragment habit freq]
+  "Evaluates the `:successful` field of `habit-goal-fragment` based on its `:total-done` field, the type of habit, and the habit's goal."
+  [habit-goal-fragment habit-type freq]
   (let [goal-amount (get-habit-goal-amount-for-datetime (:start-date habit-goal-fragment) freq)]
     (assoc habit-goal-fragment
-           :successful ((if (= (:type_name habit) "good_habit") >= <=)
+           :successful ((if (= habit-type "good_habit") >= <=)
                         (:total-done habit-goal-fragment)
                         goal-amount))))
 
@@ -95,7 +95,7 @@
   (let [habit-data-during-fragment (get-habit-data-during-fragment habit-data habit-goal-fragment)]
     (-> habit-goal-fragment
         (evaluate-habit-goal-fragment-total-done habit-data-during-fragment)
-        (evaluate-habit-goal-fragment-successful habit freq))))
+        (evaluate-habit-goal-fragment-successful (:type_name habit) freq))))
 
 (defn get-habit-goal-fragments
   "Creates and evaluates habit goal fragments for a habit based on data from `current-date` or earlier.
