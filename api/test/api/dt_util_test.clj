@@ -80,12 +80,6 @@
                (= (map #(t/plus from-date-at-start-of-day (t/days %)) (range (inc days-apart)))
                   (get-consecutive-datetimes from-date until-date)))))
 
-(defspec get-consecutive-datetimes-count-test
-         number-of-test-check-iterations
-         (prop/for-all [{:keys [from-date until-date days-apart]} generate-two-random-datetimes-with-days-apart]
-           (= (inc days-apart)
-              (count (get-consecutive-datetimes from-date until-date)))))
-
 (defspec days-spanned-between-datetimes-test
          number-of-test-check-iterations
          (prop/for-all [{:keys [from-date until-date days-apart]} generate-two-random-datetimes-with-days-apart]
