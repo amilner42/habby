@@ -175,9 +175,9 @@
 (defspec get-habit-data-during-fragment-test
          number-of-test-check-iterations
          (prop/for-all [days-to-subtract gen/s-pos-int,
-                        days-to-add gen/s-pos-int]
-           (let [habit-goal-fragment (random-habit-goal-fragment {}),
-                 start-date (:start-date habit-goal-fragment),
+                        days-to-add gen/s-pos-int,
+                        habit-goal-fragment (generate-random-habit-goal-fragment {})]
+           (let [start-date (:start-date habit-goal-fragment),
                  end-date (:end-date habit-goal-fragment),
                  too-early-dt (t/minus start-date (t/days days-to-subtract)),
                  outside-range-record-a (random-habit-day-record {:gen-date (gen/return too-early-dt)}),
