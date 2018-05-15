@@ -32,7 +32,7 @@
   "Returns the `DateTime` on which we consider a habit to have started, given its data and goal.
   If `freq` is based on the calendar week (Monday to Sunday), returns the Monday of the first `habit_day_record`.
   Otherwise just returns the date of the first `habit_day_record`.
-  Assumes `sorted-habit-data` is sorted increasingly by date."
+  Assumes `sorted-habit-data` is sorted increasingly by date and non-empty."
   [sorted-habit-data freq]
   (let [date-of-first-habit-day-record (:date (first sorted-habit-data))]
     (if (= (:type_name freq) "total_week_frequency")
