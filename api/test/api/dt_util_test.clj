@@ -20,14 +20,14 @@
     (t/plus (t/date-time 2018 5 7)  ; May 7 2018 was a Monday
             (t/weeks weeks-to-add))))
 
-(defn generate-random-datetime-d-days-later
-  "Returns a generator for a `DateTime` instance `d` days later than `dt`, with a random time."
-  [dt d]
+(defn generate-random-datetime-on-given-date
+  "Returns a generator for a `DateTime` instance on the same date as `dt`, with a random time."
+  [dt]
   (gen/let [hour generate-random-hour,
             minute generate-random-minute]
     (-> dt
         t/with-time-at-start-of-day
-        (t/plus (t/days d) (t/hours hour) (t/minutes minute)))))
+        (t/plus (t/hours hour) (t/minutes minute)))))
 
 ; Generates a sorted two-element vector of DateTimes
 (def generate-two-random-sorted-datetimes
@@ -39,7 +39,8 @@
 (def generate-two-random-datetimes-with-days-apart
   (gen/let [from-date generate-random-datetime,
             days-apart gen/nat]
-    (let [until-date (gen/generate (generate-random-datetime-d-days-later from-date days-apart))]
+    (let [until-date (t/plus (gen/generate (generate-random-datetime-on-given-date from-date))
+                             (t/days days-apart))]
       {:from-date from-date, :until-date until-date, :days-apart days-apart})))
 
 (defspec date-geq?-and-date-leq?-equal-dates-test
@@ -67,14 +68,16 @@
 
 (defspec get-consecutive-datetimes-test
          20
-         (let [today-at-start-of-day (t/today-at 0 0)]
-           (prop/for-all [random-today-dt-a (generate-random-datetime-d-days-later today-at-start-of-day 0)
-                          random-today-dt-b (generate-random-datetime-d-days-later today-at-start-of-day 0)
-                          random-tomorrow-dt (generate-random-datetime-d-days-later today-at-start-of-day 1)]
-             (and (= [today-at-start-of-day]
-                     (get-consecutive-datetimes random-today-dt-a random-today-dt-b))
-                  (= [today-at-start-of-day, (t/plus today-at-start-of-day (t/days 1))]
-                     (get-consecutive-datetimes random-today-dt-a random-tomorrow-dt))))))
+         (let [today-at-start-of-day (t/today-at 0 0),
+               tomorrow-at-start-of-day (t/plus today-at-start-of-day (t/days 1))]
+           (prop/for-all [random-today-dt-a (generate-random-datetime-on-given-date today-at-start-of-day)
+                          random-today-dt-b (generate-random-datetime-on-given-date today-at-start-of-day)
+                          random-today-dt-c (generate-random-datetime-on-given-date today-at-start-of-day)]
+             (let [random-tomorrow-dt (t/plus random-today-dt-c (t/days 1))]
+               (and (= [today-at-start-of-day]
+                       (get-consecutive-datetimes random-today-dt-a random-today-dt-b))  ; get datetimes from today until today
+                    (= [today-at-start-of-day, tomorrow-at-start-of-day]
+                       (get-consecutive-datetimes random-today-dt-a random-tomorrow-dt)))))))  ; get datetimes from today until tomorrow
 
 (defspec get-consecutive-datetimes-count-test
          10

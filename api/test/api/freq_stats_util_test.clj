@@ -8,7 +8,7 @@
                                          get-habit-start-date, partition-datetimes-based-on-habit-goal, create-habit-goal-fragment,
                                          span-of-habit-goal-fragment, during-habit-goal-fragment?, get-habit-data-during-fragment]]
             [api.dt-util-test :refer [generate-random-datetime, generate-random-monday-datetime, generate-two-random-sorted-datetimes,
-                                      generate-two-random-datetimes-with-days-apart, generate-random-datetime-d-days-later]])
+                                      generate-two-random-datetimes-with-days-apart, generate-random-datetime-on-given-date]])
   (:import org.bson.types.ObjectId))
 
 (def generate-random-specific-day-of-week-frequency
@@ -139,7 +139,8 @@
          (prop/for-all [{:keys [from-date until-date days-apart]} generate-two-random-datetimes-with-days-apart,
                         days-to-add gen/int]
            (let [habit-goal-fragment (random-habit-goal-fragment-with-given-dates from-date until-date),
-                 datetime (gen/generate (generate-random-datetime-d-days-later from-date days-to-add))]
+                 datetime (t/plus (gen/generate (generate-random-datetime-on-given-date from-date))
+                                  (t/days days-to-add))]
              (= (<= 0 days-to-add days-apart)
                 (during-habit-goal-fragment? datetime habit-goal-fragment)))))
 
