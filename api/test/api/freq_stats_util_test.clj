@@ -6,7 +6,7 @@
             [api.dt-util :refer [days-spanned-between-datetimes]]
             [api.freq-stats-util :refer [get-habit-goal-fragment-length, get-habit-goal-amount-for-datetime,
                                          get-habit-start-date, partition-datetimes-based-on-habit-goal, create-habit-goal-fragment,
-                                         span-of-habit-goal-fragment, during-habit-goal-fragment?]]
+                                         span-of-habit-goal-fragment, during-habit-goal-fragment?, get-habit-data-during-fragment]]
             [api.dt-util-test :refer [generate-random-datetime, generate-random-monday-datetime, generate-two-random-sorted-datetimes,
                                       generate-two-random-datetimes-with-days-apart, generate-random-datetime-d-days-later]])
   (:import org.bson.types.ObjectId))
@@ -28,13 +28,13 @@
 (def generate-random-ID
   (gen/fmap (fn [_] (ObjectId.)) gen/int))
 
-(defn generate-random-habit-day-record-with-given-date
-  "Returns a generator for a random `habit_day_record` with specified `date` field, and random other fields."
+(defn random-habit-day-record-with-given-date
+  "Returns a random `habit_day_record` with the specified `date` field, and random other fields."
   [date]
-  (gen/hash-map :_id generate-random-ID,
-                :habit_id generate-random-ID,
-                :date (gen/return date),
-                :amount gen/nat))
+  (gen/generate (gen/hash-map :_id generate-random-ID,
+                              :habit_id generate-random-ID,
+                              :date (gen/return date),
+                              :amount gen/nat)))
 
 (defn random-habit-goal-fragment-with-given-dates
   "Creates a habit goal fragment with specified `start-date` and `end-date`, and random `total-done` and `successful` fields."
@@ -89,7 +89,7 @@
                         monday-dt generate-random-monday-datetime,
                         days-to-add (gen/choose 0 6)]
            (let [later-in-week-dt (t/plus monday-dt (t/days days-to-add)),
-                 sorted-habit-data [(gen/generate (generate-random-habit-day-record-with-given-date later-in-week-dt))]]
+                 sorted-habit-data [(random-habit-day-record-with-given-date later-in-week-dt)]]
              (and (= monday-dt (get-habit-start-date sorted-habit-data total-week-frequency))
                   (= later-in-week-dt (get-habit-start-date sorted-habit-data specific-day-of-week-frequency)
                         (get-habit-start-date sorted-habit-data every-x-days-frequency))))))
@@ -142,3 +142,20 @@
                  datetime (gen/generate (generate-random-datetime-d-days-later from-date days-to-add))]
              (= (<= 0 days-to-add days-apart)
                 (during-habit-goal-fragment? datetime habit-goal-fragment)))))
+
+(defspec get-habit-data-during-fragment-test
+         20
+         (prop/for-all [[from-date until-date] generate-two-random-sorted-datetimes
+                        days-to-subtract gen/s-pos-int
+                        days-to-add gen/s-pos-int]
+           (let [habit-goal-fragment (random-habit-goal-fragment-with-given-dates from-date until-date)
+                 outside-range-record-a (random-habit-day-record-with-given-date (t/minus from-date (t/days days-to-subtract)))
+                 within-range-record-a (random-habit-day-record-with-given-date from-date)
+                 within-range-record-b (random-habit-day-record-with-given-date until-date)
+                 outside-range-record-b (random-habit-day-record-with-given-date (t/plus until-date (t/days days-to-add)))
+                 habit-data [outside-range-record-a,
+                             within-range-record-a,
+                             within-range-record-b,
+                             outside-range-record-b]]
+             (= [within-range-record-a, within-range-record-b]
+                (get-habit-data-during-fragment habit-data habit-goal-fragment)))))
