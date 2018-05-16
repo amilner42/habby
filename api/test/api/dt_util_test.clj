@@ -13,14 +13,14 @@
 (def generate-random-datetime
   (gen/let [hour generate-random-hour,
             minute generate-random-minute,
-            days-to-add gen/int]
+            num-days-to-add gen/int]
     (t/plus (t/today-at hour minute)
-            (t/days days-to-add))))
+            (t/days num-days-to-add))))
 
 (def generate-random-monday-datetime
-  (gen/let [weeks-to-add gen/int]
+  (gen/let [num-weeks-to-add gen/int]
     (t/plus (t/date-time 2018 5 7)  ; May 7 2018 was a Monday
-            (t/weeks weeks-to-add))))
+            (t/weeks num-weeks-to-add))))
 
 (defn generate-random-datetime-on-given-date
   "Returns a generator for a `DateTime` instance on the same date as `dt`, with a random time."
@@ -42,13 +42,13 @@
             dt-b generate-random-datetime]
     (sort [dt-a dt-b])))
 
-; Generates two random `DateTime`s, with `until-date` being `days-apart` days later than `from-date`. Returns a map of the values.
-(def generate-two-random-datetimes-with-days-apart
+; Generates two random `DateTime`s, with `until-date` being `num-days-apart` days later than `from-date`. Returns a map of the values.
+(def generate-two-random-datetimes-with-num-days-apart
   (gen/let [from-date generate-random-datetime,
-            days-apart gen/nat]
+            num-days-apart gen/nat]
     (let [until-date (t/plus (random-datetime-on-given-date from-date)
-                             (t/days days-apart))]
-      {:from-date from-date, :until-date until-date, :days-apart days-apart})))
+                             (t/days num-days-apart))]
+      {:from-date from-date, :until-date until-date, :num-days-apart num-days-apart})))
 
 (defspec date-geq?-and-date-leq?-equal-dates-test
          number-of-test-check-iterations
@@ -69,19 +69,19 @@
 (defspec first-monday-before-datetime-test
          number-of-test-check-iterations
          (prop/for-all [monday-dt generate-random-monday-datetime
-                        days-to-add (gen/choose 0 6)]
-           (let [later-in-week-dt (t/plus monday-dt (t/days days-to-add))]
+                        num-days-later (gen/choose 0 6)]
+           (let [later-in-week-dt (t/plus monday-dt (t/days num-days-later))]
              (= monday-dt (first-monday-before-datetime later-in-week-dt)))))
 
 (defspec get-consecutive-datetimes-test
          number-of-test-check-iterations
-         (prop/for-all [{:keys [from-date until-date days-apart]} generate-two-random-datetimes-with-days-apart]
+         (prop/for-all [{:keys [from-date until-date num-days-apart]} generate-two-random-datetimes-with-num-days-apart]
              (let [from-date-at-start-of-day (t/with-time-at-start-of-day from-date)]
-               (= (map #(t/plus from-date-at-start-of-day (t/days %)) (range (inc days-apart)))
+               (= (map #(t/plus from-date-at-start-of-day (t/days %)) (range (inc num-days-apart)))
                   (get-consecutive-datetimes from-date until-date)))))
 
 (defspec days-spanned-between-datetimes-test
          number-of-test-check-iterations
-         (prop/for-all [{:keys [from-date until-date days-apart]} generate-two-random-datetimes-with-days-apart]
-           (= (inc days-apart)
+         (prop/for-all [{:keys [from-date until-date num-days-apart]} generate-two-random-datetimes-with-num-days-apart]
+           (= (inc num-days-apart)
               (days-spanned-between-datetimes from-date until-date))))
