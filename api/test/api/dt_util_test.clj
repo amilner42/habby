@@ -109,6 +109,13 @@
            (every? #(= 0 (t/hour %) (t/minute %))
                    (get-consecutive-datetimes dt-a dt-b))))
 
+; Test that `get-consecutive-datetimes` produces the correct number of `DateTime`s
+(defspec get-consecutive-datetimes-count-test
+         number-of-test-check-iterations
+         (prop/for-all [{:keys [from-date until-date num-days-apart]} generate-two-random-datetimes-with-num-days-apart]
+           (= (inc num-days-apart)
+              (count (get-consecutive-datetimes from-date until-date)))))
+
 (defspec days-spanned-between-datetimes-test
          number-of-test-check-iterations
          (prop/for-all [{:keys [from-date until-date num-days-apart]} generate-two-random-datetimes-with-num-days-apart]
