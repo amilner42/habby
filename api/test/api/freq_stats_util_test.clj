@@ -207,10 +207,18 @@
              (= (update habit-goal-fragment :total-done + (apply + amounts))
                 (freq-stats-util/evaluate-habit-goal-fragment-total-done habit-goal-fragment habit-data-during-fragment)))))
 
-(defspec evaluate-habit-goal-fragment-successful-test
+(defspec evaluate-habit-goal-fragment-successful-bad-habit-total-week-frequency-test
          number-of-test-check-iterations
          (prop/for-all [habit-goal-fragment (generate-random-habit-goal-fragment {}),
                         total-week-frequency generate-random-total-week-frequency]
            (let [habit-type "bad_habit"]
              (= (assoc habit-goal-fragment :successful (<= (:total-done habit-goal-fragment) (:week total-week-frequency)))
                 (freq-stats-util/evaluate-habit-goal-fragment-successful habit-goal-fragment habit-type total-week-frequency)))))
+
+(defspec evaluate-habit-goal-fragment-successful-good-habit-every-x-days-frequency-test
+         number-of-test-check-iterations
+         (prop/for-all [habit-goal-fragment (generate-random-habit-goal-fragment {}),
+                        every-x-days-frequency generate-random-every-x-days-frequency]
+           (let [habit-type "good_habit"]
+             (= (assoc habit-goal-fragment :successful (>= (:total-done habit-goal-fragment) (:times every-x-days-frequency)))
+                (freq-stats-util/evaluate-habit-goal-fragment-successful habit-goal-fragment habit-type every-x-days-frequency)))))
