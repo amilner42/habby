@@ -149,8 +149,8 @@
          number-of-test-check-iterations
          (prop/for-all [total-week-frequency generate-random-total-week-frequency,
                         monday-dt dt-util-test/generate-random-monday-datetime]
-           (let [same-week-sorted-datetimes (sort (gen/generate (gen/not-empty (gen/vector (gen/fmap #(t/plus monday-dt (t/days %))
-                                                                                                     (gen/choose 0 6))))))
+           (let [generate-same-week-datetime (gen/fmap #(t/plus monday-dt (t/days %)) (gen/choose 0 6))
+                 same-week-sorted-datetimes (sort (gen/generate (gen/not-empty (gen/vector generate-same-week-datetime))))
                  same-week-sorted-habit-data (map #(random-habit-day-record {:gen-date (gen/return %)}) same-week-sorted-datetimes)]
              (= monday-dt
                 (freq-stats-util/get-habit-start-date same-week-sorted-habit-data total-week-frequency)))))
