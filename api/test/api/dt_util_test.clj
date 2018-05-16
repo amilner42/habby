@@ -64,15 +64,29 @@
            (and (date-geq? dt dt)
                 (date-leq? dt dt))))
 
-(defspec date-geq?-test
+(defspec date-geq?-true-test
          number-of-test-check-iterations
          (prop/for-all [[dt-a dt-b] generate-two-random-sorted-datetimes]
            (date-geq? dt-b dt-a)))
 
-(defspec date-leq?-test
+(defspec date-geq?-false-test
+         number-of-test-check-iterations
+         (prop/for-all [dt-a generate-random-datetime
+                        num-days-later gen/s-pos-int]
+           (let [dt-b (random-datetime-on-given-date (t/plus dt-a (t/days num-days-later)))]
+             (not (date-geq? dt-a dt-b)))))
+
+(defspec date-leq?-true-test
          number-of-test-check-iterations
          (prop/for-all [[dt-a dt-b] generate-two-random-sorted-datetimes]
            (date-leq? dt-a dt-b)))
+
+(defspec date-leq?-false-test
+         number-of-test-check-iterations
+         (prop/for-all [dt-a generate-random-datetime
+                        num-days-later gen/s-pos-int]
+           (let [dt-b (random-datetime-on-given-date (t/plus dt-a (t/days num-days-later)))]
+             (not (date-leq? dt-b dt-a)))))
 
 (defspec first-monday-before-datetime-test
          number-of-test-check-iterations
