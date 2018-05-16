@@ -4,6 +4,7 @@
             [clojure.test.check.clojure-test :refer [defspec]]
             [clj-time.core :as t]
             [api.freq-stats-util :as freq-stats-util]
+            [api.dt-util :as dt-util]
             [api.dt-util-test :as dt-util-test])
   (:import org.bson.types.ObjectId))
 
@@ -227,3 +228,28 @@
            (let [habit-type "good_habit"]
              (= (assoc habit-goal-fragment :successful (>= (:total-done habit-goal-fragment) (:times every-x-days-frequency)))
                 (freq-stats-util/evaluate-habit-goal-fragment-successful habit-goal-fragment habit-type every-x-days-frequency)))))
+
+(defspec get-habit-goal-fragments-bad-habit-specific-day-of-week-frequency-test
+         number-of-test-check-iterations
+         (prop/for-all [habit-start-date dt-util-test/generate-random-datetime,
+                        days-to-add gen/nat,
+                        week-amount-vector (gen/vector gen/nat 7)]
+           (let [specific-day-of-week-frequency (create-specific-day-of-week-frequency week-amount-vector),
+                 current-date (t/plus habit-start-date (t/days days-to-add)),
+                 habit-record-dates (dt-util/get-consecutive-datetimes habit-start-date current-date),
+                 habit-type "bad_habit",
+                 habit-record-amounts (gen/generate (gen/vector gen/nat (inc days-to-add))),
+                 habit-record-days-of-week (map t/day-of-week habit-record-dates),
+                 sorted-habit-data (map #(random-habit-day-record {:gen-date (gen/return %1)
+                                                                   :gen-amount (gen/return %2)})
+                                        habit-record-dates
+                                        habit-record-amounts)]
+             (= (map (fn [date amount day-of-week]
+                       {:start-date date,
+                        :end-date date,
+                        :total-done amount,
+                        :successful (<= amount (nth week-amount-vector (dec day-of-week)))})
+                     habit-record-dates
+                     habit-record-amounts
+                     habit-record-days-of-week)
+                (freq-stats-util/get-habit-goal-fragments sorted-habit-data current-date habit-type specific-day-of-week-frequency)))))
