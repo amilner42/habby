@@ -253,3 +253,28 @@
                      habit-record-amounts
                      habit-record-days-of-week)
                 (freq-stats-util/get-habit-goal-fragments sorted-habit-data current-date habit-type specific-day-of-week-frequency)))))
+
+(defspec get-habit-goal-fragments-good-habit-every-x-days-frequency-test
+         number-of-test-check-iterations
+         (prop/for-all [habit-start-date dt-util-test/generate-random-datetime,
+                        num-days-later gen/nat,
+                        every-x-days-frequency generate-random-every-x-days-frequency]
+           (let [habit-type "good_habit",
+                 current-date (t/plus habit-start-date (t/days num-days-later)),
+                 habit-record-dates (dt-util/get-consecutive-datetimes habit-start-date current-date),
+                 habit-record-amounts (gen/generate (gen/vector gen/nat (inc num-days-later))),
+                 sorted-habit-data (map #(random-habit-day-record {:gen-date (gen/return %1)
+                                                                   :gen-amount (gen/return %2)})
+                                        habit-record-dates
+                                        habit-record-amounts)
+                 partitioned-habit-record-dates (partition-all (:days every-x-days-frequency) habit-record-dates)
+                 partitioned-habit-record-amounts (partition-all (:days every-x-days-frequency) habit-record-amounts)]
+             (= (map (fn [dates amounts]
+                       (let [amounts-sum (reduce + amounts)]
+                         {:start-date (first dates),
+                          :end-date (last dates),
+                          :total-done amounts-sum,
+                          :successful (>= amounts-sum (:times every-x-days-frequency))}))
+                     partitioned-habit-record-dates
+                     partitioned-habit-record-amounts)
+                (freq-stats-util/get-habit-goal-fragments sorted-habit-data current-date habit-type every-x-days-frequency)))))
