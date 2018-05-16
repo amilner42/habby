@@ -77,7 +77,7 @@
   [{:keys [db habit_ids current_client_date] :or {db habby_db, current_client_date (t/today-at 0 0)}}]
   (let [all-habits (get-habits {:db db,
                                 :habit_ids habit_ids}),
-        all-habit-data (get-habit-data {:db db,
-                                        :before_date (date-to-y-m-d-map current_client_date),
-                                        :habit_ids habit_ids})]
-    (map #(get-freq-stats-for-habit db % all-habit-data current_client_date) all-habits)))
+        all-habit-data-until-current-date (get-habit-data {:db db,
+                                                           :before_date (date-to-y-m-d-map current_client_date),
+                                                           :habit_ids habit_ids})]
+    (map #(get-freq-stats-for-habit db % all-habit-data-until-current-date current_client_date) all-habits)))

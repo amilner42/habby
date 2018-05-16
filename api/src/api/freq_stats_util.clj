@@ -153,8 +153,8 @@
 
 (defn get-freq-stats-for-habit
   "Computes a `habit_frequency_stats` for a habit based on habit data from `current-date` or earlier."
-  [db habit all-habit-data current-date]
-  (let [sorted-habit-data (->> all-habit-data
+  [db habit all-habit-data-until-current-date current-date]
+  (let [sorted-habit-data (->> all-habit-data-until-current-date
                                (filter #(= (:habit_id %) (:_id habit)))
                                (sort-by :date)),
         freq (get-frequency habit),
