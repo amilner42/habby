@@ -97,10 +97,10 @@
          number-of-test-check-iterations
          (prop/for-all [week-amount-vector (gen/vector gen/nat 7),
                         monday-dt dt-util-test/generate-random-monday-datetime,
-                        days-to-add (gen/choose 0 6)]
-           (let [later-in-week-dt (t/plus monday-dt (t/days days-to-add)),
+                        num-days-later (gen/choose 0 6)]
+           (let [later-in-week-dt (t/plus monday-dt (t/days num-days-later)),
                  specific-day-of-week-frequency (create-specific-day-of-week-frequency week-amount-vector)]
-             (= (nth week-amount-vector days-to-add)
+             (= (nth week-amount-vector num-days-later)
                 (freq-stats-util/get-habit-goal-amount-for-datetime later-in-week-dt specific-day-of-week-frequency)))))
 
 (defspec get-habit-goal-amount-for-datetime-total-week-frequency-test
@@ -136,8 +136,8 @@
 (defspec partition-datetimes-based-on-habit-goal-count-test
          number-of-test-check-iterations
          (prop/for-all [freq generate-random-frequency,
-                        {:keys [from-date until-date days-apart]} dt-util-test/generate-two-random-datetimes-with-days-apart]
-           (let [total-span (inc days-apart),
+                        {:keys [from-date until-date num-days-apart]} dt-util-test/generate-two-random-datetimes-with-num-days-apart]
+           (let [total-span (inc num-days-apart),
                  fragment-length (freq-stats-util/get-habit-goal-fragment-length freq)]
              (== (Math/ceil (/ total-span fragment-length))
                  (count (freq-stats-util/partition-datetimes-based-on-habit-goal freq from-date until-date))))))
@@ -147,13 +147,13 @@
          (prop/for-all [freq generate-random-frequency,
                         from-date dt-util-test/generate-random-datetime]
            (let [fragment-length (freq-stats-util/get-habit-goal-fragment-length freq),
-                 days-in-remaining-fragment (gen/generate (gen/choose 1 fragment-length)),
-                 days-to-add (dec (+ fragment-length days-in-remaining-fragment)),
-                 until-date (dt-util-test/random-datetime-on-given-date (t/plus from-date (t/days days-to-add))),
+                 num-days-in-remaining-fragment (gen/generate (gen/choose 1 fragment-length)),
+                 num-days-later (dec (+ fragment-length num-days-in-remaining-fragment)),
+                 until-date (dt-util-test/random-datetime-on-given-date (t/plus from-date (t/days num-days-later))),
                  from-date-at-start-of-day (t/with-time-at-start-of-day from-date),
-                 first-fragment (map #(t/plus from-date-at-start-of-day (t/days %)) (range fragment-length)),
-                 remaining-fragment (map #(t/plus from-date-at-start-of-day (t/days %)) (range fragment-length (inc days-to-add)))]
-             (= [first-fragment, remaining-fragment]
+                 first-fragment-dates (map #(t/plus from-date-at-start-of-day (t/days %)) (range fragment-length)),
+                 remaining-fragment-dates (map #(t/plus from-date-at-start-of-day (t/days %)) (range fragment-length (inc num-days-later)))]
+             (= [first-fragment-dates, remaining-fragment-dates]
                 (freq-stats-util/partition-datetimes-based-on-habit-goal freq from-date until-date)))))
 
 (defspec create-habit-goal-fragment-test
@@ -167,35 +167,35 @@
 
 (defspec span-of-habit-goal-fragment-test
          number-of-test-check-iterations
-         (prop/for-all [{:keys [from-date until-date days-apart]} dt-util-test/generate-two-random-datetimes-with-days-apart]
+         (prop/for-all [{:keys [from-date until-date num-days-apart]} dt-util-test/generate-two-random-datetimes-with-num-days-apart]
            (let [habit-goal-fragment (random-habit-goal-fragment {:gen-start-date (gen/return from-date)
                                                                   :gen-end-date (gen/return until-date)})]
-             (= (inc days-apart)
+             (= (inc num-days-apart)
                 (freq-stats-util/span-of-habit-goal-fragment habit-goal-fragment)))))
 
 (defspec during-habit-goal-fragment?-test
          number-of-test-check-iterations
-         (prop/for-all [{:keys [from-date until-date days-apart]} dt-util-test/generate-two-random-datetimes-with-days-apart,
-                        days-to-add gen/int]
+         (prop/for-all [{:keys [from-date until-date num-days-apart]} dt-util-test/generate-two-random-datetimes-with-num-days-apart,
+                        num-days-to-add gen/int]
            (let [habit-goal-fragment (random-habit-goal-fragment {:gen-start-date (gen/return from-date)
                                                                   :gen-end-date (gen/return until-date)}),
                  datetime (t/plus (dt-util-test/random-datetime-on-given-date from-date)
-                                  (t/days days-to-add))]
-             (= (<= 0 days-to-add days-apart)
+                                  (t/days num-days-to-add))]
+             (= (<= 0 num-days-to-add num-days-apart)
                 (freq-stats-util/during-habit-goal-fragment? datetime habit-goal-fragment)))))
 
 (defspec get-habit-data-during-fragment-test
          number-of-test-check-iterations
-         (prop/for-all [days-to-subtract gen/s-pos-int,
-                        days-to-add gen/s-pos-int,
+         (prop/for-all [num-days-earlier gen/s-pos-int,
+                        num-days-later gen/s-pos-int,
                         habit-goal-fragment (generate-random-habit-goal-fragment {})]
            (let [start-date (:start-date habit-goal-fragment),
                  end-date (:end-date habit-goal-fragment),
-                 too-early-dt (t/minus start-date (t/days days-to-subtract)),
+                 too-early-dt (t/minus start-date (t/days num-days-earlier)),
                  outside-range-record-a (random-habit-day-record {:gen-date (gen/return too-early-dt)}),
                  within-range-record-a (random-habit-day-record {:gen-date (gen/return start-date)}),
                  within-range-record-b (random-habit-day-record {:gen-date (gen/return end-date)}),
-                 too-late-dt (t/plus end-date (t/days days-to-add)),
+                 too-late-dt (t/plus end-date (t/days num-days-later)),
                  outside-range-record-b (random-habit-day-record {:gen-date (gen/return too-late-dt)}),
                  habit-data [outside-range-record-a,
                              within-range-record-a,
@@ -232,13 +232,13 @@
 (defspec get-habit-goal-fragments-bad-habit-specific-day-of-week-frequency-test
          number-of-test-check-iterations
          (prop/for-all [habit-start-date dt-util-test/generate-random-datetime,
-                        days-to-add gen/nat,
+                        num-days-later gen/nat,
                         week-amount-vector (gen/vector gen/nat 7)]
            (let [specific-day-of-week-frequency (create-specific-day-of-week-frequency week-amount-vector),
-                 current-date (t/plus habit-start-date (t/days days-to-add)),
+                 current-date (t/plus habit-start-date (t/days num-days-later)),
                  habit-record-dates (dt-util/get-consecutive-datetimes habit-start-date current-date),
                  habit-type "bad_habit",
-                 habit-record-amounts (gen/generate (gen/vector gen/nat (inc days-to-add))),
+                 habit-record-amounts (gen/generate (gen/vector gen/nat (inc num-days-later))),
                  habit-record-days-of-week (map t/day-of-week habit-record-dates),
                  sorted-habit-data (map #(random-habit-day-record {:gen-date (gen/return %1)
                                                                    :gen-amount (gen/return %2)})
