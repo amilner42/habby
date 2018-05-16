@@ -93,15 +93,16 @@
          gen-current-fragment-total gen/nat,
          gen-current-fragment-goal gen/nat,
          gen-current-fragment-days-left gen/nat}}]
-  (gen/hash-map :habit_id gen-habit-id,
-                :total_fragments gen-total-fragments,
-                :successful_fragments gen-successful-fragments,
-                :total_done gen-total-done,
-                :current_fragment_streak gen-current-fragment-streak,
-                :best_fragment_streak gen-best-fragment-streak,
-                :current_fragment_total gen-current-fragment-total,
-                :current_fragment_goal gen-current-fragment-goal,
-                :current_fragment_days_left gen-current-fragment-days-left))
+  (gen/such-that #(<= (:current_fragment_streak %) (:best_fragment_streak %))
+                 (gen/hash-map :habit_id gen-habit-id,
+                               :total_fragments gen-total-fragments,
+                               :successful_fragments gen-successful-fragments,
+                               :total_done gen-total-done,
+                               :current_fragment_streak gen-current-fragment-streak,
+                               :best_fragment_streak gen-best-fragment-streak,
+                               :current_fragment_total gen-current-fragment-total,
+                               :current_fragment_goal gen-current-fragment-goal,
+                               :current_fragment_days_left gen-current-fragment-days-left)))
 
 ;; Tests
 ;; ---------------------------------------------------------------------------
@@ -321,21 +322,22 @@
 
 (defspec update-freq-stats-with-past-fragment-successful-fragment-test
          number-of-test-check-iterations
-         (prop/for-all [habit-frequency-stats (generate-random-habit-frequency-stats {:gen-best-fragment-streak (gen/return 0)}),
+         (prop/for-all [habit-frequency-stats (generate-random-habit-frequency-stats {}),
                         successful-habit-goal-fragment (generate-random-habit-goal-fragment {:gen-successful (gen/return true)})]
-           (let [total-done (:total-done successful-habit-goal-fragment)
-                 new-current-fragment-streak (inc (:current_fragment_streak habit-frequency-stats))]
+           (let [total-done (:total-done successful-habit-goal-fragment),
+                 current-streak-is-best-streak (= (:current_fragment_streak habit-frequency-stats)
+                                                  (:best_fragment_streak habit-frequency-stats))]
              (= (-> habit-frequency-stats
                     (update :total_fragments inc)
                     (update :successful_fragments inc)
                     (update :total_done + total-done)
-                    (assoc :current_fragment_streak new-current-fragment-streak)
-                    (assoc :best_fragment_streak new-current-fragment-streak))
+                    (update :current_fragment_streak inc)
+                    (update :best_fragment_streak (if current-streak-is-best-streak inc identity)))
                 (freq-stats-util/update-freq-stats-with-past-fragment habit-frequency-stats successful-habit-goal-fragment)))))
 
 (defspec update-freq-stats-with-current-fragment-good-habit-successful-fragment-total-week-frequency-test
          number-of-test-check-iterations
-         (prop/for-all [habit-frequency-stats (generate-random-habit-frequency-stats {:gen-best-fragment-streak (gen/return 0)}),
+         (prop/for-all [habit-frequency-stats (generate-random-habit-frequency-stats {}),
                         total-week-frequency generate-random-total-week-frequency,
                         current-fragment-start-date dt-util-test/generate-random-datetime,
                         num-days-later (gen/choose 0 6)]
@@ -345,13 +347,14 @@
                                                                           :gen-successful (gen/return true)}),
                  habit-type "good_habit",
                  total-done (:total-done successful-current-fragment),
-                 new-current-fragment-streak (inc (:current_fragment_streak habit-frequency-stats))]
+                 current-streak-is-best-streak (= (:current_fragment_streak habit-frequency-stats)
+                                                  (:best_fragment_streak habit-frequency-stats))]
              (= (-> habit-frequency-stats
                     (update :total_fragments inc)
                     (update :successful_fragments inc)
                     (update :total_done + total-done)
-                    (assoc :current_fragment_streak new-current-fragment-streak)
-                    (assoc :best_fragment_streak new-current-fragment-streak)
+                    (update :current_fragment_streak inc)
+                    (update :best_fragment_streak (if current-streak-is-best-streak inc identity))
                     (assoc :current_fragment_total total-done)
                     (assoc :current_fragment_goal (:week total-week-frequency))
                     (assoc :current_fragment_days_left (- 7 (inc num-days-later))))
@@ -362,23 +365,18 @@
 
 (defspec update-freq-stats-with-current-fragment-good-habit-failed-fragment-every-x-days-frequency-test
          number-of-test-check-iterations
-         (prop/for-all [habit-frequency-stats (generate-random-habit-frequency-stats {:gen-best-fragment-streak (gen/return 0)}),
+         (prop/for-all [habit-frequency-stats (generate-random-habit-frequency-stats {}),
                         every-x-days-frequency generate-random-every-x-days-frequency,
                         current-fragment-start-date dt-util-test/generate-random-datetime,
                         num-days-later (gen/choose 0 6)]
            (let [current-fragment-end-date (t/plus current-fragment-start-date (t/days num-days-later)),
                  failed-current-fragment (random-habit-goal-fragment {:gen-start-date (gen/return current-fragment-start-date),
                                                                       :gen-end-date (gen/return current-fragment-end-date),
-                                                                      :gen-successful (gen/return true)}),
+                                                                      :gen-successful (gen/return false)}),
                  habit-type "good_habit",
-                 total-done (:total-done failed-current-fragment),
-                 new-current-fragment-streak (inc (:current_fragment_streak habit-frequency-stats))]
+                 total-done (:total-done failed-current-fragment)]
              (= (-> habit-frequency-stats
-                    (update :total_fragments inc)
-                    (update :successful_fragments inc)
                     (update :total_done + total-done)
-                    (assoc :current_fragment_streak new-current-fragment-streak)
-                    (assoc :best_fragment_streak new-current-fragment-streak)
                     (assoc :current_fragment_total total-done)
                     (assoc :current_fragment_goal (:times every-x-days-frequency))
                     (assoc :current_fragment_days_left (- (:days every-x-days-frequency) (inc num-days-later))))
