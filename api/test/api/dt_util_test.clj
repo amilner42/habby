@@ -102,6 +102,13 @@
                (= (map #(t/plus from-date-at-start-of-day (t/days %)) (range (inc num-days-apart)))
                   (get-consecutive-datetimes from-date until-date)))))
 
+; Test that each `DateTime` produced by `get-consecutive-datetimes` is at the start of the day
+(defspec get-consecutive-datetimes-start-of-day-test
+         number-of-test-check-iterations
+         (prop/for-all [[dt-a dt-b] generate-two-random-sorted-datetimes]
+           (every? #(= 0 (t/hour %) (t/minute %))
+                   (get-consecutive-datetimes dt-a dt-b))))
+
 (defspec days-spanned-between-datetimes-test
          number-of-test-check-iterations
          (prop/for-all [{:keys [from-date until-date num-days-apart]} generate-two-random-datetimes-with-num-days-apart]
