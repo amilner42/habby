@@ -8,8 +8,13 @@
 
 (def number-of-test-check-iterations 30)
 
+;; Generators
+;; ---------------------------------------------------------------------------
+
 (def generate-random-hour (gen/choose 0 23))
+
 (def generate-random-minute (gen/choose 0 59))
+
 (def generate-random-datetime
   (gen/let [hour generate-random-hour,
             minute generate-random-minute,
@@ -49,6 +54,9 @@
     (let [until-date (t/plus (random-datetime-on-given-date from-date)
                              (t/days num-days-apart))]
       {:from-date from-date, :until-date until-date, :num-days-apart num-days-apart})))
+
+;; Tests
+;; ---------------------------------------------------------------------------
 
 (defspec date-geq?-and-date-leq?-equal-dates-test
          number-of-test-check-iterations
