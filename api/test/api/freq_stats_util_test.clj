@@ -385,3 +385,26 @@
                                                                          failed-current-fragment
                                                                          every-x-days-frequency
                                                                          habit-type)))))
+
+(defspec update-freq-stats-with-current-fragment-bad-habit-failed-fragment-specific-day-of-week-frequency-test
+         number-of-test-check-iterations
+         (prop/for-all [habit-frequency-stats (generate-random-habit-frequency-stats {}),
+                        specific-day-of-week-frequency generate-random-specific-day-of-week-frequency,
+                        current-fragment-date dt-util-test/generate-random-datetime]
+           (let [failed-current-fragment (random-habit-goal-fragment {:gen-start-date (gen/return current-fragment-date),
+                                                                      :gen-end-date (gen/return current-fragment-date),
+                                                                      :gen-successful (gen/return false)}),
+                 habit-type "bad_habit",
+                 total-done (:total-done failed-current-fragment)]
+             (= (-> habit-frequency-stats
+                    (update :total_fragments inc)
+                    (update :total_done + total-done)
+                    (assoc :current_fragment_streak 0)
+                    (assoc :current_fragment_total total-done)
+                    (assoc :current_fragment_goal (freq-stats-util/get-habit-goal-amount-for-datetime current-fragment-date
+                                                                                                      specific-day-of-week-frequency))
+                    (assoc :current_fragment_days_left 0))
+                (freq-stats-util/update-freq-stats-with-current-fragment habit-frequency-stats
+                                                                         failed-current-fragment
+                                                                         specific-day-of-week-frequency
+                                                                         habit-type)))))
