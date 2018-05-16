@@ -124,9 +124,9 @@
   of `current-fragment`, whose `:end-date` field was cut short at the current date during construction.
   Only ever treats the current fragment as successful for good habits, and only ever treats it as failed for bad
   habits; we don't punish unfinished good habits or reward unfinished bad habits."
-  [freq-stats current-fragment freq habit]
-  (let [treat-as-successful (and (= (:type_name habit) "good_habit") (:successful current-fragment))
-        treat-as-failed (and (= (:type_name habit) "bad_habit") (not (:successful current-fragment)))]
+  [freq-stats current-fragment freq habit-type]
+  (let [treat-as-successful (and (= habit-type "good_habit") (:successful current-fragment))
+        treat-as-failed (and (= habit-type "bad_habit") (not (:successful current-fragment)))]
     (as-> freq-stats $
           (update $ :total_fragments (if (or treat-as-successful treat-as-failed) inc identity))
           (update $ :successful_fragments (if treat-as-successful inc identity))
@@ -149,7 +149,7 @@
           (reduce update-freq-stats-with-past-fragment
                   freq-stats
                   past-fragments)
-          (update-freq-stats-with-current-fragment freq-stats current-fragment freq habit))))
+          (update-freq-stats-with-current-fragment freq-stats current-fragment freq (:type_name habit)))))
 
 (defn get-freq-stats-for-habit
   "Computes a `habit_frequency_stats` for a habit based on habit data from `current-date` or earlier."
