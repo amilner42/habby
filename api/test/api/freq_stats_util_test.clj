@@ -9,10 +9,14 @@
 
 (def number-of-test-check-iterations 30)
 
+(defn create-specific-day-of-week-frequency
+  "Creates a `specific_day_of_week_frequency` from a vector of numbers corresponding to Monday to Sunday amounts."
+  [week-amount-vector]
+  (assoc (zipmap [:monday :tuesday :wednesday :thursday :friday :saturday :sunday] week-amount-vector)
+         :type_name "specific_day_of_week_frequency"))
+
 (def generate-random-specific-day-of-week-frequency
-  (gen/hash-map :type_name (gen/return "specific_day_of_week_frequency"),
-                :monday gen/nat, :tuesday gen/nat, :wednesday gen/nat, :thursday gen/nat,
-                :friday gen/nat, :saturday gen/nat, :sunday gen/nat))
+  (gen/fmap create-specific-day-of-week-frequency (gen/vector gen/nat 7)))
 
 (def generate-random-total-week-frequency
   (gen/hash-map :type_name (gen/return "total_week_frequency"),
@@ -94,9 +98,7 @@
                         monday-dt dt-util-test/generate-random-monday-datetime,
                         days-to-add (gen/choose 0 6)]
            (let [later-in-week-dt (t/plus monday-dt (t/days days-to-add)),
-                 specific-day-of-week-frequency (assoc (zipmap [:monday :tuesday :wednesday :thursday :friday :saturday :sunday]
-                                                               week-amount-vector)
-                                                       :type_name "specific_day_of_week_frequency")]
+                 specific-day-of-week-frequency (create-specific-day-of-week-frequency week-amount-vector)]
              (= (nth week-amount-vector days-to-add)
                 (freq-stats-util/get-habit-goal-amount-for-datetime later-in-week-dt specific-day-of-week-frequency)))))
 
