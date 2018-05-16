@@ -367,9 +367,10 @@
          number-of-test-check-iterations
          (prop/for-all [habit-frequency-stats (generate-random-habit-frequency-stats {}),
                         every-x-days-frequency generate-random-every-x-days-frequency,
-                        current-fragment-start-date dt-util-test/generate-random-datetime,
-                        num-days-later (gen/choose 0 6)]
-           (let [current-fragment-end-date (t/plus current-fragment-start-date (t/days num-days-later)),
+                        current-fragment-start-date dt-util-test/generate-random-datetime]
+           (let [fragment-length (:days every-x-days-frequency),
+                 num-days-later (gen/generate (gen/choose 0 (dec fragment-length)))
+                 current-fragment-end-date (t/plus current-fragment-start-date (t/days num-days-later)),
                  failed-current-fragment (random-habit-goal-fragment {:gen-start-date (gen/return current-fragment-start-date),
                                                                       :gen-end-date (gen/return current-fragment-end-date),
                                                                       :gen-successful (gen/return false)}),
@@ -379,7 +380,7 @@
                     (update :total_done + total-done)
                     (assoc :current_fragment_total total-done)
                     (assoc :current_fragment_goal (:times every-x-days-frequency))
-                    (assoc :current_fragment_days_left (- (:days every-x-days-frequency) (inc num-days-later))))
+                    (assoc :current_fragment_days_left (- fragment-length (inc num-days-later))))
                 (freq-stats-util/update-freq-stats-with-current-fragment habit-frequency-stats
                                                                          failed-current-fragment
                                                                          every-x-days-frequency
