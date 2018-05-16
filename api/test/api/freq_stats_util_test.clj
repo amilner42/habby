@@ -10,6 +10,9 @@
 
 (def number-of-test-check-iterations 30)
 
+;; Generators
+;; ---------------------------------------------------------------------------
+
 (defn create-specific-day-of-week-frequency
   "Creates a `specific_day_of_week_frequency` from a vector of numbers corresponding to Monday to Sunday amounts."
   [week-amount-vector]
@@ -76,6 +79,9 @@
   Args should still be generators, as in `generate-random-habit-goal-fragment`."
   [args]
   (gen/generate (generate-random-habit-goal-fragment args)))
+
+;; Tests
+;; ---------------------------------------------------------------------------
 
 (defspec get-habit-goal-fragment-length-specific-day-of-week-frequency-test
          number-of-test-check-iterations
