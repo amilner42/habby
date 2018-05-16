@@ -332,3 +332,30 @@
                     (assoc :current_fragment_streak new-current-fragment-streak)
                     (assoc :best_fragment_streak new-current-fragment-streak))
                 (freq-stats-util/update-freq-stats-with-past-fragment habit-frequency-stats successful-habit-goal-fragment)))))
+
+(defspec update-freq-stats-with-current-fragment-good-habit-successful-fragment-total-week-frequency-test
+         number-of-test-check-iterations
+         (prop/for-all [habit-frequency-stats (generate-random-habit-frequency-stats {:gen-best-fragment-streak (gen/return 0)}),
+                        total-week-frequency generate-random-total-week-frequency,
+                        current-fragment-start-date dt-util-test/generate-random-datetime,
+                        num-days-later (gen/choose 0 6)]
+           (let [current-fragment-end-date (t/plus current-fragment-start-date (t/days num-days-later)),
+                 successful-current-fragment (random-habit-goal-fragment {:gen-start-date (gen/return current-fragment-start-date),
+                                                                          :gen-end-date (gen/return current-fragment-end-date),
+                                                                          :gen-successful (gen/return true)}),
+                 habit-type "good_habit",
+                 total-done (:total-done successful-current-fragment),
+                 new-current-fragment-streak (inc (:current_fragment_streak habit-frequency-stats))]
+             (= (-> habit-frequency-stats
+                    (update :total_fragments inc)
+                    (update :successful_fragments inc)
+                    (update :total_done + total-done)
+                    (assoc :current_fragment_streak new-current-fragment-streak)
+                    (assoc :best_fragment_streak new-current-fragment-streak)
+                    (assoc :current_fragment_total total-done)
+                    (assoc :current_fragment_goal (:week total-week-frequency))
+                    (assoc :current_fragment_days_left (- 7 (inc num-days-later))))
+                (freq-stats-util/update-freq-stats-with-current-fragment habit-frequency-stats
+                                                                         successful-current-fragment
+                                                                         total-week-frequency
+                                                                         habit-type)))))
