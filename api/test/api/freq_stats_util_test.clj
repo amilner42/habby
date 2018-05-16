@@ -235,9 +235,9 @@
                         num-days-later gen/nat,
                         week-amount-vector (gen/vector gen/nat 7)]
            (let [specific-day-of-week-frequency (create-specific-day-of-week-frequency week-amount-vector),
+                 habit-type "bad_habit",
                  current-date (t/plus habit-start-date (t/days num-days-later)),
                  habit-record-dates (dt-util/get-consecutive-datetimes habit-start-date current-date),
-                 habit-type "bad_habit",
                  habit-record-amounts (gen/generate (gen/vector gen/nat (inc num-days-later))),
                  habit-record-days-of-week (map t/day-of-week habit-record-dates),
                  sorted-habit-data (map #(random-habit-day-record {:gen-date (gen/return %1)
