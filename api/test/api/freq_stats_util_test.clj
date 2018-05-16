@@ -22,6 +22,11 @@
   (gen/hash-map :type_name (gen/return "every_x_days_frequency"),
                 :times gen/nat, :days gen/s-pos-int))
 
+(def generate-random-frequency
+  (gen/one-of [generate-random-specific-day-of-week-frequency,
+               generate-random-total-week-frequency,
+               generate-random-every-x-days-frequency]))
+
 ; Generates a random ObjectId. `(gen/return (ObjectId.))` always returns the same ID, this avoids that.
 (def generate-random-ID
   (gen/fmap (fn [_] (ObjectId.)) gen/int))
@@ -69,18 +74,19 @@
 
 (defspec get-habit-goal-fragment-length-specific-day-of-week-frequency-test
          number-of-test-check-iterations
-         (prop/for-all [freq generate-random-specific-day-of-week-frequency]
-           (= 1 (freq-stats-util/get-habit-goal-fragment-length freq))))
+         (prop/for-all [specific-day-of-week-frequency generate-random-specific-day-of-week-frequency]
+           (= 1 (freq-stats-util/get-habit-goal-fragment-length specific-day-of-week-frequency))))
 
 (defspec get-habit-goal-fragment-length-total-week-frequency-test
          number-of-test-check-iterations
-         (prop/for-all [freq generate-random-total-week-frequency]
-           (= 7 (freq-stats-util/get-habit-goal-fragment-length freq))))
+         (prop/for-all [total-week-frequency generate-random-total-week-frequency]
+           (= 7 (freq-stats-util/get-habit-goal-fragment-length total-week-frequency))))
 
 (defspec get-habit-goal-fragment-length-every-x-days-frequency-test
          number-of-test-check-iterations
-         (prop/for-all [freq generate-random-every-x-days-frequency]
-           (= (:days freq) (freq-stats-util/get-habit-goal-fragment-length freq))))
+         (prop/for-all [every-x-days-frequency generate-random-every-x-days-frequency]
+           (= (:days every-x-days-frequency)
+              (freq-stats-util/get-habit-goal-fragment-length every-x-days-frequency))))
 
 (defspec get-habit-goal-amount-for-datetime-specific-day-of-week-frequency-test
          number-of-test-check-iterations
@@ -88,22 +94,23 @@
                         monday-dt dt-util-test/generate-random-monday-datetime,
                         days-to-add (gen/choose 0 6)]
            (let [later-in-week-dt (t/plus monday-dt (t/days days-to-add)),
-                 freq (assoc (zipmap [:monday :tuesday :wednesday :thursday :friday :saturday :sunday] week-amount-vector)
-                             :type_name "specific_day_of_week_frequency")]
+                 specific-day-of-week-frequency (assoc (zipmap [:monday :tuesday :wednesday :thursday :friday :saturday :sunday]
+                                                               week-amount-vector)
+                                                       :type_name "specific_day_of_week_frequency")]
              (= (nth week-amount-vector days-to-add)
-                (freq-stats-util/get-habit-goal-amount-for-datetime later-in-week-dt freq)))))
+                (freq-stats-util/get-habit-goal-amount-for-datetime later-in-week-dt specific-day-of-week-frequency)))))
 
 (defspec get-habit-goal-amount-for-datetime-total-week-frequency-test
          number-of-test-check-iterations
-         (prop/for-all [freq generate-random-total-week-frequency,
+         (prop/for-all [total-week-frequency generate-random-total-week-frequency,
                         dt dt-util-test/generate-random-datetime]
-           (= (:week freq) (freq-stats-util/get-habit-goal-amount-for-datetime dt freq))))
+           (= (:week total-week-frequency) (freq-stats-util/get-habit-goal-amount-for-datetime dt total-week-frequency))))
 
 (defspec get-habit-goal-amount-for-datetime-every-x-days-frequency-test
          number-of-test-check-iterations
-         (prop/for-all [freq generate-random-every-x-days-frequency,
+         (prop/for-all [every-x-days-frequency generate-random-every-x-days-frequency,
                         dt dt-util-test/generate-random-datetime]
-           (= (:times freq) (freq-stats-util/get-habit-goal-amount-for-datetime dt freq))))
+           (= (:times every-x-days-frequency) (freq-stats-util/get-habit-goal-amount-for-datetime dt every-x-days-frequency))))
 
 (defspec get-habit-start-date-total-week-frequency-test
          number-of-test-check-iterations
@@ -125,9 +132,7 @@
 
 (defspec partition-datetimes-based-on-habit-goal-count-test
          number-of-test-check-iterations
-         (prop/for-all [freq (gen/one-of [generate-random-specific-day-of-week-frequency,
-                                          generate-random-total-week-frequency,
-                                          generate-random-every-x-days-frequency])
+         (prop/for-all [freq generate-random-frequency,
                         {:keys [from-date until-date days-apart]} dt-util-test/generate-two-random-datetimes-with-days-apart]
            (let [total-span (inc days-apart),
                  fragment-length (freq-stats-util/get-habit-goal-fragment-length freq)]
@@ -136,9 +141,7 @@
 
 (defspec partition-datetimes-based-on-habit-goal-two-fragments-test
          number-of-test-check-iterations
-         (prop/for-all [freq (gen/one-of [generate-random-specific-day-of-week-frequency,
-                                          generate-random-total-week-frequency,
-                                          generate-random-every-x-days-frequency])
+         (prop/for-all [freq generate-random-frequency,
                         from-date dt-util-test/generate-random-datetime]
            (let [fragment-length (freq-stats-util/get-habit-goal-fragment-length freq),
                  days-in-remaining-fragment (gen/generate (gen/choose 1 fragment-length)),
