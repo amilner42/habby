@@ -239,6 +239,28 @@
              (= [within-range-record-a, within-range-record-b]
                 (freq-stats-util/get-habit-data-during-fragment habit-data habit-goal-fragment)))))
 
+(defspec get-habit-data-during-fragment-within-range-test
+         number-of-test-check-iterations
+         (prop/for-all [habit-goal-fragment (generate-random-habit-goal-fragment {})]
+           (let [start-date (:start-date habit-goal-fragment),
+                 end-date (:end-date habit-goal-fragment),
+                 generate-within-range-dt (gen/fmap #(t/plus start-date (t/days %))
+                                                    (gen/choose 0 (dec (dt-util/days-spanned-between-datetimes start-date end-date)))),
+                 within-range-data (gen/generate (gen/vector (generate-random-habit-day-record {:gen-date generate-within-range-dt})))]
+             (= within-range-data
+                (freq-stats-util/get-habit-data-during-fragment within-range-data habit-goal-fragment)))))
+
+(defspec get-habit-data-during-fragment-outside-range-test
+         number-of-test-check-iterations
+         (prop/for-all [habit-goal-fragment (generate-random-habit-goal-fragment {})]
+           (let [start-date (:start-date habit-goal-fragment),
+                 end-date (:end-date habit-goal-fragment),
+                 generate-outside-range-dt (gen/one-of [(gen/fmap #(t/minus start-date (t/days %)) gen/s-pos-int),
+                                                        (gen/fmap #(t/plus end-date (t/days %)) gen/s-pos-int)]),
+                 outside-range-data (gen/generate (gen/vector (generate-random-habit-day-record {:gen-date generate-outside-range-dt})))]
+             (= []
+                (freq-stats-util/get-habit-data-during-fragment outside-range-data habit-goal-fragment)))))
+
 (defspec evaluate-habit-goal-fragment-total-done-test
          number-of-test-check-iterations
          (prop/for-all [habit-goal-fragment (generate-random-habit-goal-fragment {}),
