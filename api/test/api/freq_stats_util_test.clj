@@ -186,14 +186,19 @@
              (= [first-fragment-dates, remaining-fragment-dates]
                 (freq-stats-util/partition-datetimes-based-on-habit-goal freq from-date until-date)))))
 
-(defspec create-habit-goal-fragment-test
+(defspec create-habit-goal-fragment-single-date-fragment-test
          number-of-test-check-iterations
-         (prop/for-all [[start-date end-date :as datetimes] dt-util-test/generate-two-random-sorted-datetimes
-                        single-date dt-util-test/generate-random-datetime]
-           (and (= {:start-date start-date, :end-date end-date, :total-done 0, :successful false}
-                   (freq-stats-util/create-habit-goal-fragment datetimes))
-                (= {:start-date single-date, :end-date single-date, :total-done 0, :successful false}
-                   (freq-stats-util/create-habit-goal-fragment [single-date])))))
+         (prop/for-all [single-date dt-util-test/generate-random-datetime]
+           (= {:start-date single-date, :end-date single-date, :total-done 0, :successful false}
+              (freq-stats-util/create-habit-goal-fragment [single-date]))))
+
+(defspec create-habit-goal-fragment-multiple-date-fragment-test
+         number-of-test-check-iterations
+         (prop/for-all [{:keys [from-date until-date num-days-apart]} dt-util-test/generate-two-random-datetimes-with-num-days-apart]
+           (let [middle-dates (gen/generate (gen/vector (gen/fmap #(t/plus from-date (t/days %)) (gen/choose 0 num-days-apart)))),
+                 datetimes (cons from-date (conj middle-dates until-date))]
+             (= {:start-date from-date, :end-date until-date, :total-done 0, :successful false}
+                (freq-stats-util/create-habit-goal-fragment datetimes)))))
 
 (defspec span-of-habit-goal-fragment-test
          number-of-test-check-iterations
