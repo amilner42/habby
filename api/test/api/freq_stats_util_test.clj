@@ -5,7 +5,8 @@
             [clj-time.core :as t]
             [api.freq-stats-util :as freq-stats-util]
             [api.dt-util :as dt-util]
-            [api.dt-util-test :as dt-util-test])
+            [api.dt-util-test :as dt-util-test]
+            [api.habit-util :as habit-util])
   (:import org.bson.types.ObjectId))
 
 (def number-of-test-check-iterations 30)
@@ -103,6 +104,30 @@
                                :current_fragment_total gen-current-fragment-total,
                                :current_fragment_goal gen-current-fragment-goal,
                                :current_fragment_days_left gen-current-fragment-days-left)))
+
+(def generate-random-good-habit
+  (gen/hash-map :type_name (gen/return "good_habit"),
+                :_id generate-random-ID,
+                :suspended gen/boolean,
+                :name gen/string,
+                :description gen/string,
+                :unit_name_singular gen/string,
+                :unit_name_plural gen/string,
+                :time_of_day (gen/elements [:MORNING :EVENING :ANYTIME]),
+                :target_frequency generate-random-frequency))
+
+(def generate-random-bad-habit
+  (gen/hash-map :type_name (gen/return "bad_habit"),
+                :_id generate-random-ID,
+                :suspended gen/boolean,
+                :name gen/string,
+                :description gen/string,
+                :unit_name_singular gen/string,
+                :unit_name_plural gen/string,
+                :threshold_frequency generate-random-frequency))
+
+(def generate-random-habit
+  (gen/one-of [generate-random-good-habit, generate-random-bad-habit]))
 
 ;; Tests
 ;; ---------------------------------------------------------------------------
@@ -457,3 +482,14 @@
                                                                          successful-current-fragment
                                                                          total-week-frequency
                                                                          habit-type)))))
+
+(defspec compute-freq-stats-from-habit-goal-fragments-total-done-test
+         number-of-test-check-iterations
+         (prop/for-all [habit-goal-fragments (gen/not-empty (gen/vector (generate-random-habit-goal-fragment {}))),
+                        habit generate-random-habit]
+           (let [total-done (reduce #(+ %1 (:total-done %2)) 0 habit-goal-fragments),
+                 freq (habit-util/get-frequency habit)]
+             (= total-done
+                (:total_done (freq-stats-util/compute-freq-stats-from-habit-goal-fragments habit-goal-fragments
+                                                                                           habit
+                                                                                           freq))))))
