@@ -141,7 +141,7 @@
                                                   (span-of-habit-goal-fragment current-fragment))))))
 
 (defn compute-freq-stats-from-habit-goal-fragments
-  "Computes a `habit_frequency_stats` based on a list of habit goal fragments with goal `freq`."
+  "Computes a `habit_frequency_stats` based on a non-empty list of habit goal fragments with goal `freq`."
   [habit-goal-fragments habit freq]
   (let [past-fragments (butlast habit-goal-fragments)
         current-fragment (last habit-goal-fragments)]
