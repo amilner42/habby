@@ -435,3 +435,25 @@
                                                                          failed-current-fragment
                                                                          specific-day-of-week-frequency
                                                                          habit-type)))))
+
+(defspec update-freq-stats-with-current-fragment-bad-habit-successful-fragment-total-week-frequency-test
+         number-of-test-check-iterations
+         (prop/for-all [habit-frequency-stats (generate-random-habit-frequency-stats {}),
+                        total-week-frequency generate-random-total-week-frequency,
+                        current-fragment-start-date dt-util-test/generate-random-datetime,
+                        num-days-later (gen/choose 0 6)]
+           (let [current-fragment-end-date (t/plus current-fragment-start-date (t/days num-days-later)),
+                 successful-current-fragment (random-habit-goal-fragment {:gen-start-date (gen/return current-fragment-start-date),
+                                                                          :gen-end-date (gen/return current-fragment-end-date),
+                                                                          :gen-successful (gen/return true),})
+                 habit-type "bad_habit",
+                 total-done (:total-done successful-current-fragment)]
+             (= (-> habit-frequency-stats
+                    (update :total_done + total-done)
+                    (assoc :current_fragment_total total-done)
+                    (assoc :current_fragment_goal (:week total-week-frequency))
+                    (assoc :current_fragment_days_left (- 7 (inc num-days-later))))
+                (freq-stats-util/update-freq-stats-with-current-fragment habit-frequency-stats
+                                                                         successful-current-fragment
+                                                                         total-week-frequency
+                                                                         habit-type)))))
