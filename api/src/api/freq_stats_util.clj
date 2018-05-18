@@ -152,8 +152,9 @@
           (update-freq-stats-with-current-fragment freq-stats current-fragment freq (:type_name habit)))))
 
 (defn get-freq-stats-for-habit
-  "Computes a `habit_frequency_stats` for a habit based on habit data from `current-date` or earlier."
-  [db habit all-habit-data-until-current-date current-date]
+  "Computes a `habit_frequency_stats` for `habit` based on habit data from `current-date` or earlier.
+  `all-habit-data-until-current-date` may include data from other habits."
+  [habit all-habit-data-until-current-date current-date]
   (let [sorted-habit-data (->> all-habit-data-until-current-date
                                (filter #(= (:habit_id %) (:_id habit)))
                                (sort-by :date)),

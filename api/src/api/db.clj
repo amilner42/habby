@@ -80,4 +80,4 @@
         all-habit-data-until-current-date (get-habit-data {:db db,
                                                            :before_date (date-to-y-m-d-map current_client_date),
                                                            :habit_ids habit_ids})]
-    (map #(get-freq-stats-for-habit db % all-habit-data-until-current-date current_client_date) all-habits)))
+    (map #(get-freq-stats-for-habit % all-habit-data-until-current-date current_client_date) all-habits)))
