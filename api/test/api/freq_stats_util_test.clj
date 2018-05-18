@@ -493,3 +493,18 @@
                 (:total_done (freq-stats-util/compute-freq-stats-from-habit-goal-fragments habit-goal-fragments
                                                                                            habit
                                                                                            freq))))))
+
+(defspec get-freq-stats-for-habit-total-done-test
+         number-of-test-check-iterations
+         (prop/for-all [current-date dt-util-test/generate-random-datetime,
+                        habit generate-random-habit]
+           (let [generate-random-dt-before-current-date (gen/fmap #(t/minus current-date (t/days %)) gen/nat),
+                 other-habits-data (gen/generate (gen/vector (generate-random-habit-day-record {:gen-habit-id (gen/such-that #(not= % (:_id habit))
+                                                                                                                             generate-random-ID),
+                                                                                                :gen-date generate-random-dt-before-current-date}))),
+                 this-habit-data (gen/generate (gen/vector (generate-random-habit-day-record {:gen-habit-id (gen/return (:_id habit)),
+                                                                                              :gen-date generate-random-dt-before-current-date}))),
+                 all-habit-data-until-current-date (concat other-habits-data this-habit-data),
+                 this-habit-total-done (reduce #(+ %1 (:amount %2)) 0 this-habit-data)]
+             (= this-habit-total-done
+                (:total_done (freq-stats-util/get-freq-stats-for-habit habit all-habit-data-until-current-date current-date))))))
