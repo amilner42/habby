@@ -86,7 +86,7 @@ renderTodayPanel ymd rdHabits rdHabitData rdFrequencyStatsList addHabit editingH
                                         frequencyStatsList
 
                                 _ ->
-                                    Err "Frequency stats not available for any habits"
+                                    Nothing
                             )
                             ymd
                             habitData
@@ -382,7 +382,7 @@ renderHistoryViewerPanel openView dateInput selectedDate rdHabits rdHabitData rd
                                                     frequencyStatsList
 
                                             _ ->
-                                                Err "Frequency stats not available for any habits"
+                                                Nothing
                                         )
                                         selectedDate
                                         habitData
@@ -431,7 +431,7 @@ update the habit data.
 
 -}
 renderHabitBox :
-    Result String FrequencyStats.FrequencyStats
+    Maybe FrequencyStats.FrequencyStats
     -> YmdDate.YmdDate
     -> List HabitData.HabitData
     -> Dict.Dict String Int
@@ -461,10 +461,10 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
 
         isCurrentFragmentSuccessful =
             case habitStats of
-                Err _ ->
+                Nothing ->
                     False
 
-                Ok stats ->
+                Just stats ->
                     HabitUtil.isHabitCurrentFragmentSuccessful habit stats
 
         frequencyStatisticDiv str =
@@ -482,10 +482,10 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
         ]
         [ div [ class "habit-name" ] [ text habitRecord.name ]
         , case habitStats of
-            Err _ ->
+            Nothing ->
                 frequencyStatisticDiv "Error retriving performance stats"
 
-            Ok stats ->
+            Just stats ->
                 div [ class "frequency-stats-list" ]
                     [ div
                         [ class "current-progress" ]
