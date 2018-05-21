@@ -35,7 +35,7 @@ queryHabitsAndHabitDataAndFrequencyStats :
     -> (ApiError -> b)
     -> (HabitsAndHabitDataAndFrequencyStats -> b)
     -> Cmd b
-queryHabitsAndHabitDataAndFrequencyStats ymd url handleError handleSuccess =
+queryHabitsAndHabitDataAndFrequencyStats ymd =
     let
         queryString =
             """{
@@ -134,9 +134,6 @@ queryHabitsAndHabitDataAndFrequencyStats ymd url handleError handleSuccess =
             |> required "frequencyStatsList" (Decode.list FrequencyStats.decodeFrequencyStats)
             |> Decode.at [ "data" ]
         )
-        url
-        handleError
-        handleSuccess
 
 
 type alias QueriedFrequencyStats =
@@ -151,7 +148,7 @@ queryPastFrequencyStats :
     -> (ApiError -> b)
     -> (QueriedFrequencyStats -> b)
     -> Cmd b
-queryPastFrequencyStats ymd url handleError handleSuccess =
+queryPastFrequencyStats ymd =
     let
         queryString =
             """{frequencyStatsList: get_frequency_stats(current_client_date: {year: """
@@ -179,9 +176,6 @@ queryPastFrequencyStats ymd url handleError handleSuccess =
             |> required "frequencyStatsList" (Decode.list FrequencyStats.decodeFrequencyStats)
             |> Decode.at [ "data" ]
         )
-        url
-        handleError
-        handleSuccess
 
 
 mutationAddHabit : Habit.CreateHabit -> String -> (ApiError -> b) -> (Habit.Habit -> b) -> Cmd b
