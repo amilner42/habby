@@ -17,24 +17,10 @@ isHabitCurrentFragmentSuccessful habit frequencyStats =
             frequencyStats.currentFragmentTotal <= frequencyStats.currentFragmentGoal
 
 
-findFrequencyStatsForHabit : Habit.Habit -> List FrequencyStats.FrequencyStats -> Result String FrequencyStats.FrequencyStats
+findFrequencyStatsForHabit : Habit.Habit -> List FrequencyStats.FrequencyStats -> Maybe FrequencyStats.FrequencyStats
 findFrequencyStatsForHabit habit frequencyStats =
-    let
-        habitId =
-            .id (Habit.getCommonFields habit)
-
-        filteredFrequencyStatsByHabitId =
-            List.filter (\stats -> stats.habitId == habitId) frequencyStats
-    in
-    case filteredFrequencyStatsByHabitId of
-        [] ->
-            Err ("No frequency stats found for habit " ++ habitId)
-
-        [ s ] ->
-            Ok s
-
-        s1 :: s2 :: _ ->
-            Err ("More than one frequency stats found for habit " ++ habitId ++ ", something fishy is going on")
+    List.filter (\stats -> stats.habitId == (habit |> Habit.getCommonFields |> .id)) frequencyStats
+        |> List.head
 
 
 {-| Returns the habits sorted by completion, urgency, and current goal progress.
@@ -151,16 +137,16 @@ sortHabitsByCurrentFragment frequencyStatsList habits =
                     findFrequencyStatsForHabit habitTwo frequencyStatsList
             in
             case ( habitOneFrequencyStats, habitTwoFrequencyStats ) of
-                ( Err _, Err _ ) ->
+                ( Nothing, Nothing ) ->
                     EQ
 
-                ( Err _, Ok _ ) ->
+                ( Nothing, Just _ ) ->
                     GT
 
-                ( Ok _, Err _ ) ->
+                ( Just _, Nothing ) ->
                     LT
 
-                ( Ok statsOne, Ok statsTwo ) ->
+                ( Just statsOne, Just statsTwo ) ->
                     let
                         completionComparison =
                             compareHabitsByCompletion habitOne habitTwo statsOne statsTwo
