@@ -7,7 +7,8 @@
 
 (def default-frequency-stats {:total_fragments 0, :successful_fragments 0, :total_done 0,
                               :current_fragment_streak 0, :best_fragment_streak 0,
-                              :current_fragment_total 0, :current_fragment_goal 0, :current_fragment_days_left 0})
+                              :current_fragment_total 0, :current_fragment_goal 0, :current_fragment_days_left 0,
+                              :habit_has_started false})
 
 (defn get-habit-goal-fragment-length
   "Returns the number of days within each habit goal fragment, given a goal frequency `freq`.
@@ -162,4 +163,5 @@
         habit-goal-fragments (get-habit-goal-fragments sorted-habit-data current-date (:type_name habit) freq)]
     (if (nil? habit-goal-fragments)
       (assoc default-frequency-stats :habit_id (:_id habit))
-      (compute-freq-stats-from-habit-goal-fragments habit-goal-fragments habit freq))))
+      (-> (compute-freq-stats-from-habit-goal-fragments habit-goal-fragments habit freq)
+          (assoc :habit_has_started true)))))

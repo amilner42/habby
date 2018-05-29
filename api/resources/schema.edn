@@ -67,7 +67,8 @@
                                             :best_fragment_streak {:type (non-null Int)}
                                             :current_fragment_total {:type (non-null Int)}
                                             :current_fragment_goal {:type (non-null Int)}
-                                            :current_fragment_days_left {:type (non-null Int)}}}}
+                                            :current_fragment_days_left {:type (non-null Int)}
+                                            :habit_has_started {:type (non-null Boolean)}}}}
 
  :queries {:get_habits {:type (non-null (list (non-null :habit)))
                         :description "Get all habits."
