@@ -14,6 +14,7 @@ type alias FrequencyStats =
     , currentFragmentTotal : Int
     , currentFragmentGoal : Int
     , currentFragmentDaysLeft : Int
+    , habitHasStarted : Bool
     }
 
 
@@ -29,3 +30,4 @@ decodeFrequencyStats =
         |> required "current_fragment_total" Decode.int
         |> required "current_fragment_goal" Decode.int
         |> required "current_fragment_days_left" Decode.int
+        |> required "habit_has_started" Decode.bool
