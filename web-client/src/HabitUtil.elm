@@ -9,12 +9,15 @@ import Models.Habit as Habit
 
 isHabitCurrentFragmentSuccessful : Habit.Habit -> FrequencyStats.FrequencyStats -> Bool
 isHabitCurrentFragmentSuccessful habit frequencyStats =
-    case habit of
-        Habit.GoodHabit _ ->
-            frequencyStats.currentFragmentTotal >= frequencyStats.currentFragmentGoal
+    if not frequencyStats.habitHasStarted then
+        False
+    else
+        case habit of
+            Habit.GoodHabit _ ->
+                frequencyStats.currentFragmentTotal >= frequencyStats.currentFragmentGoal
 
-        Habit.BadHabit _ ->
-            frequencyStats.currentFragmentTotal <= frequencyStats.currentFragmentGoal
+            Habit.BadHabit _ ->
+                frequencyStats.currentFragmentTotal <= frequencyStats.currentFragmentGoal
 
 
 findFrequencyStatsForHabit : Habit.Habit -> List FrequencyStats.FrequencyStats -> Maybe FrequencyStats.FrequencyStats
@@ -52,6 +55,18 @@ compareByAll comparators tOne tTwo =
 
                 EQ ->
                     compareByAll restOfComparators tOne tTwo
+
+
+{-| Compares two habits by whether or not they have been started by the user.
+-}
+compareHabitsByHabitHasStarted : Comparator HabitStatsPair
+compareHabitsByHabitHasStarted ( _, statsOne ) ( _, statsTwo ) =
+    if statsOne.habitHasStarted == statsTwo.habitHasStarted then
+        EQ
+    else if statsOne.habitHasStarted then
+        GT
+    else
+        LT
 
 
 {-| Compares two habits by whether or not their current fragment goals have already been achieved. Prioritizes incomplete habits.
@@ -172,7 +187,8 @@ sortHabitsByCurrentFragment frequencyStatsList habits =
 
                 ( Just statsOne, Just statsTwo ) ->
                     compareByAll
-                        [ compareHabitsByCompletion
+                        [ compareHabitsByHabitHasStarted
+                        , compareHabitsByCompletion
                         , compareHabitsByDaysLeft
                         , compareHabitsByCurrentGoalProgress
                         , compareHabitsByCurrentGoalRemaining

@@ -123,6 +123,7 @@ queryHabitsAndHabitDataAndFrequencyStats ymd =
     current_fragment_total
     current_fragment_goal
     current_fragment_days_left
+    habit_has_started
   }
 }"""
     in
@@ -167,6 +168,7 @@ queryPastFrequencyStats ymd =
     current_fragment_total
     current_fragment_goal
     current_fragment_days_left
+    habit_has_started
   }
 }"""
     in
