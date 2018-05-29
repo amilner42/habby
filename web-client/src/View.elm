@@ -486,30 +486,33 @@ renderHabitBox habitStats ymd habitData editingHabitDataDict onHabitDataInput se
                 frequencyStatisticDiv "Error retriving performance stats"
 
             Just stats ->
-                div [ class "frequency-stats-list" ]
-                    [ div
-                        [ class "current-progress" ]
-                        [ text <|
-                            toString stats.currentFragmentTotal
-                                ++ " out of "
-                                ++ toString stats.currentFragmentGoal
-                                ++ " "
-                                ++ habitRecord.unitNamePlural
+                if not stats.habitHasStarted then
+                    div [ class "current-progress" ] [ text "Start this habit!" ]
+                else
+                    div [ class "frequency-stats-list" ]
+                        [ div
+                            [ class "current-progress" ]
+                            [ text <|
+                                toString stats.currentFragmentTotal
+                                    ++ " out of "
+                                    ++ toString stats.currentFragmentGoal
+                                    ++ " "
+                                    ++ habitRecord.unitNamePlural
+                            ]
+                        , frequencyStatisticDiv ("Days left: " ++ toString stats.currentFragmentDaysLeft)
+                        , frequencyStatisticDiv
+                            ((toString <|
+                                round <|
+                                    toFloat stats.successfulFragments
+                                        * 100
+                                        / toFloat stats.totalFragments
+                             )
+                                ++ "%"
+                            )
+                        , frequencyStatisticDiv ("Streak: " ++ toString stats.currentFragmentStreak)
+                        , frequencyStatisticDiv ("Best streak: " ++ toString stats.bestFragmentStreak)
+                        , frequencyStatisticDiv ("Total done: " ++ toString stats.totalDone)
                         ]
-                    , frequencyStatisticDiv ("Days left: " ++ toString stats.currentFragmentDaysLeft)
-                    , frequencyStatisticDiv
-                        ((toString <|
-                            round <|
-                                toFloat stats.successfulFragments
-                                    * 100
-                                    / toFloat stats.totalFragments
-                         )
-                            ++ "%"
-                        )
-                    , frequencyStatisticDiv ("Streak: " ++ toString stats.currentFragmentStreak)
-                    , frequencyStatisticDiv ("Best streak: " ++ toString stats.bestFragmentStreak)
-                    , frequencyStatisticDiv ("Total done: " ++ toString stats.totalDone)
-                    ]
         , div
             [ classList
                 [ ( "habit-amount-complete", True )
