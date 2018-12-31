@@ -1,7 +1,14 @@
 # Habby
 
-A basic habit tracker app, created mostly to test out using
+### Introduction
+
+A basic habit tracker app, created mostly as a quick experiment to test out using
 [Lacinia](http://lacinia.readthedocs.io/en/latest/).
+
+This "experiment app" was continued by my friend Aly who wanted to develop the app for his personal use, you can
+track his continuation [here](https://github.com/alythobani/stay-habby).
+
+This experiment will not be developed further and is left here only as a reference.
 
 ### Stack
 
