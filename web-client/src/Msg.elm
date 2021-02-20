@@ -13,8 +13,8 @@ type Msg
     = NoOp
     | OnLocationChange Navigation.Location
     | TickMinute Time.Time
-    | OnGetHabitsAndHabitDataFailure ApiError
-    | OnGetHabitsAndHabitDataSuccess Api.HabitsAndHabitData
+    | OnGetHabitsAndHabitDataAndFrequencyStatsFailure ApiError
+    | OnGetHabitsAndHabitDataAndFrequencyStatsSuccess Api.HabitsAndHabitDataAndFrequencyStats
     | OnOpenAddHabit
     | OnCancelAddHabit
     | OnSelectAddHabitKind Habit.HabitKind
@@ -47,5 +47,8 @@ type Msg
     | OnHistoryViewerSelectYesterday
     | OnHistoryViewerSelectBeforeYesterday
     | OnHistoryViewerSelectDateInput
+    | SetHistoryViewerSelectedDate YmdDate.YmdDate
+    | OnGetPastFrequencyStatsFailure ApiError
+    | OnGetPastFrequencyStatsSuccess Api.QueriedFrequencyStats
     | OnHistoryViewerChangeDate
     | OnHistoryViewerHabitDataInput YmdDate.YmdDate String String

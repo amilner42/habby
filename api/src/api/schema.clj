@@ -71,33 +71,37 @@
 (defn resolve-get-habits
   "@refer `db/get-habits`."
   [context args value]
-  (map tag-type (db/get-habits)))
+  (map tag-type (db/get-habits args)))
 
 (defn resolve-mutation-add-habit
   "@refer `db/add-habit`."
-  [context {:keys [create_habit_data] } value]
-  (tag-type (db/add-habit (unnest-tagged-unions-on-input-object create_habit_data))))
+  [context {:keys [create_habit_data] :as all} value]
+  (tag-type (db/add-habit (assoc all :habit (unnest-tagged-unions-on-input-object create_habit_data)))))
 
 (defn resolve-mutation-set-habit-data
   "@refer `db/set-habit-data`."
-  [context {:keys [habit_id amount date]} value]
-  (let [date-time (date-from-y-m-d-map date)]
-    (db/set-habit-data habit_id amount date-time)))
+  [context {:keys [date] :as all} value]
+  (db/set-habit-data (assoc (dissoc all :date) :date-time (date-from-y-m-d-map date))))
 
 (defn resolve-get-habit-data
   "@refer `db/get-habit-data`."
-  [context {:keys [after_date for_habit]} value]
-  (db/get-habit-data after_date for_habit))
+  [context args value]
+  (db/get-habit-data args))
 
 (defn resolve-mutation-delete-habit
   "@refer `db/delete-habit`."
-  [context {:keys [habit_id]} value]
-  (db/delete-habit habit_id))
+  [context args value]
+  (db/delete-habit args))
 
 (defn resolve-mutation-set-suspend-habit
   "@refer `db/set-suspend-habit`."
-  [context {:keys [habit_id, suspended]} value]
-  (db/set-suspend-habit habit_id suspended))
+  [context args value]
+  (db/set-suspend-habit args))
+
+(defn resolve-query-get-frequency-stats
+  "@refer `db/get-frequency-stats`."
+  [context {:keys [current_client_date] :as all} value]
+  (map tag-type (db/get-frequency-stats (assoc all :current_client_date (date-from-y-m-d-map current_client_date)))))
 
 (defn resolver-map
   []
@@ -109,7 +113,8 @@
    :query/get-habit-data (create-async-resolver resolve-get-habit-data)
    :query/date-to-y-m-d-format (create-date-to-y-m-d-resolver :date)
    :query/resolve-mutation-delete-habit (create-async-resolver resolve-mutation-delete-habit)
-   :query/resolve-mutation-set-suspend-habit (create-async-resolver resolve-mutation-set-suspend-habit)})
+   :query/resolve-mutation-set-suspend-habit (create-async-resolver resolve-mutation-set-suspend-habit)
+   :query/get-frequency-stats (create-async-resolver resolve-query-get-frequency-stats)})
 
 (defn load-schema
   []
